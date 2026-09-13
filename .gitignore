@@ -1,0 +1,11 @@
+.idea
+.gradle
+*.iml
+target
+run
+build
+bin
+out
+.zencoder
+/.gradle/
+/build/

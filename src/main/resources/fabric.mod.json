@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "id": "darkvisuals",
+  "version": "0.3",
+  "name": "darkvisuals",
+  "description": "The best visual mod",
+  "authors": ["Sh1ckOnly", "Allans"],
+  "contact": {},
+  "license": "MIT",
+  "icon": "assets/darkvisuals/logo.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "dev.darkvisuals.emotes.network.EmotesNetworkInit",
+      "dev.darkvisuals.darkvisuals"
+    ]
+  },
+  "mixins": [
+    "darkvisuals.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.16.10",
+    "minecraft": "1.21.4"
+  }
+}

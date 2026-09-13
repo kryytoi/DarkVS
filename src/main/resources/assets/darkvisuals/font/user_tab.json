@@ -1,0 +1,11 @@
+{
+  "providers": [
+    {
+      "type": "bitmap",
+      "file": "darkvisuals:font/user_tab_badge.png",
+      "ascent": 7,
+      "height": 8,
+      "chars": ["\uE100"]
+    }
+  ]
+}

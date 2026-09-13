@@ -1,0 +1,142 @@
+{
+  "bell": {
+    "sounds": [
+      {
+        "name": "darkvisuals:bell"
+      }
+    ]
+  },
+  "crime": {
+    "sounds": [
+      {
+        "name": "darkvisuals:crime"
+      }
+    ]
+  },
+  "nya": {
+    "sounds": [
+      {
+        "name": "darkvisuals:nya"
+      }
+    ]
+  },
+  "skeet": {
+    "sounds": [
+      {
+        "name": "darkvisuals:skeet"
+      }
+    ]
+  },
+  "uwu": {
+    "sounds": [
+      {
+        "name": "darkvisuals:uwu"
+      }
+    ]
+  },
+  "enable": {
+    "sounds": [
+      {
+        "name": "darkvisuals:enable"
+      }
+    ]
+  },
+  "disable": {
+    "sounds": [
+      {
+        "name": "darkvisuals:disable"
+      }
+    ]
+  },
+  "enable1": {
+    "sounds": [
+      {
+        "name": "darkvisuals:enable1"
+      }
+    ]
+  },
+  "enable2": {
+    "sounds": [
+      {
+        "name": "darkvisuals:enable2"
+      }
+    ]
+  },
+  "disable1": {
+    "sounds": [
+      {
+        "name": "darkvisuals:disable1"
+      }
+    ]
+  },
+  "disable2": {
+    "sounds": [
+      {
+        "name": "darkvisuals:disable2"
+      }
+    ]
+  },
+  "kill2": {
+    "sounds": [
+      {
+        "name": "darkvisuals:kill2"
+      }
+    ]
+  },
+  "welcome": {
+    "sounds": [
+      {
+        "name": "darkvisuals:welcome"
+      }
+    ]
+  },
+  "moan1": {
+    "sounds": [
+      {
+        "name": "darkvisuals:moan1"
+      }
+    ]
+  },
+  "moan2": {
+    "sounds": [
+      {
+        "name": "darkvisuals:moan2"
+      }
+    ]
+  },
+  "moan3": {
+    "sounds": [
+      {
+        "name": "darkvisuals:moan3"
+      }
+    ]
+  },
+  "moan4": {
+    "sounds": [
+      {
+        "name": "darkvisuals:moan4"
+      }
+    ]
+  },
+  "hit": {
+    "sounds": [
+      {
+        "name": "darkvisuals:hit1"
+      }
+    ]
+  },
+  "hit2": {
+    "sounds": [
+      {
+        "name": "darkvisuals:hit2"
+      }
+    ]
+  },
+  "hit3": {
+    "sounds": [
+      {
+        "name": "darkvisuals:hit3"
+      }
+    ]
+  }
+}
