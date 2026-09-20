@@ -34,19 +34,24 @@ public record BuiltBlur(
 
 	private static final ShaderProgramKey BLUR_SHADER_KEY = new ShaderProgramKey(ResourceProvider.getShaderIdentifier("blur"), VertexFormats.POSITION_COLOR, Defines.EMPTY);
     private static final Supplier<SimpleFramebuffer> TEMP_FBO_SUPPLIER = Suppliers.memoize(() -> new SimpleFramebuffer(1920, 1024, false));
-    private static final Framebuffer MAIN_FBO = MinecraftClient.getInstance().getFramebuffer();
+    // MAIN_FBO намеренно НЕ кешируется — Minecraft пересоздаёт его при запуске/ресайзе,
+    // и закешированный указатель становится удалённым FBO → GL_INVALID_VALUE каждый кадр.
 
     @Override
     public void render(Matrix4f matrix, float x, float y, float z) {
+        MinecraftClient client = MinecraftClient.getInstance();
+        Framebuffer main = client.getFramebuffer();
+        if (main == null) return;
+
         SimpleFramebuffer fbo = TEMP_FBO_SUPPLIER.get();
-        if (fbo.textureWidth != MAIN_FBO.textureWidth || fbo.textureHeight != MAIN_FBO.textureHeight) fbo.resize(MAIN_FBO.textureWidth, MAIN_FBO.textureHeight);
+        if (fbo.textureWidth != main.textureWidth || fbo.textureHeight != main.textureHeight) fbo.resize(main.textureWidth, main.textureHeight);
 
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
         RenderSystem.disableCull();
-        fbo.beginWrite(false);
-        MAIN_FBO.draw(fbo.textureWidth, fbo.textureHeight);
-        MAIN_FBO.beginWrite(false);
+        fbo.beginWrite(true);
+        main.draw(fbo.textureWidth, fbo.textureHeight);
+        main.beginWrite(true);
         RenderSystem.setShaderTexture(0, fbo.getColorAttachment());
 
         float width = this.size.width(), height = this.size.height();

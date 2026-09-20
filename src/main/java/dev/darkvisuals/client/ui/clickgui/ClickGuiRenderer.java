@@ -8,6 +8,7 @@ import dev.darkvisuals.client.util.renderer.fonts.Font;
 import dev.darkvisuals.client.util.renderer.fonts.Fonts;
 import dev.darkvisuals.modules.api.Category;
 import dev.darkvisuals.modules.api.Module;
+import dev.darkvisuals.modules.impl.render.UI;
 import dev.darkvisuals.modules.settings.Setting;
 import dev.darkvisuals.modules.settings.impl.*;
 import net.minecraft.client.gui.DrawContext;
@@ -135,8 +136,18 @@ private float globalAlpha = 1f;
     }
     public static Color liveThemeColor() {
         Color c = dev.darkvisuals.client.managers.ThemeManager.getInstance().getCurrentTheme().getAccentColor();
-        return new Color(c.getRed(), c.getGreen(), c.getBlue(), 255);
+        // переиспользуем кэшированный Color, пока тема не сменилась — иначе каждый
+        // кадр здесь выделяется новый объект
+        int rgb = (c.getRed() << 16) | (c.getGreen() << 8) | c.getBlue();
+        if (CACHED_THEME_RGB != rgb || CACHED_THEME_COLOR == null) {
+            CACHED_THEME_RGB = rgb;
+            CACHED_THEME_COLOR = new Color(c.getRed(), c.getGreen(), c.getBlue(), 255);
+        }
+        return CACHED_THEME_COLOR;
     }
+
+    private static int CACHED_THEME_RGB = -1;
+    private static Color CACHED_THEME_COLOR = null;
     private static int theme() { return themeColor.getRGB() | 0xFF000000; }
     private static int themeA(int alpha) {
         return (alpha << 24) | (themeColor.getRed() << 16) | (themeColor.getGreen() << 8) | themeColor.getBlue();
@@ -159,6 +170,12 @@ private float globalAlpha = 1f;
     }
 
     public static boolean isSearching() { return searchBuffer.length() > 0; }
+
+    /** Режим UI Mode → Liquid Glass: панель клик-гуя рисуется жидким стеклом. */
+    public static boolean isLiquidGlass() {
+        var ui = darkvisuals.getInstance().getModuleManager().getModule(UI.class);
+        return ui != null && ui.getUiMode() == UI.UIMode.LiquidGlass;
+    }
 
     public static List<Module> getSearchResults() {
         String q = searchBuffer.toString().trim().toLowerCase();
@@ -410,6 +427,17 @@ if (desc != null && !desc.isEmpty()) {
 
     private void renderPanel(DrawContext ctx, float px, float py) {
         int t = theme();
+
+        // режим Liquid Glass: панель клик-гуя — настоящее жидкое стекло.
+        // Шейдер преломляет и размывает игру за панелью; панель не заливается
+        // непрозрачным цветом — фон остаётся видимым сквозь стекло.
+        if (isLiquidGlass()) {
+            Render2D.drawGlass(ctx.getMatrices(), px, py, PANEL_W, PANEL_H,
+                    1f, PANEL_R_TL, PANEL_R_TR, PANEL_R_BR, PANEL_R_BL,
+                    glassTint(0.22f), 8f, 3f, 3f, 2f);
+            return;
+        }
+
         rect(ctx, px, py, PANEL_W, PANEL_H, PANEL_R_TL, PANEL_R_TR, PANEL_R_BR, PANEL_R_BL, t);
         float ix = px + BORDER, iy = py + BORDER, iw = PANEL_W - BORDER * 2, ih = PANEL_H - BORDER * 2;
         rect(ctx, ix, iy, iw, ih, PANEL_R_TL - BORDER, PANEL_R_TR - BORDER, PANEL_R_BR - BORDER, PANEL_R_BL - BORDER, C_PANEL);
@@ -581,7 +609,7 @@ if (desc != null && !desc.isEmpty()) {
 
             float drawY = rowY + rowOffset;
 
-            rect(ctx, cx, drawY, cw, ROW_H, ROW_R, lerpColor(C_ROW, C_ROW_HOVER, hovT));
+            rect(ctx, cx, drawY, cw, ROW_H, ROW_R, lerpColor(elementFill(C_ROW, 0.62f), elementFill(C_ROW_HOVER, 0.72f), hovT));
             // тонкая акцентная полоска слева у включённых модулей
             if (togT > 0.02f) {
                 rect(ctx, cx, drawY + 3f, 2.5f, ROW_H - 6f, 1.25f, withAlpha(theme(), (int) (200f * togT)));
@@ -626,7 +654,7 @@ if (desc != null && !desc.isEmpty()) {
                 float slide = (1f - expandT) * 6f;
                 prevAlpha = globalAlpha;
                 globalAlpha *= expandT;
-                rect(ctx, cx, rowY + slide, cw, bh, SETTINGS_R, C_BLOCK);
+                rect(ctx, cx, rowY + slide, cw, bh, SETTINGS_R, elementFill(C_BLOCK, 0.55f));
                 // акцентная кромка у блока настроек
                 rect(ctx, cx, rowY + slide, 2.5f, bh, 1.25f, withAlpha(theme(), (int) (140f * expandT)));
                 renderSettings(ctx, m, cx + SETTINGS_PAD, rowY + slide + SETTINGS_PAD, cw - SETTINGS_PAD * 2, mouseX, mouseY, inContent);
@@ -919,10 +947,15 @@ if (desc != null && !desc.isEmpty()) {
         return (al << 24) | (color & 0x00FFFFFF);
     }
 
+    /** Получить Color для ARGB-int без аллокации, если он уже в кеше. */
+    private static java.awt.Color cachedColor(int argb) {
+        return Render2D.cachedColor(argb);
+    }
+
     public void rect(DrawContext ctx, float x, float y, float w, float h, float r, int color) {
         int c = a(color);
         if (((c >>> 24) & 0xFF) == 0 || w <= 0 || h <= 0) return;
-        Render2D.drawRoundedRect(ctx.getMatrices(), x, y, w, h, Math.min(r, Math.min(w, h) / 2f), new Color(c, true));
+        Render2D.drawRoundedRect(ctx.getMatrices(), x, y, w, h, Math.min(r, Math.min(w, h) / 2f), cachedColor(c));
     }
 
  
@@ -932,7 +965,7 @@ if (desc != null && !desc.isEmpty()) {
         if (((c >>> 24) & 0xFF) == 0 || w <= 0 || h <= 0) return;
         float cap = Math.min(w, h) / 2f;
         Render2D.drawRoundedRect(ctx.getMatrices(), x, y, w, h,
-                Math.min(rTL, cap), Math.min(rTR, cap), Math.min(rBR, cap), Math.min(rBL, cap), new Color(c, true));
+                Math.min(rTL, cap), Math.min(rTR, cap), Math.min(rBR, cap), Math.min(rBL, cap), cachedColor(c));
     }
 
     private void circle(DrawContext ctx, float cx, float cy, float r, int color) {
@@ -955,7 +988,7 @@ if (desc != null && !desc.isEmpty()) {
         RenderSystem.enableBlend();
         RenderSystem.setShaderColor(1, 1, 1, 1);
         try {
-            Render2D.drawFont(ms, font.getFont(size), s, x, y, new Color(a(color), true));
+            Render2D.drawFont(ms, font.getFont(size), s, x, y, cachedColor(a(color)));
         } catch (IllegalStateException ignored) {
              
         }
@@ -974,6 +1007,20 @@ if (desc != null && !desc.isEmpty()) {
     private static int withAlpha(int color, int alpha) {
         alpha = Math.max(0, Math.min(255, alpha));
         return (alpha << 24) | (color & 0x00FFFFFF);
+    }
+
+    /** ARGB тинта жидкого стекла: светлый прозрачный цвет + альфа 0..1.
+     *  Цвет темы намеренно не используется — стекло должно показывать фон
+     *  (преломление/блюр), а не заливать панель. */
+    private static int glassTint(float alpha01) {
+        return withAlpha(0xFFC8D7E6, (int) (Math.max(0f, Math.min(1f, alpha01)) * 255f));
+    }
+
+    /** В режиме Liquid Glass внутренние элементы делаются прозрачными, чтобы
+     *  не перекрывать стекло панели — стекло должно оставаться видимым. */
+    private static int elementFill(int fallback, float alpha) {
+        if (!isLiquidGlass()) return fallback;
+        return withAlpha(fallback, (int) (Math.max(0f, Math.min(1f, alpha)) * 255f));
     }
 
     private static int lerpColor(int from, int to, float t) {

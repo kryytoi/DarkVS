@@ -105,10 +105,10 @@ public class darkvisuals implements ModInitializer, Wrapper {
 
                     @Override
                     public void reload(ResourceManager manager) {
-                        Fonts.reload();  
-                         
-                         
+                        Fonts.reload();
                         dev.darkvisuals.client.util.IntroManager.init(manager);
+                        // подгружаем все PNG-граффити из assets/darkvisuals/grafi
+                        dev.darkvisuals.client.managers.GraffityManager.reload(manager);
                     }
                 }
         );

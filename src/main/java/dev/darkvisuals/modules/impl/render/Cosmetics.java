@@ -11,6 +11,7 @@ import dev.darkvisuals.darkvisuals;
 import dev.darkvisuals.client.events.impl.EventTick;
 import dev.darkvisuals.client.util.models.CapModel;
 import dev.darkvisuals.client.util.models.KaguneModel;
+import dev.darkvisuals.client.util.models.RobotTentaclesModel;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.LightType;
 import dev.darkvisuals.modules.api.Category;
@@ -88,6 +89,11 @@ public final class Cosmetics extends Module implements ThemeManager.ThemeChangeL
     private final BooleanSetting kagune = new BooleanSetting("Кагуне", false, () -> false);
     private final BooleanSetting mortyPatch = new BooleanSetting("Повязка Морти", false, () -> false);
     private final BooleanSetting nikeCap = new BooleanSetting("Кепка Nike", false, () -> false);
+    private final BooleanSetting robotTentacles = new BooleanSetting("Робо-щупальца", false, () -> false);
+
+    private final NumberSetting robotTentacleSize = new NumberSetting("Размер робо-щупалец", 1.0f, 0.5f, 2.0f, 0.05f);
+    private final NumberSetting robotTentacleSpeed = new NumberSetting("Скорость робо-щупалец", 1.0f, 0.1f, 3.0f, 0.05f);
+    private final BooleanSetting robotTentacleAnimation = new BooleanSetting("Анимация робо-щупалец", true, () -> robotTentacles.getValue());
 
      
     private final NumberSetting kaguneSize = new NumberSetting("Размер кагуне", 1.0f, 0.5f, 2.0f, 0.05f);
@@ -103,6 +109,7 @@ public final class Cosmetics extends Module implements ThemeManager.ThemeChangeL
     private float propellerRotation;
     private float propellerSpeed;
     private float kaguneAnimTime;
+    private float robotTentacleAnimTime;
 
     private float selfClassicBodyYaw;
     private boolean selfClassicBodyYawInitialized;
@@ -145,6 +152,8 @@ public final class Cosmetics extends Module implements ThemeManager.ThemeChangeL
                         kaguneAnimTime, kaguneSize.getValue().floatValue(), kaguneAnimation.getValue());
                 case "morty" -> renderMortyPatch(player, 1.0f, matrices, player.getPos());
                 case "nike" -> renderNikeCap(player, 1.0f, matrices, player.getPos());
+                case "robot_tentacles" -> RobotTentaclesModel.render(player, 1.0f, matrices, player.getPos(),
+                        robotTentacleAnimTime, robotTentacleSize.getValue().floatValue(), robotTentacleAnimation.getValue());
             }
         } finally {
             RenderSystem.enableCull();
@@ -164,6 +173,9 @@ public final class Cosmetics extends Module implements ThemeManager.ThemeChangeL
         getSettings().add(kaguneSize);
         getSettings().add(kaguneSpeed);
         getSettings().add(kaguneAnimation);
+        getSettings().add(robotTentacleSize);
+        getSettings().add(robotTentacleSpeed);
+        getSettings().add(robotTentacleAnimation);
         getSettings().add(chinaBrimRadius);
         getSettings().add(chinaOpacity);
 
@@ -176,7 +188,10 @@ public final class Cosmetics extends Module implements ThemeManager.ThemeChangeL
         chinaHat.setVisible(() -> false);
         mortyPatch.setVisible(() -> false);
         nikeCap.setVisible(() -> false);
+        robotTentacles.setVisible(() -> false);
         kagune.setVisible(() -> false);
+        robotTentacleSize.setVisible(() -> robotTentacles.getValue());
+        robotTentacleSpeed.setVisible(() -> robotTentacles.getValue());
         butterflyWingSize.setVisible(() -> wings.getValue());
         classicWingSize.setVisible(() -> wings2.getValue());
         blackWingSize.setVisible(() -> blackWings.getValue());
@@ -200,6 +215,7 @@ public final class Cosmetics extends Module implements ThemeManager.ThemeChangeL
     public BooleanSetting getNikeCapSetting() { return nikeCap; }
     public BooleanSetting getChinaHatSetting() { return chinaHat; }
     public BooleanSetting getKaguneSetting()   { return kagune; }
+    public BooleanSetting getRobotTentaclesSetting() { return robotTentacles; }
 
     public Color getThemeColor() { return currentColor; }
     public float getBlackWingSize() { return blackWingSize.getValue().floatValue(); }
@@ -285,6 +301,7 @@ public final class Cosmetics extends Module implements ThemeManager.ThemeChangeL
     public void onTick(EventTick event) {
         if (mc.player == null) return;
         kaguneAnimTime += 0.18f * kaguneSpeed.getValue().floatValue();
+        robotTentacleAnimTime += 0.18f * robotTentacleSpeed.getValue().floatValue();
         if (!mc.player.isOnGround() && mc.player.getVelocity().y < -0.08) {
             propellerSpeed = Math.min(propellerSpeed + 4.0f, 60.0f);
         } else {
@@ -306,6 +323,7 @@ public final class Cosmetics extends Module implements ThemeManager.ThemeChangeL
         boolean renderKag = kagune.getValue();
         boolean renderMorty = mortyPatch.getValue();
         boolean renderNike = nikeCap.getValue();
+        boolean renderRobotTentacles = robotTentacles.getValue();
 
         String preview = previewOverrideId;
         if (preview != null) {
@@ -318,13 +336,14 @@ public final class Cosmetics extends Module implements ThemeManager.ThemeChangeL
             renderKag = "kagune".equals(preview);
             renderMorty = "morty".equals(preview);
             renderNike = "nike".equals(preview);
+            renderRobotTentacles = "robot_tentacles".equals(preview);
         }
 
         if (showNimbus) {
             renderNimbus(event);
         }
 
-        if (!renderButterfly && !renderClassic && !renderBlack && !renderCapH && !renderChina && !renderKag && !renderMorty && !renderNike) return;
+        if (!renderButterfly && !renderClassic && !renderBlack && !renderCapH && !renderChina && !renderKag && !renderMorty && !renderNike && !renderRobotTentacles) return;
 
         float tickDelta = event.getTickDelta();
         MatrixStack matrices = event.getMatrices();
@@ -335,7 +354,7 @@ public final class Cosmetics extends Module implements ThemeManager.ThemeChangeL
                  
                 if (player == mc.player && mc.options.getPerspective().isFirstPerson()) continue;
                 if (!renderButterfly && !renderClassic && !renderBlack && !renderCapH
-                        && !renderChina && !renderKag && !renderMorty && !renderNike) continue;
+                        && !renderChina && !renderKag && !renderMorty && !renderNike && !renderRobotTentacles) continue;
                 if (renderButterfly) renderButterflyWings(player, tickDelta, matrices, cameraPos);
                 if (renderClassic) renderClassicWings(player, tickDelta, matrices, cameraPos);
                 if (renderBlack) {
@@ -351,6 +370,11 @@ public final class Cosmetics extends Module implements ThemeManager.ThemeChangeL
                 }
                 if (renderMorty) renderMortyPatch(player, tickDelta, matrices, cameraPos);
                 if (renderNike) renderNikeCap(player, tickDelta, matrices, cameraPos);
+                if (renderRobotTentacles) {
+                    float animatedTime = robotTentacleAnimTime + 0.18f * robotTentacleSpeed.getValue().floatValue() * tickDelta;
+                    RobotTentaclesModel.render(player, tickDelta, matrices, cameraPos,
+                            animatedTime, robotTentacleSize.getValue().floatValue(), robotTentacleAnimation.getValue());
+                }
                 continue;
             }
 
@@ -373,6 +397,11 @@ public final class Cosmetics extends Module implements ThemeManager.ThemeChangeL
             }
             if (remote.contains("morty")) renderMortyPatch(player, tickDelta, matrices, cameraPos);
             if (remote.contains("nike")) renderNikeCap(player, tickDelta, matrices, cameraPos);
+            if (remote.contains("robot_tentacles")) {
+                float animatedTime = robotTentacleAnimTime + 0.18f * robotTentacleSpeed.getValue().floatValue() * tickDelta;
+                RobotTentaclesModel.render(player, tickDelta, matrices, cameraPos,
+                        animatedTime, robotTentacleSize.getValue().floatValue(), robotTentacleAnimation.getValue());
+            }
         }
     }
 

@@ -2,11 +2,15 @@
   "permissions": {
     "allow": [
       "Bash(java -version)",
-      "Bash(./gradlew.bat compileJava -q)",
       "Bash(echo \"EXIT_CODE=$?\")",
-      "Bash(./gradlew compileJava)",
       "PowerShell($jar = \"C:\\\\Users\\\\NewDarko\\\\.gradle\\\\caches\\\\fabric-loom\\\\minecraftMaven\\\\net\\\\minecraft\\\\minecraft-clientonly-deobf\\\\26.2\\\\minecraft-clientonly-deobf-26.2.jar\"; javap -classpath $jar net.minecraft.client.render.RenderLayers)",
-      "PowerShell($jar = \"C:\\\\Users\\\\NewDarko\\\\.gradle\\\\caches\\\\fabric-loom\\\\minecraftMaven\\\\net\\\\minecraft\\\\minecraft-merged\\\\1.21.4-net.fabricmc.yarn.1_21_4.1.21.4+build.8-v2\\\\minecraft-merged-1.21.4-net.fabricmc.yarn.1_21_4.1.21.4+build.8-v2.jar\"; javap -classpath $jar net.minecraft.client.render.RenderLayers)"
+      "PowerShell($jar = \"C:\\\\Users\\\\NewDarko\\\\.gradle\\\\caches\\\\fabric-loom\\\\minecraftMaven\\\\net\\\\minecraft\\\\minecraft-merged\\\\1.21.4-net.fabricmc.yarn.1_21_4.1.21.4+build.8-v2\\\\minecraft-merged-1.21.4-net.fabricmc.yarn.1_21_4.1.21.4+build.8-v2.jar\"; javap -classpath $jar net.minecraft.client.render.RenderLayers)",
+      "PowerShell(if \\(Test-Path \"$env:TEMP\\\\darkvs_compile2.log\"\\) { Get-Content \"$env:TEMP\\\\darkvs_compile2.log\" -Tail 60 } else { \"log not found\" })",
+      "PowerShell($src = \"C:\\\\Users\\\\MrDarko\\\\Desktop\\\\DarkVS\\\\DarkVS\\\\src\\\\main\\\\resources\\\\assets\\\\darkvisuals\\\\shaders\\\\core\\\\glass.fsh\"; $out = \"C:\\\\Users\\\\MrDarko\\\\Desktop\\\\DarkVS\\\\DarkVS\\\\build\\\\resources\\\\main\\\\assets\\\\darkvisuals\\\\shaders\\\\core\\\\glass.fsh\"; Write-Output \\(\"src  exists: \" + \\(Test-Path $src\\)\\); Write-Output \\(\"out  exists: \" + \\(Test-Path $out\\)\\); if \\(Test-Path $out\\) { $a = \\(Get-Item $src\\).LastWriteTime; $b = \\(Get-Item $out\\).LastWriteTime; Write-Output \\(\"src time: \" + $a\\); Write-Output \\(\"out time: \" + $b\\) })",
+      "PowerShell($log = \"C:\\\\Users\\\\MrDarko\\\\Desktop\\\\DarkVS\\\\DarkVS\\\\run\\\\logs\\\\latest.log\"; $lines = Get-Content $log; $idx = 0; $found = $false; foreach \\($l in $lines\\) { $idx++; if \\($l -match \"GL_INVALID_VALUE\"\\) { if \\(-not $found\\) { $start = [Math]::Max\\(1, $idx - 12\\); $found = $true } } }; if \\($found\\) { $lines | Select-Object -Skip \\($start - 1\\) -First 22 } else { Write-Output \"no GL errors found\" })",
+      "PowerShell($log = \"C:\\\\Users\\\\MrDarko\\\\Desktop\\\\DarkVS\\\\DarkVS\\\\run\\\\logs\\\\latest.log\"; $lines = Get-Content $log; $gl = \\($lines | Select-String \"GL_INVALID_VALUE\"\\).Count; $last = $lines | Select-Object -Last 8; Write-Output \"GL_INVALID_VALUE count: $gl\"; Write-Output \"--- last lines:\"; $last)",
+      "PowerShell(cd \"C:\\\\Users\\\\MrDarko\\\\Desktop\\\\DarkVS\\\\DarkVS\"; & .\\\\gradlew.bat processResources --console=plain 2>&1 | Select-String -Pattern \"BUILD SUCC|BUILD FAIL\" | Select-Object -First 3; $out = \"C:\\\\Users\\\\MrDarko\\\\Desktop\\\\DarkVS\\\\DarkVS\\\\build\\\\resources\\\\main\\\\assets\\\\darkvisuals\\\\grafi\\\\test_tag.png\"; if \\(Test-Path $out\\) { Write-Output \\(\"copied to build: \" + \\(Get-Item $out\\).Length + \" bytes\"\\) } else { Write-Output \"NOT in build\" })",
+      "PowerShell($d = \"src\\\\main\\\\java\\\\dev\\\\darkvisuals\\\\emotes\"; Get-ChildItem $d | ForEach-Object { \"=== $\\($_.Name\\) — $\\(\\(Get-Content $_.FullName -Encoding UTF8\\).Count\\) lines ===\" })"
     ]
   }
 }

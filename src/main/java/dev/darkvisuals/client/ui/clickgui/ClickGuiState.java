@@ -11,6 +11,9 @@ import java.util.Collections;
 
 public class ClickGuiState {
     private final Map<Category, Float> scrollMap = new EnumMap<>(Category.class);
+    // отдельный скролл для колонки настроек в стиле New — иначе список
+    // модулей и настройки листаются одновременно
+    private final Map<Category, Float> settingsScrollMap = new EnumMap<>(Category.class);
 
     public float getScroll(Category category) {
         return scrollMap.getOrDefault(category, 0f);
@@ -18,6 +21,14 @@ public class ClickGuiState {
 
     public void setScroll(Category category, float scroll) {
         scrollMap.put(category, scroll);
+    }
+
+    public float getSettingsScroll(Category category) {
+        return settingsScrollMap.getOrDefault(category, 0f);
+    }
+
+    public void setSettingsScroll(Category category, float scroll) {
+        settingsScrollMap.put(category, scroll);
     }
 
     public List<Module> getModules(Category category) {

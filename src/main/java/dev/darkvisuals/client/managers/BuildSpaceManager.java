@@ -13,6 +13,7 @@ import dev.darkvisuals.modules.impl.render.StructureVisualer;
 import meteordevelopment.orbit.EventHandler;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
+import net.minecraft.client.gui.screen.ingame.CreativeInventoryScreen;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.player.PlayerAbilities;
 import net.minecraft.item.BlockItem;
@@ -108,6 +109,9 @@ public class BuildSpaceManager implements Wrapper {
         ab.creativeMode = true;
         p.noClip = true;
         p.fallDistance = 0f;
+
+        // Дать игроку возможность открывать инвентарь творческого режима
+        mc.setScreen(new CreativeInventoryScreen(p, mc.world.getEnabledFeatures(), true));
 
         // площадка по центру над игроком (та же колонка чанков — они уже загружены)
         origin = BlockPos.ofFloored(p.getX() - PLATFORM_SIZE / 2.0, BUILD_Y, p.getZ() - PLATFORM_SIZE / 2.0);
@@ -290,26 +294,26 @@ public class BuildSpaceManager implements Wrapper {
     public void onTick(EventTick event) {
         if (!active) return;
 
-        // выкинуло из мира (disconnect и т.п.) — просто выходим без восстановления
         if (mc.player == null || mc.world == null) {
             active = false;
             saveData();
             return;
         }
 
-        // умерли на сервере, пока стояли (мобы и т.п.) — восстанавливаем способности
-        // и сразу возрождаемся, без экрана смерти
+        // Принудительно включаем режим полноценного креатива в пространстве стройки
+        PlayerAbilities ab = mc.player.getAbilities();
+        ab.creativeMode = true;
+        ab.allowFlying = true;
+        ab.flying = true;
+        ab.invulnerable = true;
+
         if (mc.player.isDead() || mc.player.getHealth() <= 0.0f) {
             restoreAbilities(mc.player);
-            active = false; // пакеты разморожены — respawn дойдёт до сервера
+            active = false;
             saveData();
             mc.player.requestRespawn();
             return;
         }
-
-        // не даём выключить полёт: под площадкой пустота, падать нельзя
-        PlayerAbilities ab = mc.player.getAbilities();
-        if (!ab.flying && ab.allowFlying) ab.flying = true;
     }
 
     @EventHandler

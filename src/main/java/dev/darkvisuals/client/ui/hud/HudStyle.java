@@ -6,7 +6,8 @@ import dev.darkvisuals.modules.settings.api.Nameable;
  
 public enum HudStyle implements Nameable {
     GLOWING("Glowing"),
-    MINIMALISTIC("Minimalistic");
+    MINIMALISTIC("Minimalistic"),
+    LIQUID_GLASS("Liquid Glass");
 
     private final String displayName;
 
@@ -19,7 +20,7 @@ public enum HudStyle implements Nameable {
         return displayName;
     }
 
-      
+
     public static HudStyle current() {
         HUD hud = HUD.getInstance();
         if (hud != null) {
@@ -34,5 +35,9 @@ public enum HudStyle implements Nameable {
 
     public static boolean isMinimalistic() {
         return current() == MINIMALISTIC;
+    }
+
+    public static boolean isLiquidGlass() {
+        return current() == LIQUID_GLASS;
     }
 }

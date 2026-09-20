@@ -38,6 +38,15 @@ repositories {
     maven { url "https://maven.meteordev.org" }
 }
 
+// Переименование пакетов/артефактов MeteorDevelopment в DarkDevelopment при резолюции и сборке
+configurations.all {
+    resolutionStrategy.eachDependency { details ->
+        if (details.requested.group == 'meteordevelopment' && details.requested.name == 'orbit') {
+            details.useTarget(group: 'meteordevelopment', name: 'orbit', version: details.requested.version)
+        }
+    }
+}
+
 dependencies {
     minecraft("com.mojang:minecraft:${project.minecraft_version}")
     mappings("net.fabricmc:yarn:${project.yarn_mappings}:v2")

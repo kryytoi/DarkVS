@@ -98,6 +98,7 @@ public final class CosmeticsScreen extends Screen {
         items.add(new Item("kagune", "Кагуне", "Живые щупальца за спиной, как в Tokyo Ghoul", module.getKaguneSetting()));
         items.add(new Item("morty", "Повязка Морти", "Повязка Злого Морти.", module.getMortyPatchSetting()));
         items.add(new Item("nike", "Кепка Nike", "Чёрная бейсболка Nike с белым свушем в майнкрафт-стиле", module.getNikeCapSetting()));
+        items.add(new Item("robot_tentacles", "Робо-щупальца", "Механические щупальца с сервоприводами и клешнями", module.getRobotTentaclesSetting()));
         loadFavorites();
         sortItems();
          
@@ -408,6 +409,7 @@ public final class CosmeticsScreen extends Screen {
             case "kagune" -> 3.0f;    
             case "morty"  -> 1.2f;  
             case "nike"   -> 1.2f;
+            case "robot_tentacles" -> 3.0f;
             default       -> 2.6f;
         };
         float anchorY = switch (cosmeticId) {
@@ -418,6 +420,7 @@ public final class CosmeticsScreen extends Screen {
             case "kagune" -> 1.30f;
             case "morty"  -> entity.getEyeHeight(entity.getPose()); 
             case "nike"   -> entity.getEyeHeight(entity.getPose()) + 0.15f;
+            case "robot_tentacles" -> 1.30f;
             default       -> 1.35f;
         };
 

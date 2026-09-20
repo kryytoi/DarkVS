@@ -132,7 +132,31 @@ public class ModuleManager implements Wrapper {
                 new Butterflies(),
                 new ElytraWind(),
                 new LowHealthFX(),
-                new HitMarker()
+                new HitMarker(),
+                new Souls(),
+                // Эффекты красоты
+                new Fireworks(),
+                new Rainbow(),
+                new CherryBlossom(),
+                new SkyLanterns(),
+                new Halo(),
+                new FairyDust(),
+                new FireAura(),
+                new WaterRipples(),
+                new OrbitingOrbs(),
+                new MysticMist(),
+                new GlassNotes(),
+                new CombatTimer(),
+                new SlotLock(),
+                new ItemReminder(),
+                new DurabilityAlert(),
+                new CoordsClipboard(),
+                new TotemPops(),
+                new SessionStats(),
+                new ConsumeTimer(),
+                new PingDisplay(),
+                new Graffity(),
+                new Portal()
         );
 
         for (Module module : modules) {

@@ -1,7 +1,6 @@
 package dev.darkvisuals.client.ui.mainmenu;
 
 import dev.darkvisuals.darkvisuals;
-import dev.darkvisuals.client.managers.ThemeManager;
 import dev.darkvisuals.client.util.Wrapper;
 import dev.darkvisuals.client.util.animations.Animation;
 import dev.darkvisuals.client.util.animations.Easing;
@@ -18,7 +17,6 @@ import net.minecraft.client.texture.AbstractTexture;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
-
 import net.minecraft.util.math.RotationAxis;
 
 import javax.imageio.ImageIO;
@@ -26,20 +24,23 @@ import java.awt.Color;
 import java.awt.FileDialog;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 import java.awt.image.BufferedImage;
 import java.io.File;
 
 /**
- * Главное меню Dark Visuals — верстка по макету:
+ * Главное меню Dark Visuals Recode — верстка по макету:
  *
  *  ┌──────────────────────────────────────────────┐
- *  │  ⌃  Dark Visuals                              │
+ *  │  ⌃  Dark Visuals Recode                       │
  *  │                                                │
  *  │  [ Сетевая игра ]      [ Одиночная Игра ]      │
  *  │  [ Аккаунты    ]       [ Настройки     ]       │
  *  │  [           Выйти                     ]       │
  *  └──────────────────────────────────────────────┘
+ *
+ * Фон: обычный тёмный + фиолетовое солнце с лучами строго позади интерфейса.
+ * Плашка и кнопки: «жидкое стекло» — прозрачный фон с настоящим
+ * размытием того, что находится позади (drawShaderBlurRect).
  *
  * Sk3d Expensive 1.21 ( SK3D )
  */
@@ -65,9 +66,6 @@ public class MainMenu extends Screen implements Wrapper {
     private static final Identifier ICO_EXIT    = Identifier.of("darkvisuals", "textures/mainmenu/exit.png");
     private static final Identifier ICO_LOGO    = Identifier.of("darkvisuals", "textures/mainmenu/logo.png");
 
-    // ── Фон ───────────────────────────────────────────────────────────────────
-    private static final Identifier DEFAULT_BG_ID = Identifier.of("darkvisuals", "textures/background.png");
-
     // ── Кастомный логотип (клик по кружку профиля) ────────────────────────────
     private static final String LOGO_FILE_NAME = "custom_logo.png";
     private static AbstractTexture customLogoTexture = null;
@@ -88,181 +86,30 @@ public class MainMenu extends Screen implements Wrapper {
     private static final float COL_GAP    = 10f;   // горизонтальный зазор между кнопками в ряду
     private static final float RADIUS     = 8f;
 
-    // ── Цвета ─────────────────────────────────────────────────────────────────
-    private static final Color OVERLAY_COLOR   = new Color(4, 4, 8, 90);
-    private static final Color PANEL_FILL      = new Color(15, 15, 15, 191);   // rgba(15,15,15,0.75)
-    private static final Color PANEL_BORDER    = new Color(255, 255, 255, 18);
-    private static final Color GLASS_BTN_FILL  = new Color(0, 0, 0, 220);
-    private static final Color GLASS_BTN_TEXT  = new Color(235, 235, 240, 255);
-    private static final Color MUTED_TEXT      = new Color(200, 200, 210, 210);
-    private static final Color ACCENT_PURPLE   = new Color(0x99, 0x00, 0xFF);
-    private static final Color EXIT_RED        = new Color(0xE5, 0x3E, 0x3E);
+    // ── Цвета (тёмный + фиолетовый) ───────────────────────────────────────────
+    private static final Color BG_BASE        = new Color(12, 9, 19);        // обычный тёмный фон
+    private static final Color PANEL_TINT     = new Color(12, 9, 20, 78);    // тёмное стекло панели
+    private static final Color GLASS_DARK     = new Color(18, 13, 28, 52);   // тёмное стекло кнопок
+    private static final Color GLASS_PURPLE   = new Color(153, 0, 255, 90);  // фиолетовое стекло
+    private static final Color GLASS_BTN_TEXT = new Color(235, 235, 240, 255);
+    private static final Color MUTED_TEXT     = new Color(200, 200, 210, 210);
+    private static final Color ACCENT_PURPLE  = new Color(0x99, 0x00, 0xFF);
+    private static final Color ACCENT_SOFT    = new Color(0xB8, 0x64, 0xFF);
 
-    private static final String VERSION = "darkvisuals v1.0";
+    // ── Солнце (строго на фоне, позади плашки и кнопок) ──────────────────────
+    private static final float SUN_CORE_R     = 48f;   // радиус ядра
+    private static final int   SUN_RAYS        = 14;   // лучей (чередуются длинные/короткие)
+    private static final float SUN_RAY_LONG    = 300f;
+    private static final float SUN_RAY_SHORT   = 180f;
+    private static final float SUN_SPIN_SPEED  = 0.055f; // рад/с — медленное вращение лучей
 
-    // ═══════════════════════════════════════════════════════════════════════════
-    //  ЛИСТОПАД — воксельные (блочные) осенние листья, падающие сверху экрана
-    // ═══════════════════════════════════════════════════════════════════════════
-    private static final Color[] LEAF_PALETTE = new Color[] {
-            new Color(214, 110, 40),   // оранжевый
-            new Color(178, 58, 38),    // красно-коричневый
-            new Color(224, 168, 54),   // жёлто-оранжевый
-            new Color(150, 75, 40),    // коричневый
-            new Color(196, 84, 50),    // терракотовый
-            new Color(232, 140, 46)    // янтарный
-    };
+    // ── Заголовок: переливается между тёмным фиолетовым и тёмно-серым ────────
+    private static final Color TITLE_PURPLE = new Color(122, 44, 172);
+    private static final Color TITLE_GRAY   = new Color(96, 96, 106);
+    private static final float SHIMMER_PERIOD = 1600f; // мс на полный цикл перелива
 
-    private static final int LEAF_COUNT_BACK  = 22; // листья за плашкой (фон)
-    private static final int LEAF_COUNT_FRONT = 12; // листья перед плашкой (передний план)
-
-    private final Random leafRandom = new Random();
-    private final List<Leaf> leavesBack  = new ArrayList<>();
-    private final List<Leaf> leavesFront = new ArrayList<>();
-    private long lastLeafNanoTime = 0L;
-
-    // Тонкие фоновые частицы: добавляют глубину, но не перекрывают интерфейс.
-    private static final int AMBIENT_PARTICLE_COUNT = 34;
-    private final List<AmbientParticle> ambientParticles = new ArrayList<>();
-    private long lastAmbientNanoTime = 0L;
-
-    private static final class AmbientParticle {
-        float x, y, speed, radius, phase;
-        Color color;
-    }
-
-    private void initAmbientParticles() {
-        ambientParticles.clear();
-        Random random = new Random(0xD4A2B17L);
-        for (int i = 0; i < AMBIENT_PARTICLE_COUNT; i++) {
-            AmbientParticle particle = new AmbientParticle();
-            particle.x = random.nextFloat() * Math.max(1, width);
-            particle.y = random.nextFloat() * Math.max(1, height);
-            particle.speed = 5f + random.nextFloat() * 13f;
-            particle.radius = 0.7f + random.nextFloat() * 1.8f;
-            particle.phase = random.nextFloat() * (float) (Math.PI * 2f);
-            particle.color = random.nextBoolean() ? new Color(153, 0, 255) : new Color(76, 190, 255);
-            ambientParticles.add(particle);
-        }
-        lastAmbientNanoTime = System.nanoTime();
-    }
-
-    private void updateAmbientParticles(float width, float height, float dt) {
-        for (AmbientParticle particle : ambientParticles) {
-            particle.phase += dt * 0.8f;
-            particle.y -= particle.speed * dt;
-            particle.x += (float) Math.sin(particle.phase) * 5f * dt;
-            if (particle.y < -8f) {
-                particle.y = height + 8f;
-                particle.x = (particle.x + width * 0.37f) % width;
-            }
-        }
-    }
-
-    private void drawAmbientParticles(MatrixStack stack, float alpha) {
-        for (AmbientParticle particle : ambientParticles) {
-            float pulse = 0.45f + 0.55f * (float) Math.sin(particle.phase * 1.7f);
-            int outerAlpha = (int) (22f * alpha * pulse);
-            int coreAlpha = (int) (105f * alpha * pulse);
-            Render2D.drawRoundedRect(stack, particle.x - particle.radius * 2f, particle.y - particle.radius * 2f,
-                    particle.radius * 4f, particle.radius * 4f, particle.radius * 2f,
-                    withAlpha(particle.color, outerAlpha));
-            Render2D.drawRoundedRect(stack, particle.x - particle.radius / 2f, particle.y - particle.radius / 2f,
-                    particle.radius, particle.radius, particle.radius / 2f,
-                    withAlpha(lighten(particle.color, 0.45f), coreAlpha));
-        }
-    }
-
-    /** Один воксельный лист-частица. */
-    private static final class Leaf {
-        float x, y;
-        float vy;
-        float swayPhase, swaySpeed, swayAmp;
-        float rotation, rotSpeed;
-        float size;
-        Color color;
-        Color shade;
-        Color highlight;
-    }
-
-    private Leaf spawnLeaf(float width, float height, boolean initial, boolean foreground, Random r) {
-        Leaf l = new Leaf();
-        l.size = foreground ? (9f + r.nextFloat() * 6f) : (4f + r.nextFloat() * 4f);
-        l.x = r.nextFloat() * width;
-        l.y = initial
-                ? r.nextFloat() * (height + 200f) - 200f
-                : -l.size * 2f - r.nextFloat() * 160f;
-        l.vy = (foreground ? (26f + r.nextFloat() * 26f) : (14f + r.nextFloat() * 16f));
-        l.swayAmp = 8f + r.nextFloat() * 20f;
-        l.swaySpeed = 0.5f + r.nextFloat() * 1.0f;
-        l.swayPhase = r.nextFloat() * (float) (Math.PI * 2f);
-        l.rotation = r.nextFloat() * (float) (Math.PI * 2f);
-        l.rotSpeed = (r.nextBoolean() ? 1f : -1f) * (0.4f + r.nextFloat() * 1.1f);
-        l.color = LEAF_PALETTE[r.nextInt(LEAF_PALETTE.length)];
-        l.shade = darken(l.color, 0.30f);
-        l.highlight = lighten(l.color, 0.35f);
-        return l;
-    }
-
-    private void initLeaves() {
-        leavesBack.clear();
-        leavesFront.clear();
-        float w = Math.max(1, this.width);
-        float h = Math.max(1, this.height);
-        for (int i = 0; i < LEAF_COUNT_BACK; i++) {
-            leavesBack.add(spawnLeaf(w, h, true, false, leafRandom));
-        }
-        for (int i = 0; i < LEAF_COUNT_FRONT; i++) {
-            leavesFront.add(spawnLeaf(w, h, true, true, leafRandom));
-        }
-        lastLeafNanoTime = System.nanoTime();
-    }
-
-    private void updateLeaves(float width, float height, float dt) {
-        updateLeafList(leavesBack, width, height, dt, false);
-        updateLeafList(leavesFront, width, height, dt, true);
-    }
-
-    private void updateLeafList(List<Leaf> list, float width, float height, float dt, boolean foreground) {
-        for (int i = 0; i < list.size(); i++) {
-            Leaf l = list.get(i);
-            l.swayPhase += l.swaySpeed * dt;
-            l.x += (float) Math.sin(l.swayPhase) * l.swayAmp * dt;
-            l.y += l.vy * dt;
-            l.rotation += l.rotSpeed * dt;
-
-            if (l.y - l.size > height + 20f) {
-                list.set(i, spawnLeaf(width, height, false, foreground, leafRandom));
-            }
-        }
-    }
-
-    /** Рисует один воксельный лист: базовый пиксельный блок + тень + блик. */
-    private void drawLeaf(MatrixStack stack, Leaf leaf, float globalAlpha) {
-        int a = (int) (215 * globalAlpha);
-        if (a <= 2) return;
-
-        stack.push();
-        stack.translate(leaf.x, leaf.y, 0f);
-        stack.multiply(RotationAxis.POSITIVE_Z.rotation(leaf.rotation));
-
-        float s = leaf.size;
-        Render2D.drawRoundedRect(stack, -s / 2f, -s / 2f, s, s, 1f, withAlpha(leaf.color, a));
-
-        float shadeSize = s * 0.42f;
-        Render2D.drawRoundedRect(stack, 0f, 0f, shadeSize, shadeSize, 0.5f, withAlpha(leaf.shade, a));
-
-        float hiSize = s * 0.32f;
-        Render2D.drawRoundedRect(stack, -s / 2f, -s / 2f, hiSize, hiSize, 0.5f,
-                withAlpha(leaf.highlight, (int) (a * 0.85f)));
-
-        stack.pop();
-    }
-
-    private void drawLeaves(MatrixStack stack, List<Leaf> list, float globalAlpha) {
-        for (Leaf l : list) {
-            drawLeaf(stack, l, globalAlpha);
-        }
-    }
+    private static final String TITLE   = "Dark Visuals Recode";
+    private static final String VERSION = "darkvisuals recode v1.0";
 
     // Кэш реально отрисованной раскладки — клики всегда совпадают с картинкой.
     private float lastPanelX, lastPanelY, lastPanelW, lastPanelH;
@@ -272,13 +119,13 @@ public class MainMenu extends Screen implements Wrapper {
     private float lastColX1, lastColX2, lastColW1, lastColW2;
     private float lastExitX, lastExitY, lastExitW, lastExitH;
     private float lastAchX, lastAchY;
-    private final List<float[]> lastAchievementHitboxes = new java.util.ArrayList<>();
-    private final List<Achievement> lastAchievementList = new java.util.ArrayList<>();
+    private final List<float[]> lastAchievementHitboxes = new ArrayList<>();
+    private final List<Achievement> lastAchievementList = new ArrayList<>();
     private static final float ACH_ICON_SIZE = 18f;
     private static final float ACH_ICON_GAP  = 6f;
 
     public MainMenu() {
-        super(Text.of("darkvisuals"));
+        super(Text.of(TITLE));
     }
 
     @Override
@@ -288,8 +135,6 @@ public class MainMenu extends Screen implements Wrapper {
         shownAtMs = System.currentTimeMillis();
         loadCustomLogoIfNeeded();
         AchievementManager.loadIfNeeded();
-        initLeaves();
-        initAmbientParticles();
     }
 
     /** Каскадный шаг появления: 0..1 после задержки delayMs. */
@@ -407,7 +252,7 @@ public class MainMenu extends Screen implements Wrapper {
             try {
                 this.renderBackground(context, mouseX, mouseY, delta);
                 if (this.textRenderer != null) {
-                    String msg = "Dark Visuals: загрузка шрифтов…";
+                    String msg = "Dark Visuals Recode: загрузка шрифтов…";
                     context.drawCenteredTextWithShadow(this.textRenderer, msg,
                             this.width / 2, this.height / 2, 0xFFFFFFFF);
                 }
@@ -428,8 +273,6 @@ public class MainMenu extends Screen implements Wrapper {
         }
     }
 
-    private int lastLeafScreenW = -1, lastLeafScreenH = -1;
-
     private void renderMenu(DrawContext context, int mouseX, int mouseY, float delta) {
         float t = (float) entrance.getValue();
 
@@ -437,44 +280,21 @@ public class MainMenu extends Screen implements Wrapper {
 
         int W = this.width, H = this.height;
 
-        if (leavesBack.isEmpty() && leavesFront.isEmpty()) {
-            initLeaves();
-        }
-        if (ambientParticles.isEmpty()) {
-            initAmbientParticles();
-        }
-        lastLeafScreenW = W;
-        lastLeafScreenH = H;
+        // ── Фон: обычный тёмный + виньетка + фиолетовое солнце ─────────────────────
+        Render2D.drawRect(stack, 0, 0, W, H, BG_BASE);
 
-        // ── Фон (панорама / текущая логика фона без изменений) ─────────────────
-        net.minecraft.util.Identifier introFrame = dev.darkvisuals.client.util.IntroManager.currentFrame();
+        Render2D.drawGradientRect(stack, 0, 0, W, H * 0.30f,
+                new Color(0, 0, 0, 120), new Color(0, 0, 0, 0), false);
+        Render2D.drawGradientRect(stack, 0, H * 0.70f, W, H * 0.30f,
+                new Color(0, 0, 0, 0), new Color(0, 0, 0, 150), false);
+
+        drawSun(stack, W, H, t);
+
+        // Стартовый GIF-интро, если он сейчас воспроизводится (поверх солнца).
+        Identifier introFrame = dev.darkvisuals.client.util.IntroManager.currentFrame();
         if (introFrame != null) {
             Render2D.drawTexture(stack, 0, 0, W, H, 0f, introFrame, Color.WHITE);
-        } else {
-            Render2D.drawTexture(stack, 0, 0, W, H, 0f, DEFAULT_BG_ID, Color.WHITE);
         }
-        Render2D.drawRect(stack, 0, 0, W, H, OVERLAY_COLOR);
-
-        // мягкая виньетка по краям экрана — добавляет глубину
-        Render2D.drawGradientRect(stack, 0, 0, W, H * 0.28f,
-                new Color(0, 0, 0, 115), new Color(0, 0, 0, 0), false);
-        Render2D.drawGradientRect(stack, 0, H * 0.72f, W, H * 0.28f,
-                new Color(0, 0, 0, 0), new Color(0, 0, 0, 140), false);
-
-        // ── Листопад: обновляем частицы и рисуем фоновый слой (за плашкой) ──────
-        long nowNanos = System.nanoTime();
-        float leafDt = lastLeafNanoTime == 0L ? 0f
-                : Math.min(0.05f, (nowNanos - lastLeafNanoTime) / 1_000_000_000f);
-        lastLeafNanoTime = nowNanos;
-        updateLeaves(W, H, leafDt);
-        drawLeaves(stack, leavesBack, t);
-
-        long ambientNow = System.nanoTime();
-        float ambientDt = lastAmbientNanoTime == 0L ? 0f
-                : Math.min(0.05f, (ambientNow - lastAmbientNanoTime) / 1_000_000_000f);
-        lastAmbientNanoTime = ambientNow;
-        updateAmbientParticles(W, H, ambientDt);
-        drawAmbientParticles(stack, t);
 
         // ── Раскладка панели (высота считается снизу вверх по контенту) ────────
         float panelW = Math.min(PANEL_W, W - 40f);
@@ -497,13 +317,17 @@ public class MainMenu extends Screen implements Wrapper {
         stack.translate(-W / 2f, -H / 2f, 0f);
         stack.translate(0f, (1f - t) * 16f, 0f);
 
-        Render2D.drawRoundedRect(stack, panelX, panelY, panelW, contentH, PANEL_RADIUS,
-                withAlpha(PANEL_FILL, (int) (PANEL_FILL.getAlpha() * t)));
-        Render2D.drawBorder(stack, panelX, panelY, panelW, contentH, PANEL_RADIUS, 0f, 1f,
-                withAlpha(PANEL_BORDER, (int) (PANEL_BORDER.getAlpha() * t)));
+        // мягкое фиолетовое свечение, растекающееся вокруг панели
+        Render2D.drawBlurredRect(stack, panelX - 6f, panelY - 6f, panelW + 12f, contentH + 12f,
+                PANEL_RADIUS + 6f, 16f, withAlpha(ACCENT_PURPLE, (int) (42f * t)));
+
+        // плашка — тёмное «жидкое стекло»: прозрачная, с размытием фона за ней
+        drawGlass(stack, panelX, panelY, panelW, contentH, PANEL_RADIUS, 14f, t, PANEL_TINT);
+
+        // пульсирующая акцентная линия под верхним краем панели
         float accentPulse = 0.55f + 0.45f * (float) Math.sin(System.currentTimeMillis() / 720.0);
         Render2D.drawRoundedRect(stack, panelX + 28f, panelY + 1f, panelW - 56f, 1.5f, 1f,
-                new Color(153, 0, 255, (int) (85f * t * accentPulse)));
+                withAlpha(ACCENT_SOFT, (int) (95f * t * accentPulse)));
 
         this.lastPanelX = panelX; this.lastPanelY = panelY;
         this.lastPanelW = panelW; this.lastPanelH = contentH;
@@ -511,13 +335,13 @@ public class MainMenu extends Screen implements Wrapper {
         float innerX = panelX + PANEL_PAD_X;
         float innerW = panelW - PANEL_PAD_X * 2f;
 
-        // ── Шапка: логотип-галочка + "Dark Visuals" — по центру панели, крупнее ──
+        // ── Шапка: логотип-галочка + "Dark Visuals Recode" — по центру панели ────
         float headerY = panelY + PANEL_PAD_TOP;
 
         float titleSz    = 20f;
-        String titleText = "Dark Visuals";
+        String titleText = TITLE;
         float titleW     = Fonts.BOLD.getWidth(titleText, titleSz);
-        float logoTextGap = 16f;
+        float logoTextGap = 14f;
 
         float headerBlockW = HEADER_LOGO_SIZE + logoTextGap + titleW;
         float headerBlockX = innerX + innerW / 2f - headerBlockW / 2f;
@@ -530,12 +354,18 @@ public class MainMenu extends Screen implements Wrapper {
 
         float titleX = logoX + HEADER_LOGO_SIZE + logoTextGap;
         float titleY = headerY + HEADER_LOGO_SIZE / 2f - Fonts.BOLD.getHeight(titleSz) / 2f;
-        // заголовок дышит: яркость и акцентная линия под ним
+        // заголовок переливается между тёмным фиолетовым и тёмно-серым
         float titlePulse = 0.85f + 0.15f * (float) Math.sin((System.currentTimeMillis() - shownAtMs) / 1100.0);
+        float shimmer = 0.5f + 0.5f * (float) Math.sin((System.currentTimeMillis() - shownAtMs) / SHIMMER_PERIOD);
+        Color titleColor = lerpColor(TITLE_PURPLE, TITLE_GRAY, shimmer);
+        // мягкий блик, дышащий в такт переливу
         Render2D.drawFont(stack, Fonts.BOLD.getFont(titleSz), titleText,
-                titleX, titleY, new Color(255, 255, 255, (int) (150 * t * titlePulse)));
+                titleX + 0.6f, titleY + 0.6f,
+                withAlpha(ACCENT_SOFT, (int) (60 * t * shimmer)));
+        Render2D.drawFont(stack, Fonts.BOLD.getFont(titleSz), titleText,
+                titleX, titleY, withAlpha(titleColor, (int) (235 * t * titlePulse)));
         Render2D.drawRoundedRect(stack, headerBlockX, headerY + HEADER_LOGO_SIZE + 7f, headerBlockW, 1.2f, 0.6f,
-                withAlpha(ACCENT_PURPLE, (int) (95 * t * titlePulse)));
+                withAlpha(titleColor, (int) (110 * t * titlePulse)));
 
         // ── Кнопки ────────────────────────────────────────────────────────────
         float y1 = headerY + headerH + HEADER_GAP;
@@ -551,7 +381,7 @@ public class MainMenu extends Screen implements Wrapper {
         this.lastY1 = y1; this.lastY2 = y2; this.lastY3 = y3;
         this.lastBtnH = BTN_H;
 
-        // Ряд 1 ──────────────────────────────────────────────��───────────────
+        // Ряд 1 ──────────────────────────────────────────────────────────────────
         long elapsedMs = System.currentTimeMillis() - shownAtMs;
 
         float b1 = entranceStep(elapsedMs, 120L);
@@ -574,7 +404,7 @@ public class MainMenu extends Screen implements Wrapper {
             stack.pop();
         }
 
-        // Ряд 2 ──────────────────────────────────────────────────────────────
+        // Ряд 2 ──────────────────────────────────────────────────────────────────
         float b3 = entranceStep(elapsedMs, 260L);
         accHover.update(isHovered(mouseX, mouseY, col1X, y2, colW, BTN_H));
         if (b3 > 0.01f) {
@@ -595,7 +425,7 @@ public class MainMenu extends Screen implements Wrapper {
             stack.pop();
         }
 
-        // Ряд 3 — "Выйти" на всю ширину ─────────────────────────────────────
+        // Ряд 3 — "Выйти" на всю ширину ─────────────────────────────────────────
         float b5 = entranceStep(elapsedMs, 400L);
         float exitW = innerW;
         exitHover.update(isHovered(mouseX, mouseY, col1X, y3, exitW, BTN_H));
@@ -612,19 +442,70 @@ public class MainMenu extends Screen implements Wrapper {
         this.lastExitW = exitW; this.lastExitH = BTN_H;
 
         // ── Профиль / достижения — в верхнем левом углу экрана, поверх фона ─────
-        String username = mc.getSession() != null ? mc.getSession().getUsername() : "Player";
         drawAchievements(stack, 20f, 20f, mouseX, mouseY, t);
 
-        // ── Версия ─────────────────────────────────────────────────────
+        // ── Версия ─────────────────────────────────────────────────────────────
         float verSz = 8f;
         float verW  = Fonts.REGULAR.getWidth(VERSION, verSz);
         float verT = entranceStep(System.currentTimeMillis() - shownAtMs, 650L);
         Render2D.drawFont(stack, Fonts.REGULAR.getFont(verSz), VERSION,
                 W - verW - 10f, H - verSz - 10f,
                 new Color(210, 210, 220, (int) (180 * t * verT)));
+    }
 
-        // ── Листопад: передний слой (крупные листья поверх интерфейса) ──────────
-        drawLeaves(stack, leavesFront, t);
+    /**
+     * Фиолетовое солнце в центре экрана — только элемент фона: рисуется
+     * ДО плашки и кнопок, так что интерфейс всегда остаётся поверх.
+     * Состоит из медленно вращающихся лучей, мягкого ореола и яркого ядра.
+     */
+    private void drawSun(MatrixStack stack, int W, int H, float alpha) {
+        if (alpha <= 0.01f) return;
+
+        float time = (System.currentTimeMillis() - shownAtMs) / 1000f;
+        float cx = W / 2f, cy = H / 2f;
+        float breathe = 1f + 0.03f * (float) Math.sin(time * 1.1f); // солнце «дышит»
+        float coreR = SUN_CORE_R * breathe * (0.7f + 0.3f * alpha);
+        int a = (int) (255f * alpha);
+
+        // ── Лучи: чередующиеся длинные/короткие, медленно вращаются ─────────────
+        for (int i = 0; i < SUN_RAYS; i++) {
+            boolean longRay = (i % 2 == 0);
+            float len    = longRay ? SUN_RAY_LONG : SUN_RAY_SHORT;
+            float halfW  = longRay ? 4.5f : 3f;
+            float rayA   = (longRay ? 62f : 44f) * alpha;
+
+            stack.push();
+            stack.translate(cx, cy, 0f);
+            stack.multiply(RotationAxis.POSITIVE_Z.rotation(
+                    time * SUN_SPIN_SPEED + i * (float) (Math.PI * 2.0 / SUN_RAYS)));
+
+            // мягкое свечение луча
+            Render2D.drawBlurredRect(stack, coreR * 0.7f, -halfW * 2.2f,
+                    len, halfW * 4.4f, halfW * 2.2f, 7f,
+                    new Color(153, 0, 255, (int) rayA));
+            // ядро луча — ярче и у́же, выцветает к концу
+            Render2D.drawRoundedRect(stack, coreR * 0.7f, -halfW, len, halfW * 2f, halfW,
+                    new Color(196, 120, 255, (int) (rayA * 1.5f)));
+            stack.pop();
+        }
+
+        // ── Ореол: широкое фиолетовое свечение вокруг ядра ───────────────────────
+        float glowR = coreR * 3.6f;
+        Render2D.drawBlurredRect(stack, cx - glowR, cy - glowR, glowR * 2f, glowR * 2f, glowR, 26f,
+                new Color(153, 0, 255, (int) (85f * alpha)));
+
+        // ── Ядро: от фиолетового края к горячему светлому центру ────────────────
+        Render2D.drawRoundedRect(stack, cx - coreR, cy - coreR, coreR * 2f, coreR * 2f, coreR,
+                new Color(153, 0, 255, (int) (225f * alpha)));
+        float r2 = coreR * 0.72f;
+        Render2D.drawRoundedRect(stack, cx - r2, cy - r2, r2 * 2f, r2 * 2f, r2,
+                new Color(186, 90, 255, (int) (235f * alpha)));
+        float r3 = coreR * 0.46f;
+        Render2D.drawRoundedRect(stack, cx - r3, cy - r3, r3 * 2f, r3 * 2f, r3,
+                new Color(224, 168, 255, (int) (245f * alpha)));
+        float r4 = coreR * 0.22f;
+        Render2D.drawRoundedRect(stack, cx - r4, cy - r4, r4 * 2f, r4 * 2f, r4,
+                new Color(255, 240, 255, a));
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
@@ -688,6 +569,65 @@ public class MainMenu extends Screen implements Wrapper {
     //  DRAW HELPERS
     // ═══════════════════════════════════════════════════════════════════════════
 
+    /**
+     * «Жидкое стекло»: настоящее размытие того, что находится позади
+     * прямоугольника (shader blur), полупрозрачный тинт и стеклянные кромки.
+     * Сам фон элемента остаётся прозрачным — видно размытый фон за ним.
+     *
+     * @param fade  0..1 — прозрачность/интенсивность стекла (для анимаций)
+     * @param tint  цвет и альфа стеклянной заливки
+     */
+    private void drawGlass(MatrixStack stack, float x, float y, float w, float h,
+                           float radius, float blur, float fade, Color tint) {
+        drawGlass(stack, x, y, w, h, radius, blur, fade, tint, true);
+    }
+
+    /**
+     * @param sheen рисовать ли стеклянные блики/свечение (верхняя линия,
+     *             вертикальный градиент, белая кромка). Для кнопок — false,
+     *             чтобы они были матовыми и без свечения.
+     */
+    private void drawGlass(MatrixStack stack, float x, float y, float w, float h,
+                           float radius, float blur, float fade, Color tint, boolean sheen) {
+        if (fade <= 0.01f) return;
+
+        // размытие того, что позади элемента
+        Render2D.drawShaderBlurRect(stack, x, y, w, h, radius, blur * fade,
+                new Color(255, 255, 255, (int) (255f * fade)));
+
+        // полупрозрачная стеклянная заливка (не перекрывает фон, только тонирует)
+        Render2D.drawRoundedRect(stack, x, y, w, h, radius,
+                withAlpha(tint, (int) (tint.getAlpha() * fade)));
+
+        if (!sheen) {
+            // для кнопок — только тихая кромка цветом тинта, без свечения
+            Render2D.drawBorder(stack, x, y, w, h, radius, 0f, 1f,
+                    withAlpha(tint, (int) (110f * fade)));
+            return;
+        }
+
+        // вертикальный блик стекла
+        Render2D.drawGradientRect(stack, x, y + radius * 0.5f, w, h - radius,
+                new Color(255, 255, 255, (int) (26f * fade)),
+                new Color(Math.max(0, tint.getRed() - 25), Math.max(0, tint.getGreen() - 25),
+                        Math.max(0, tint.getBlue() - 25), (int) (50f * fade)),
+                false);
+
+        // внутренняя белая кромка
+        Render2D.drawBorder(stack, x + 0.5f, y + 0.5f, w - 1f, h - 1f, radius - 0.5f, 2.5f, 0f,
+                new Color(255, 255, 255, (int) (34f * fade)));
+
+        // внешняя кромка цветом тинта
+        Render2D.drawBorder(stack, x, y, w, h, radius, 0f, 1f,
+                withAlpha(tint, (int) (110f * fade)));
+
+        // верхняя световая линия
+        Render2D.drawGradientRect(stack, x + radius, y + 0.5f, w - radius * 2f, 1f,
+                new Color(255, 255, 255, (int) (140f * fade)),
+                new Color(255, 255, 255, (int) (20f * fade)),
+                true);
+    }
+
     /** Фиолетовый логотип-галочка в шапке (или кастомный логотип пользователя). */
     private void drawHeaderLogo(MatrixStack stack, float x, float y, float size, float alpha) {
         if (customLogoTexture != null) {
@@ -701,18 +641,18 @@ public class MainMenu extends Screen implements Wrapper {
 
     /**
      * Заполненная (выделенная) кнопка — используется для "Сетевая игра".
-     * iconLeft = true — иконка слева от текста, иначе иконка справа (не используется здесь,
-     * оставлено для единообразия сигнатуры с drawGlassButton).
+     * Фиолетовое «жидкое стекло». iconLeft = true — иконка слева от текста,
+     * иначе иконка справа (не используется здесь, оставлено для единообразия
+     * сигнатуры с drawGlassButton).
      */
     private void drawFilledButton(MatrixStack stack, float x, float y, float w, float h,
                                   String label, Identifier icon, Color accent, double hover, float alpha,
                                   boolean iconLeft) {
-        Color fill = hover > 0.01 ? lighten(accent, (float) (0.10f * hover)) : accent;
-        Render2D.drawRoundedRect(stack, x, y, w, h, RADIUS, withAlpha(fill, (int) (255 * alpha)));
-        Render2D.drawBorder(stack, x, y, w, h, RADIUS, 0f, 1f,
-                new Color(255, 255, 255, (int) (55 * alpha)));
+        drawGlass(stack, x, y, w, h, RADIUS, 6f, alpha, GLASS_PURPLE, false);
         // подчёркивание, «проезжающее» при наведении
         if (hover > 0.01) {
+            Render2D.drawRoundedRect(stack, x, y, w, h, RADIUS,
+                    withAlpha(lighten(accent, 0.3f), (int) (40 * hover * alpha)));
             float uw = (w - 16f) * (float) hover;
             Render2D.drawRoundedRect(stack, x + 8f + (w - 16f - uw) / 2f, y + h - 2f, uw, 1.4f, 0.7f,
                     new Color(255, 255, 255, (int) (175 * hover * alpha)));
@@ -739,10 +679,7 @@ public class MainMenu extends Screen implements Wrapper {
     private void drawGlassButton(MatrixStack stack, float x, float y, float w, float h,
                                  String label, Identifier icon, Color accent, double hover, float alpha,
                                  boolean iconLeft) {
-        Render2D.drawRoundedRect(stack, x, y, w, h, RADIUS,
-                withAlpha(GLASS_BTN_FILL, (int) (GLASS_BTN_FILL.getAlpha() * alpha)));
-        Render2D.drawBorder(stack, x, y, w, h, RADIUS, 0f, 1f,
-                new Color(255, 255, 255, (int) (28 * alpha)));
+        drawGlass(stack, x, y, w, h, RADIUS, 6f, alpha, GLASS_DARK, false);
         if (hover > 0.01) {
             Render2D.drawRoundedRect(stack, x, y, w, h, RADIUS,
                     withAlpha(accent, (int) (35 * hover * alpha)));
@@ -777,38 +714,35 @@ public class MainMenu extends Screen implements Wrapper {
         }
     }
 
-    /** Широкая тёмная кнопка "Выйти" с красным крестиком слева. */
+    /** Широкая тёмная кнопка "Выйти" с фиолетовым крестиком слева. */
     private void drawExitButton(MatrixStack stack, float x, float y, float w, float h,
                                 String label, double hover, float alpha) {
-        Render2D.drawRoundedRect(stack, x, y, w, h, RADIUS,
-                withAlpha(GLASS_BTN_FILL, (int) (GLASS_BTN_FILL.getAlpha() * alpha)));
-        Render2D.drawBorder(stack, x, y, w, h, RADIUS, 0f, 1f,
-                new Color(255, 255, 255, (int) (28 * alpha)));
+        drawGlass(stack, x, y, w, h, RADIUS, 6f, alpha, GLASS_DARK, false);
         if (hover > 0.01) {
             Render2D.drawRoundedRect(stack, x, y, w, h, RADIUS,
-                    withAlpha(EXIT_RED, (int) (30 * hover * alpha)));
-            // красное подчёркивание при наведении
+                    withAlpha(ACCENT_PURPLE, (int) (40 * hover * alpha)));
+            // фиолетовое подчёркивание при наведении
             float uw = (w - 16f) * (float) hover;
             Render2D.drawRoundedRect(stack, x + 8f + (w - 16f - uw) / 2f, y + h - 2f, uw, 1.4f, 0.7f,
-                    withAlpha(EXIT_RED, (int) (185 * hover * alpha)));
+                    withAlpha(ACCENT_SOFT, (int) (185 * hover * alpha)));
         }
 
         float crossSz = Math.min(14f, h - 14f);
         float pad = 12f;
         float crossX = x + pad;
         float crossY = y + h / 2f - crossSz / 2f;
-        drawCrossIcon(stack, crossX, crossY, crossSz, withAlpha(EXIT_RED, (int) (255 * alpha)));
+        drawCrossIcon(stack, crossX, crossY, crossSz, withAlpha(ACCENT_SOFT, (int) (255 * alpha)));
 
         float sz = 7.5f;
         String text = label;
         float textW = Fonts.BOLD.getWidth(text, sz);
-        // Текст крестика центрируется относительно всей кнопки (как на макет��).
+        // Текст крестика центрируется относительно всей кнопки (как на макете).
         float textX = x + w / 2f - textW / 2f;
         Render2D.drawFont(stack, Fonts.BOLD.getFont(sz), text, textX, y + h / 2f - sz / 2f,
                 new Color(255, 255, 255, (int) (255 * alpha)));
     }
 
-    /** Рисует красный крестик 'X' двумя диагональными линиями (без зависимости от текстур). */
+    /** Рисует фиолетовый крестик 'X' двумя диагональными линиями (без зависимости от текстур). */
     private void drawCrossIcon(MatrixStack stack, float x, float y, float size, Color color) {
         float thickness = Math.max(1.5f, size * 0.14f);
         Render2D.drawLine(stack, x, y, x + size, y + size, thickness, color);
@@ -836,9 +770,10 @@ public class MainMenu extends Screen implements Wrapper {
                     && mouseY >= iconY && mouseY <= iconY + ACH_ICON_SIZE;
 
             Render2D.drawRoundedRect(stack, curX, iconY, ACH_ICON_SIZE, ACH_ICON_SIZE, 4f,
-                    new Color(24, 20, 8, (int) (215 * alpha)));
+                    new Color(20, 14, 32, (int) (215 * alpha)));
             Render2D.drawBorder(stack, curX, iconY, ACH_ICON_SIZE, ACH_ICON_SIZE, 4f, 0f, 1f,
-                    withAlpha(hovered ? new Color(255, 200, 60) : new Color(255, 255, 255), (int) ((hovered ? 160 : 45) * alpha)));
+                    withAlpha(hovered ? ACCENT_SOFT : new Color(255, 255, 255),
+                            (int) ((hovered ? 170 : 45) * alpha)));
 
             AbstractTexture icon = AchievementManager.getIcon(a);
             if (icon != null) {
@@ -847,11 +782,11 @@ public class MainMenu extends Screen implements Wrapper {
                         2f, icon, new Color(255, 255, 255, (int) (255 * alpha)));
             } else {
                 float sz = 8f;
-                String fallback = "🏆";
+                String fallback = "★";
                 float fw = Fonts.BOLD.getWidth(fallback, sz);
                 Render2D.drawFont(stack, Fonts.BOLD.getFont(sz), fallback,
                         curX + ACH_ICON_SIZE / 2f - fw / 2f, iconY + ACH_ICON_SIZE / 2f - sz / 2f,
-                        new Color(255, 210, 90, (int) (230 * alpha)));
+                        new Color(186, 110, 255, (int) (230 * alpha)));
             }
 
             lastAchievementHitboxes.add(new float[]{curX, iconY, ACH_ICON_SIZE, ACH_ICON_SIZE});
@@ -866,7 +801,7 @@ public class MainMenu extends Screen implements Wrapper {
         }
     }
 
-    private void drawAchievementTooltip(MatrixStack stack, Achievement a, int mouseX, int mouseY, float alpha) {
+    private void drawAchievementTooltip(MatrixStack stack, Achievement a, float mouseX, float mouseY, float alpha) {
         float titleSz = 6f, bodySz = 5f;
         String title = a.name;
         String desc = a.description == null ? "" : a.description;
@@ -884,15 +819,13 @@ public class MainMenu extends Screen implements Wrapper {
         if (boxX + boxW > this.width) boxX = this.width - boxW - 6f;
         if (boxY + boxH > this.height) boxY = this.height - boxH - 6f;
 
-        Render2D.drawRoundedRect(stack, boxX, boxY, boxW, boxH, 5f,
-                new Color(14, 12, 18, (int) (245 * alpha)));
-        Render2D.drawBorder(stack, boxX, boxY, boxW, boxH, 5f, 0f, 1f,
-                new Color(255, 200, 60, (int) (120 * alpha)));
+        // стеклянный тултип с размытием фона
+        drawGlass(stack, boxX, boxY, boxW, boxH, 5f, 5f, alpha, new Color(16, 11, 26, 235));
 
         float textX = boxX + 10f;
         float textY = boxY + 8f;
         Render2D.drawFont(stack, Fonts.BOLD.getFont(titleSz), title, textX, textY,
-                new Color(255, 210, 90, (int) (255 * alpha)));
+                new Color(200, 140, 255, (int) (255 * alpha)));
         textY += 12f;
         Render2D.drawFont(stack, Fonts.REGULAR.getFont(bodySz), desc, textX, textY,
                 new Color(230, 230, 235, (int) (230 * alpha)));
@@ -900,7 +833,7 @@ public class MainMenu extends Screen implements Wrapper {
         if (unlock != null) {
             textY += 12f;
             Render2D.drawFont(stack, Fonts.SEMIBOLD.getFont(bodySz), unlock, textX, textY,
-                    new Color(120, 220, 140, (int) (240 * alpha)));
+                    new Color(150, 220, 170, (int) (240 * alpha)));
         }
     }
 
@@ -924,11 +857,12 @@ public class MainMenu extends Screen implements Wrapper {
         return new Color(r, g, b, c.getAlpha());
     }
 
-    private static Color darken(Color c, float amount) {
-        int r = (int) Math.max(0, c.getRed()   * (1f - amount));
-        int g = (int) Math.max(0, c.getGreen() * (1f - amount));
-        int b = (int) Math.max(0, c.getBlue()  * (1f - amount));
-        return new Color(r, g, b, c.getAlpha());
+    /** Линейная интерполяция цвета — для перелива заголовка. */
+    private static Color lerpColor(Color a, Color b, float t) {
+        int r = (int) (a.getRed()   + (b.getRed()   - a.getRed())   * t);
+        int g = (int) (a.getGreen() + (b.getGreen() - a.getGreen()) * t);
+        int bl = (int) (a.getBlue() + (b.getBlue() - a.getBlue()) * t);
+        return new Color(r, g, bl, 255);
     }
 
     // ═══════════════════════════════════════════════════════════════════════════

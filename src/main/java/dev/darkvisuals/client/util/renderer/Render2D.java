@@ -28,6 +28,110 @@ import net.minecraft.client.render.Tessellator;
 @UtilityClass
 public class   Render2D implements Wrapper {
 
+    private static final float[] NO_CUTS = {0f, 0f, 0f, 0f};
+
+    // RGB светлого «стеклянного» тинта — как в PingDisplay/GlassNotes:
+    // стекло прозрачное, фон за ним видно, цвета темы в нём нет.
+    private static final int GLASS_TINT_RGB = (200 << 16) | (215 << 8) | 230;
+
+    private static float[] toArray(org.joml.Vector4f cutSizes) {
+        if (cutSizes == null) return NO_CUTS;
+        return new float[] {cutSizes.x, cutSizes.y, cutSizes.z, cutSizes.w};
+    }
+
+    // ===================== LIQUID GLASS =====================
+
+    public void drawGlass(MatrixStack stack, float x, float y, float width, float height,
+                          float alpha, float radius, int tintColor,
+                          float distortion, float waveSize, float edgeLight, float shine) {
+        float[] radii = {radius, radius, radius, radius};
+        Builder.liquidGlass()
+                .size(new SizeState(width, height))
+                .radius(new QuadRadiusState(radii[0], radii[1], radii[2], radii[3]))
+                .color(new QuadColorState(tintColor))
+                .cutSizes(NO_CUTS)
+                .distortion(distortion).waveSize(waveSize).edgeLight(edgeLight).shine(shine)
+                .alpha(alpha)
+                .build()
+                .render(stack.peek().getPositionMatrix(), x, y);
+    }
+
+    public void drawGlass(MatrixStack stack, float x, float y, float width, float height,
+                          float alpha, float radius, float distortion, float waveSize) {
+        drawGlass(stack, x, y, width, height, alpha, radius, 0x0DFFFFFF, distortion, waveSize, 4f, 3f);
+    }
+
+    public void drawGlass(MatrixStack stack, float x, float y, float width, float height,
+                          float alpha, float topLeft, float topRight, float bottomRight, float bottomLeft,
+                          int tintColor, float distortion, float waveSize, float edgeLight, float shine) {
+        Builder.liquidGlass()
+                .size(new SizeState(width, height))
+                .radius(new QuadRadiusState(topLeft, topRight, bottomRight, bottomLeft))
+                .color(new QuadColorState(tintColor))
+                .cutSizes(NO_CUTS)
+                .distortion(distortion).waveSize(waveSize).edgeLight(edgeLight).shine(shine)
+                .alpha(alpha)
+                .build()
+                .render(stack.peek().getPositionMatrix(), x, y);
+    }
+
+    public void drawGlass(MatrixStack stack, float x, float y, float width, float height,
+                          float alpha, float topLeft, float topRight, float bottomRight, float bottomLeft,
+                          org.joml.Vector4f cutSizes, int tintColor,
+                          float distortion, float waveSize, float edgeLight, float shine) {
+        Builder.liquidGlass()
+                .size(new SizeState(width, height))
+                .radius(new QuadRadiusState(topLeft, topRight, bottomRight, bottomLeft))
+                .color(new QuadColorState(tintColor))
+                .cutSizes(toArray(cutSizes))
+                .distortion(distortion).waveSize(waveSize).edgeLight(edgeLight).shine(shine)
+                .alpha(alpha)
+                .build()
+                .render(stack.peek().getPositionMatrix(), x, y);
+    }
+
+    public void drawGlass(MatrixStack stack, float x1, float y1, float width1, float height1,
+                          float x2, float y2, float width2, float height2,
+                          float alpha, float radius, int tintColor,
+                          float distortion, float waveSize, float edgeLight, float shine,
+                          float mergeRadius) {
+        float[] radii = {radius, radius, radius, radius};
+        Builder.liquidGlass()
+                .size(new SizeState(width1, height1))
+                .radius(new QuadRadiusState(radii[0], radii[1], radii[2], radii[3]))
+                .color(new QuadColorState(tintColor))
+                .cutSizes(NO_CUTS)
+                .distortion(distortion).waveSize(waveSize).edgeLight(edgeLight).shine(shine)
+                .alpha(alpha)
+                .secondBlob(x2, y2, width2, height2)
+                .mergeRadius(mergeRadius)
+                .merge(true)
+                .build()
+                .render(stack.peek().getPositionMatrix(), x1, y1);
+    }
+
+    public void drawGlass(MatrixStack stack, float x, float y, float width, float height,
+                          float alpha, float radius, Color tintColor,
+                          float distortion, float waveSize, float edgeLight, float shine) {
+        drawGlass(stack, x, y, width, height, alpha, radius, tintColor.getRGB(),
+                distortion, waveSize, edgeLight, shine);
+    }
+
+    public void drawGlass(MatrixStack stack, float x, float y, float width, float height,
+                          float alpha, float radius, Color tintColor, float blurRadius) {
+        float[] radii = {radius, radius, radius, radius};
+        Builder.liquidGlass()
+                .size(new SizeState(width, height))
+                .radius(new QuadRadiusState(radii[0], radii[1], radii[2], radii[3]))
+                .color(new QuadColorState(tintColor.getRGB()))
+                .cutSizes(NO_CUTS)
+                .distortion(12f).waveSize(3f).edgeLight(4f).shine(3f)
+                .blurRadius(blurRadius)
+                .alpha(alpha)
+                .build()
+                .render(stack.peek().getPositionMatrix(), x, y);
+    }
+
     public void drawRoundedRect(MatrixStack stack, float x, float y, float width, float height, float radius, Color color) {
         BuiltRectangle built = Builder.rectangle()
                 .size(new SizeState(width, height))
@@ -145,17 +249,25 @@ public class   Render2D implements Wrapper {
 
      public void drawHudBackground(MatrixStack stack, float x, float y,
                                   float width, float height, float radius, float fade) {
+        if (dev.darkvisuals.client.ui.hud.HudStyle.isLiquidGlass()) {
+            // Liquid Glass: настоящее жидкое стекло из шейдера glass.fsh.
+            // Фон за элементом остаётся видимым — стекло преломляет и размывает его,
+            // а не заливает прямоугольник цветом.
+            drawGlass(stack, x, y, width, height, fade, radius,
+                    glassTint(0.22f * fade), 8f, 3f, 3f, 2f);
+            return;
+        }
         if (dev.darkvisuals.client.ui.hud.HudStyle.isGlowing()) {
             Color accent = dev.darkvisuals.client.managers.ThemeManager
                     .getInstance().getCurrentTheme().getAccentColor();
 
-             
+
             drawGlowOutline(stack, x, y, width, height, radius,
                     new Color(accent.getRed(), accent.getGreen(), accent.getBlue(), clampAlpha(110 * fade)),
                     clampAlpha(95 * fade),
                     Math.min(9f, Math.max(5f, radius + 3f)));
 
-             
+
             drawLiquidGlass(stack, x, y, width, height, radius, fade);
         } else {
             // Minimalistic: soft ambient shadow -> #0D0D0D @ ~85% panel -> hairline edge
@@ -169,7 +281,7 @@ public class   Render2D implements Wrapper {
     }
 
      public void drawHudText(MatrixStack stack, Instance font, String text, float x, float y, Color color) {
-        if (dev.darkvisuals.client.ui.hud.HudStyle.isGlowing()) {
+        if (dev.darkvisuals.client.ui.hud.HudStyle.isGlowing() || dev.darkvisuals.client.ui.hud.HudStyle.isLiquidGlass()) {
             drawFont(stack, font, text, x + 0.5f, y + 0.5f,
                     new Color(0, 0, 0, Math.min(90, color.getAlpha())));
         }
@@ -177,7 +289,7 @@ public class   Render2D implements Wrapper {
     }
 
      public void drawHudPill(MatrixStack stack, float x, float y, float w, float h, float radius, float fade) {
-        if (dev.darkvisuals.client.ui.hud.HudStyle.isGlowing()) {
+        if (dev.darkvisuals.client.ui.hud.HudStyle.isGlowing() || dev.darkvisuals.client.ui.hud.HudStyle.isLiquidGlass()) {
             drawRoundedRect(stack, x, y, w, h, radius, new Color(255, 255, 255, clampAlpha(20 * fade)));
             drawBorder(stack, x, y, w, h, radius, 0f, 1f, new Color(255, 255, 255, clampAlpha(50 * fade)));
         } else {
@@ -195,6 +307,33 @@ public class   Render2D implements Wrapper {
 
     private int clampAlpha(float value) {
         return Math.max(0, Math.min(255, (int) value));
+    }
+
+    // кеш Color'ов: HUD рисует десятки элементов в кадр, и каждый оборачивает
+    // ARGB-int в new Color(...) — это короткоживущий мусор, который давит на GC.
+    private static final int COLOR_CACHE_SIZE = 256;
+    private static final Color[] COLOR_CACHE = new Color[COLOR_CACHE_SIZE];
+
+    static {
+        COLOR_CACHE[0] = new Color(0, true);
+        COLOR_CACHE[1] = new Color(0xFFFFFFFF, true);
+        COLOR_CACHE[2] = new Color(0xFF000000, true);
+    }
+
+    /** Color из ARGB-int без аллокации, если значение уже в кеше. */
+    public static Color cachedColor(int argb) {
+        int slot = (argb >>> 24) == 0 ? 0 : 1 + ((argb & 0x00FFFFFF) % (COLOR_CACHE_SIZE - 1));
+        Color c = COLOR_CACHE[slot];
+        if (c != null && c.getRGB() == argb) return c;
+        c = new Color(argb, true);
+        COLOR_CACHE[slot] = c;
+        return c;
+    }
+
+    /** ARGB тинта стекла: светлый прозрачный RGB + альфа (0..1).
+     *  Чем меньше альфа, тем виднее фон — цвет темы сюда не замешивается. */
+    private int glassTint(float alpha01) {
+        return (clampAlpha(alpha01 * 255f) << 24) | GLASS_TINT_RGB;
     }
 
     public void drawBorder(MatrixStack stack, float x, float y, float width, float height, float radius, float internalSmoothness, float externalSmoothness, Color color) {

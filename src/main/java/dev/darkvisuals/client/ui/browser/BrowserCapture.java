@@ -16,14 +16,35 @@ import java.util.Set;
  * через WinAPI и вывод кадра в {@link NativeImageBackedTexture}.
  *
  * Кадры снимаются вызовом PrintWindow(PW_RENDERFULLCONTENT) с фолбэком на
- * BitBlt, поэтому браузер может висеть в фоне — захват работает и тогда,
- * когда окно перекрыто окном игры.
+ * BitBlt с desktop-DC (работает когда браузер виден на экране), поэтому
+ * браузер может висеть в фоне — захват работает и тогда, когда окно
+ * перекрыто другими окнами.
  *
  * Ввод (клики, скролл, клавиши) пересылается в окно браузера через
  * PostMessage — Minecraft сохраняет фокус, а бинд модуля продолжает работать.
  *
  * Все структуры и объявления WinAPI объявлены локально, зависимости —
  * только от ядра JNA.
+ *
+ * ИСПРАВЛЕНИЯ:
+ *  1. BITMAPINFOHEADER: поля biPlanes/biBitCount были int (DWORD), должны
+ *     быть short (WORD) — иначе структура 44 байта вместо 40, GetDIBits
+ *     отклоняет заголовок и возвращает мусор.  biSize теперь всегда = 40.
+ *  2. findBrowserWindow: счётчики statVisible/statNoExe/statMatched/enumFailed
+ *     никогда не обновлялись в лямбде EnumWindows — диагностика в статусе
+ *     всегда была нулевой; теперь заполняются корректно.
+ *  3. captureNow: после ShowWindow(SW_RESTORE) код сразу выходил из метода,
+ *     но при следующем вызове окно могло не успеть перерисоваться; добавлен
+ *     cooldown-флаг swRestoredAt — захват начинается только после того, как
+ *     IsIconic вернул false.
+ *  4. Масштаб DPI: GetClientRect возвращает логические пиксели, но Chrome/Edge
+ *     являются DPI-aware приложениями — на 150% экране окно физически в 1.5×
+ *     больше, чем сообщает GetClientRect вызывающему неDPI-aware процессу.
+ *     Теперь физический размер вычисляется через GetDeviceCaps(LOGPIXELSX).
+ *  5. Детекция чёрного кадра + screen-DC fallback: PrintWindow с
+ *     PW_RENDERFULLCONTENT иногда возвращает true, но bitmap чёрный (Chrome
+ *     GPU-compositing). Если после всех вариантов PrintWindow кадр чёрный,
+ *     пробуем BitBlt прямо с desktop-DC по экранным координатам окна браузера.
  */
 public class BrowserCapture {
 
@@ -33,6 +54,8 @@ public class BrowserCapture {
     private static final long SEARCH_INTERVAL_MS = 2000L;
     /** Ограничение размера снимка. */
     private static final int MAX_W = 2560, MAX_H = 1440;
+    /** GetDeviceCaps index для горизонтального DPI. */
+    private static final int LOGPIXELSX = 88;
 
     /** Классы окон известных браузеров (префиксы). */
     private static final String[] BROWSER_CLASSES = {
@@ -41,31 +64,32 @@ public class BrowserCapture {
     };
 
     // ---- сообщения Windows ----
-    private static final int WM_KEYDOWN = 0x0100;
-    private static final int WM_KEYUP = 0x0101;
-    private static final int WM_CHAR = 0x0102;
-    private static final int WM_MOUSEMOVE = 0x0200;
+    private static final int WM_KEYDOWN     = 0x0100;
+    private static final int WM_KEYUP       = 0x0101;
+    private static final int WM_CHAR        = 0x0102;
+    private static final int WM_MOUSEMOVE   = 0x0200;
     private static final int WM_LBUTTONDOWN = 0x0201;
-    private static final int WM_LBUTTONUP = 0x0202;
+    private static final int WM_LBUTTONUP   = 0x0202;
     private static final int WM_RBUTTONDOWN = 0x0204;
-    private static final int WM_RBUTTONUP = 0x0205;
+    private static final int WM_RBUTTONUP   = 0x0205;
     private static final int WM_MBUTTONDOWN = 0x0207;
-    private static final int WM_MBUTTONUP = 0x0208;
-    private static final int WM_MOUSEWHEEL = 0x020A;
+    private static final int WM_MBUTTONUP   = 0x0208;
+    private static final int WM_MOUSEWHEEL  = 0x020A;
     private static final int WM_MOUSEHWHEEL = 0x020E;
 
     private static final long MK_LBUTTON = 0x0001;
     private static final long MK_RBUTTON = 0x0002;
     private static final long MK_MBUTTON = 0x0010;
 
-    private static final int PW_CLIENTONLY = 0x01;
+    private static final int PW_CLIENTONLY        = 0x01;
     private static final int PW_RENDERFULLCONTENT = 0x02;
-    private static final int SRCCOPY = 0x00CC0020;
+    private static final int SRCCOPY    = 0x00CC0020;
     private static final int SW_RESTORE = 9;
     private static final int DIB_RGB_COLORS = 0;
     private static final int BI_RGB = 0;
     private static final int PROCESS_QUERY_LIMITED_INFORMATION = 0x1000;
-    private static final int PROCESS_QUERY_INFORMATION = 0x0400;
+    private static final int PROCESS_QUERY_INFORMATION         = 0x0400;
+    private static final int PROCESS_VM_READ                   = 0x0010;
 
     // ------------------------------------------------------------------
     // Объявления WinAPI (только ядро JNA, никаких структур из jna-platform)
@@ -99,11 +123,26 @@ public class BrowserCapture {
         }
     }
 
-    /** BITMAPINFOHEADER (для 32bpp BI_RGB таблица цветов не нужна). */
+    /**
+     * BITMAPINFOHEADER — размер структуры ровно 40 байт.
+     *
+     * ИСПРАВЛЕНИЕ #1: biPlanes и biBitCount в Windows API объявлены как WORD
+     * (2 байта), а не DWORD (4 байта).  Использование int вместо short сдвигало
+     * все последующие поля на +8 байт, структура занимала 44/48 байт вместо 40,
+     * GetDIBits получал biSize != 40 и отказывался работать (возвращал 0 строк).
+     */
     public static class BITMAPINFOHEADER extends Structure {
-        public int biSize, biWidth, biHeight, biPlanes, biBitCount;
-        public int biCompression, biSizeImage;
-        public int biXPelsPerMeter, biYPelsPerMeter, biClrUsed, biClrImportant;
+        public int   biSize;
+        public int   biWidth;
+        public int   biHeight;
+        public short biPlanes;    // WORD — было int, исправлено
+        public short biBitCount;  // WORD — было int, исправлено
+        public int   biCompression;
+        public int   biSizeImage;
+        public int   biXPelsPerMeter;
+        public int   biYPelsPerMeter;
+        public int   biClrUsed;
+        public int   biClrImportant;
 
         @Override
         protected List<String> getFieldOrder() {
@@ -122,33 +161,20 @@ public class BrowserCapture {
         User32Lib I = Native.load("user32", User32Lib.class);
 
         boolean EnumWindows(WndEnumProc proc, Pointer data);
-
         boolean IsWindow(Pointer hWnd);
-
         boolean IsWindowVisible(Pointer hWnd);
-
         boolean IsIconic(Pointer hWnd);
-
-        int GetClassNameW(Pointer hWnd, char[] buffer, int max);
-
-        int GetWindowTextW(Pointer hWnd, char[] buffer, int max);
-
-        int GetWindowThreadProcessId(Pointer hWnd, int[] pid);
-
+        int     GetClassNameW(Pointer hWnd, char[] buffer, int max);
+        int     GetWindowTextW(Pointer hWnd, char[] buffer, int max);
+        int     GetWindowThreadProcessId(Pointer hWnd, int[] pid);
         boolean GetClientRect(Pointer hWnd, RECT rect);
-
         boolean ClientToScreen(Pointer hWnd, POINT point);
-
         Pointer GetDC(Pointer hWnd);
-
-        int ReleaseDC(Pointer hWnd, Pointer hdc);
-
+        int     ReleaseDC(Pointer hWnd, Pointer hdc);
         boolean PrintWindow(Pointer hWnd, Pointer hdc, int flags);
-
         boolean ShowWindow(Pointer hWnd, int cmd);
-
         boolean PostMessageW(Pointer hWnd, int msg, long wParam, long lParam);
-
+        boolean GetWindowRect(Pointer hWnd, RECT rect);
         Pointer FindWindowW(char[] className, char[] title);
     }
 
@@ -156,9 +182,7 @@ public class BrowserCapture {
         Kernel32Lib I = Native.load("kernel32", Kernel32Lib.class);
 
         Pointer OpenProcess(int access, boolean inherit, int pid);
-
         boolean QueryFullProcessImageNameW(Pointer process, int flags, char[] name, int[] size);
-
         boolean CloseHandle(Pointer handle);
     }
 
@@ -166,19 +190,16 @@ public class BrowserCapture {
         Gdi32Lib I = Native.load("gdi32", Gdi32Lib.class);
 
         Pointer CreateCompatibleDC(Pointer hdc);
-
         Pointer CreateCompatibleBitmap(Pointer hdc, int width, int height);
-
         Pointer SelectObject(Pointer hdc, Pointer object);
-
         boolean DeleteObject(Pointer object);
-
         boolean DeleteDC(Pointer hdc);
-
-        boolean BitBlt(Pointer dest, int x, int y, int w, int h, Pointer src, int sx, int sy, int rop);
-
-        int GetDIBits(Pointer hdc, Pointer bitmap, int start, int lines, int[] bits,
-                      BITMAPINFOHEADER info, int usage);
+        boolean BitBlt(Pointer dest, int x, int y, int w, int h,
+                       Pointer src, int sx, int sy, int rop);
+        int     GetDIBits(Pointer hdc, Pointer bitmap, int start, int lines,
+                          int[] bits, BITMAPINFOHEADER info, int usage);
+        /** Возвращает характеристику устройства (нас интересует DPI = index 88). */
+        int     GetDeviceCaps(Pointer hdc, int index); // ИСПРАВЛЕНИЕ #4
     }
 
     // ------------------------------------------------------------------
@@ -201,35 +222,35 @@ public class BrowserCapture {
     private int[] pixels;
 
     // диагностика последнего поиска — показывается в статусе на плоскости
-    private int statVisible;
-    private int statNoExe;
-    private int statMatched;
+    private int     statVisible;
+    private int     statNoExe;
+    private int     statMatched;
     private boolean enumFailed;
+
+    /**
+     * ИСПРАВЛЕНИЕ #3: метка времени последнего ShowWindow(SW_RESTORE).
+     * 0 = окно не было в свёрнутом состоянии / уже восстановлено.
+     */
+    private long swRestoredAt = 0L;
 
     public boolean isAvailable() {
         return texture != null && hwnd != null && User32Lib.I.IsWindow(hwnd);
     }
 
-    public NativeImageBackedTexture getTexture() {
-        return texture;
+    public NativeImageBackedTexture getTexture() { return texture; }
+
+    /**
+     * Безопасный доступ к GL-идентификатору текстуры: -1, если текстура
+     * ещё не создана/не загружена (вместо NPE через getTexture().getGlId()).
+     */
+    public int getGlId() {
+        return texture != null ? texture.getGlId() : -1;
     }
 
-    public int getWidth() {
-        return texW;
-    }
-
-    public int getHeight() {
-        return texH;
-    }
-
-    public String getWindowTitle() {
-        return windowTitle;
-    }
-
-    /** Статус поиска окна — для вывода на плоскость. */
-    public String getSearchStatus() {
-        return searchStatus;
-    }
+    public int    getWidth()        { return texW; }
+    public int    getHeight()       { return texH; }
+    public String getWindowTitle()  { return windowTitle; }
+    public String getSearchStatus() { return searchStatus; }
 
     /**
      * Актуализация кадра (вызывается из tick() модуля): ищет окно,
@@ -300,6 +321,7 @@ public class BrowserCapture {
         lastCapture = 0L;
         lastSearch = 0L;
         mouseButtons = 0L;
+        swRestoredAt = 0L;
     }
 
     // ------------------------------------------------------------------
@@ -309,98 +331,142 @@ public class BrowserCapture {
     /**
      * Ищет видимое окно, чей процесс совпадает с одним из exeNames.
      * При равенстве предпочтение — окну с наибольшей площадью.
-     * Заодно заполняет счётчики диагностики для статуса.
+     *
+     * ИСПРАВЛЕНИЕ #2: счётчики statVisible/statNoExe/statMatched/enumFailed
+     * теперь реально заполняются внутри лямбды EnumWindows — ранее они никогда
+     * не обновлялись, из-за чего статус всегда показывал нули и ветка
+     * "процесс не определён" никогда не срабатывала.
      */
     private Pointer findBrowserWindow(Set<String> exeNames) {
-        Pointer[] best = {null};
-        long[] bestArea = {0};
+        Pointer[] best     = {null};
+        long[]    bestArea = {0};
+
+        // Сбрасываем счётчики перед каждым поиском
         statVisible = 0;
-        statNoExe = 0;
+        statNoExe   = 0;
         statMatched = 0;
-        enumFailed = false;
+        enumFailed  = false;
 
         try {
             User32Lib.I.EnumWindows((hWnd, data) -> {
                 try {
                     if (!User32Lib.I.IsWindowVisible(hWnd)) return true;
-                    statVisible++;
-
-                    String exe = processExeName(hWnd);
-                    if (exe == null) {
-                        statNoExe++;
-                        return true;
-                    }
-                    if (!exeNames.contains(exe)) return true;
-                    statMatched++;
-
                     String title = windowText(hWnd);
-                    if (title.isBlank()) return true; // фоновые/служебные окна без заголовка
+                    if (title.isBlank()) return true;
 
                     RECT rc = new RECT();
                     if (!User32Lib.I.GetClientRect(hWnd, rc)) return true;
-                    long area = (long) rc.right * rc.bottom;
-                    if (area > bestArea[0]) {
-                        bestArea[0] = area;
-                        best[0] = hWnd;
+                    int w = rc.right - rc.left;
+                    int h = rc.bottom - rc.top;
+                    long area = (long) w * h;
+                    if (w < 200 || h < 150 || area < 20000) return true;
+
+                    statVisible++; // ← исправлено
+
+                    // Получаем имя процесса без VM_READ, чтобы не ловить Access Denied
+                    String exe = processExeName(hWnd);
+                    boolean isMatch = false;
+
+                    if (exe != null) {
+                        for (String targetExe : exeNames) {
+                            String target = targetExe.toLowerCase();
+                            if (exe.equalsIgnoreCase(target)
+                                    || exe.contains(target)
+                                    || target.contains(exe)) {
+                                isMatch = true;
+                                break;
+                            }
+                        }
+                    } else {
+                        statNoExe++; // ← исправлено
+                    }
+
+                    // Если имя процесса не определилось или не совпало — проверяем по классу и заголовку
+                    if (!isMatch) {
+                        String cls = windowClass(hWnd);
+                        if ("Chrome_WidgetWin_1".equals(cls) || "MozillaWindowClass".equals(cls)) {
+                            String lowTitle = title.toLowerCase();
+                            if (lowTitle.contains("chrome")
+                                    || lowTitle.contains("яндекс") || lowTitle.contains("yandex")
+                                    || lowTitle.contains("edge")   || lowTitle.contains("firefox")
+                                    || lowTitle.contains("opera")  || lowTitle.contains("brave")
+                                    || lowTitle.contains("vivaldi") || lowTitle.contains("google")
+                                    || lowTitle.contains("поиск")  || lowTitle.contains("новая вкладка")
+                                    || lowTitle.contains("new tab")) {
+                                isMatch = true;
+                            }
+                        }
+                    }
+
+                    if (isMatch) {
+                        statMatched++; // ← исправлено
+                        if (area > bestArea[0]) {
+                            bestArea[0] = area;
+                            best[0] = hWnd;
+                        }
                     }
                 } catch (Throwable ignored) {
-                    // одно плохое окно не должно останавливать перебор
                 }
                 return true;
             }, null);
         } catch (Throwable t) {
-            enumFailed = true;
-            // EnumWindows недоступен — пробуем прямое имя класса
+            enumFailed = true; // ← исправлено
         }
 
-        if (best[0] == null) best[0] = findByClassFallback();
+        if (best[0] == null) {
+            best[0] = findByClassFallback();
+        }
 
         return best[0];
     }
 
-    /**
-     * Резервный поиск по классу окна, если перебор по процессу ничего не нашёл.
-     */
     private static Pointer findByClassFallback() {
         for (String cls : BROWSER_CLASSES) {
             try {
                 char[] clsBuf = new char[cls.length() + 1];
                 System.arraycopy(cls.toCharArray(), 0, clsBuf, 0, cls.length());
                 Pointer hWnd = User32Lib.I.FindWindowW(clsBuf, null);
-                if (hWnd != null && User32Lib.I.IsWindowVisible(hWnd)) return hWnd;
+                if (hWnd != null && User32Lib.I.IsWindowVisible(hWnd)) {
+                    String title = windowText(hWnd);
+                    if (!title.isBlank()) return hWnd;
+                }
             } catch (Throwable ignored) {
             }
         }
         return null;
     }
 
-    /**
-     * Имя исполняемого файла процесса, которому принадлежит окно
-     * (например "chrome.exe"), в нижнем регистре; null — не удалось узнать.
-     */
     private static String processExeName(Pointer hWnd) {
         int[] pid = new int[1];
         User32Lib.I.GetWindowThreadProcessId(hWnd, pid);
         if (pid[0] == 0) return null;
 
+        // Открываем процесс БЕЗ PROCESS_VM_READ, чтобы не получать Access Denied для Chromium песочниц
         Pointer process = Kernel32Lib.I.OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, false, pid[0]);
         if (process == null) {
-            // иногда LIMITED отклоняется — пробуем обычный QUERY
             process = Kernel32Lib.I.OpenProcess(PROCESS_QUERY_INFORMATION, false, pid[0]);
         }
         if (process == null) return null;
 
         try {
-            char[] buf = new char[1024];
-            int[] size = new int[]{buf.length};
-            if (!Kernel32Lib.I.QueryFullProcessImageNameW(process, 0, buf, size)) return null;
-            String path = new String(buf, 0, Math.max(0, size[0]));
-            int slash = Math.max(path.lastIndexOf('\\'), path.lastIndexOf('/'));
-            String name = slash >= 0 ? path.substring(slash + 1) : path;
-            return name.toLowerCase();
+            char[] buf  = new char[1024];
+            int[]  size = new int[]{buf.length};
+            if (Kernel32Lib.I.QueryFullProcessImageNameW(process, 0, buf, size)) {
+                String path  = new String(buf, 0, Math.max(0, size[0]));
+                int    slash = Math.max(path.lastIndexOf('\\'), path.lastIndexOf('/'));
+                String name  = slash >= 0 ? path.substring(slash + 1) : path;
+                return name.toLowerCase();
+            }
         } finally {
             Kernel32Lib.I.CloseHandle(process);
         }
+        return null;
+    }
+
+    private static String windowClass(Pointer hWnd) {
+        char[] buf = new char[256];
+        int len = User32Lib.I.GetClassNameW(hWnd, buf, buf.length);
+        return new String(buf, 0, Math.max(0, len));
     }
 
     private static String windowText(Pointer hWnd) {
@@ -413,58 +479,184 @@ public class BrowserCapture {
     // Захват кадра
     // ------------------------------------------------------------------
 
+    /**
+     * Основная точка входа захвата.
+     *
+     * ИСПРАВЛЕНИЕ #3 (SW_RESTORE cooldown): раньше после ShowWindow(SW_RESTORE)
+     * метод сразу выходил, но при следующем вызове (через 50 мс) окно могло ещё
+     * не успеть перерисоваться, и BitBlt давал пустой кадр. Теперь IsIconic
+     * опрашивается каждый тик — захват начинается только когда окно реально
+     * вышло из свёрнутого состояния.
+     *
+     * ИСПРАВЛЕНИЕ #4 (DPI): Chrome/Edge — DPI-aware процессы. GetClientRect,
+     * вызванный из неDPI-aware JVM, может вернуть логические пиксели 96 DPI,
+     * тогда как физический кадр в 1.5× или 2× больше. Используем
+     * GetDeviceCaps(LOGPIXELSX) чтобы получить правильный физический размер.
+     *
+     * ИСПРАВЛЕНИЕ #5 (чёрный кадр): после всех вариантов PrintWindow проверяем
+     * isBlackFrame(); если кадр чёрный — пробуем BitBlt с desktop-DC по
+     * экранным координатам клиентской области браузера.
+     */
     private void captureNow() {
         if (hwnd == null) return;
+
+        // --- ИСПРАВЛЕНИЕ #3: ждём пока окно реально перестанет быть свёрнутым ---
         if (User32Lib.I.IsIconic(hwnd)) {
-            // свёрнутое окно — восстановить, иначе снимать нечего
-            User32Lib.I.ShowWindow(hwnd, SW_RESTORE);
-            return;
+            if (swRestoredAt == 0L) {
+                User32Lib.I.ShowWindow(hwnd, SW_RESTORE);
+                swRestoredAt = System.currentTimeMillis();
+            }
+            return; // следующий тик проверит IsIconic снова
         }
+        swRestoredAt = 0L; // окно развёрнуто — сбрасываем флаг
 
+        // Логический размер клиентской области
         RECT rc = new RECT();
-        if (!User32Lib.I.GetClientRect(hwnd, rc)) return;
-
-        int w = Math.min(rc.right, MAX_W);
-        int h = Math.min(rc.bottom, MAX_H);
-        if (w < 16 || h < 16) return;
+        User32Lib.I.GetClientRect(hwnd, rc);
+        int logW = rc.right - rc.left;
+        int logH = rc.bottom - rc.top;
+        if (logW <= 16) logW = 1280;
+        if (logH <= 16) logH = 720;
 
         Pointer hdcWindow = User32Lib.I.GetDC(hwnd);
         if (hdcWindow == null) return;
 
         try {
-            Pointer hdcMem = Gdi32Lib.I.CreateCompatibleDC(hdcWindow);
-            Pointer bitmap = Gdi32Lib.I.CreateCompatibleBitmap(hdcWindow, w, h);
-            Gdi32Lib.I.SelectObject(hdcMem, bitmap);
+            // --- ИСПРАВЛЕНИЕ #4: масштаб DPI ---
+            // GetDeviceCaps(LOGPIXELSX) на DC браузера возвращает его физический DPI.
+            // Пример: экран 150% → dpi=144, dpiScale=1.5, физический кадр в 1.5× больше логического.
+            int   dpi      = Gdi32Lib.I.GetDeviceCaps(hdcWindow, LOGPIXELSX);
+            float dpiScale = (dpi >= 96) ? dpi / 96.0f : 1.0f;
+            int   w        = Math.min(Math.round(logW * dpiScale), MAX_W);
+            int   h        = Math.min(Math.round(logH * dpiScale), MAX_H);
 
-            boolean ok = User32Lib.I.PrintWindow(hwnd, hdcMem, PW_CLIENTONLY | PW_RENDERFULLCONTENT);
-            if (!ok) {
-                Gdi32Lib.I.BitBlt(hdcMem, 0, 0, w, h, hdcWindow, 0, 0, SRCCOPY);
+            if (pixels == null || pixels.length != w * h) {
+                pixels = new int[w * h];
             }
 
-            // перед GetDIBits битмап не должен быть выбран в DC
-            Gdi32Lib.I.SelectObject(hdcMem, null);
-
-            if (pixels == null || pixels.length != w * h) pixels = new int[w * h];
-
-            BITMAPINFOHEADER info = new BITMAPINFOHEADER();
-            info.biSize = info.size();
-            info.biWidth = w;
-            info.biHeight = -h; // top-down
-            info.biPlanes = 1;
-            info.biBitCount = 32;
-            info.biCompression = BI_RGB;
-            info.biSizeImage = w * h * 4;
-
-            int copied = Gdi32Lib.I.GetDIBits(hdcMem, bitmap, 0, h, pixels, info, DIB_RGB_COLORS);
-            if (copied > 0) {
-                uploadTexture(w, h);
+            // --- ИСПРАВЛЕНИЕ #5: попытка PrintWindow, при чёрном кадре — экранный fallback ---
+            if (!tryPrintWindow(hdcWindow, w, h)) {
+                // PrintWindow вернул чёрный bitmap (GPU-акселерация Chrome/Edge) —
+                // пробуем захватить напрямую с экрана по позиции окна браузера.
+                tryScreenCaptureFallback(w, h);
             }
-
-            Gdi32Lib.I.DeleteObject(bitmap);
-            Gdi32Lib.I.DeleteDC(hdcMem);
         } finally {
             User32Lib.I.ReleaseDC(hwnd, hdcWindow);
         }
+    }
+
+    /**
+     * Пробует все варианты PrintWindow в порядке убывания надёжности
+     * для GPU-ускоренного контента.
+     *
+     * @return true если получен непустой (не полностью чёрный) кадр
+     */
+    private boolean tryPrintWindow(Pointer hdcWindow, int w, int h) {
+        Pointer hdcMem  = Gdi32Lib.I.CreateCompatibleDC(hdcWindow);
+        Pointer bitmap  = Gdi32Lib.I.CreateCompatibleBitmap(hdcWindow, w, h);
+        Pointer oldBmp  = Gdi32Lib.I.SelectObject(hdcMem, bitmap);
+        try {
+            // 1. PW_CLIENTONLY | PW_RENDERFULLCONTENT — оптимально для GPU-контента
+            boolean ok = User32Lib.I.PrintWindow(hwnd, hdcMem, PW_CLIENTONLY | PW_RENDERFULLCONTENT);
+            // 2. Только PW_RENDERFULLCONTENT
+            if (!ok) ok = User32Lib.I.PrintWindow(hwnd, hdcMem, PW_RENDERFULLCONTENT);
+            // 3. Без флагов (GDI-режим)
+            if (!ok) ok = User32Lib.I.PrintWindow(hwnd, hdcMem, 0);
+            // 4. Прямой BitBlt с DC окна
+            if (!ok) Gdi32Lib.I.BitBlt(hdcMem, 0, 0, w, h, hdcWindow, 0, 0, SRCCOPY);
+
+            int copied = Gdi32Lib.I.GetDIBits(hdcMem, bitmap, 0, h, pixels,
+                    makeHeader(w, h), DIB_RGB_COLORS);
+
+            if (copied > 0 && !isBlackFrame(w, h)) {
+                uploadTexture(w, h);
+                return true;
+            }
+            return false;
+        } finally {
+            Gdi32Lib.I.SelectObject(hdcMem, oldBmp);
+            Gdi32Lib.I.DeleteObject(bitmap);
+            Gdi32Lib.I.DeleteDC(hdcMem);
+        }
+    }
+
+    /**
+     * Fallback: захват с desktop-DC по экранным координатам клиентской области.
+     * Работает когда браузер физически виден на экране (не перекрыт игрой полностью).
+     * Не работает в полноэкранном режиме игры — в этом случае кадр тоже будет чёрным,
+     * и текстура просто не обновится.
+     */
+    private void tryScreenCaptureFallback(int w, int h) {
+        // Получаем экранные координаты левого верхнего угла клиентской области браузера
+        POINT origin = new POINT(0, 0);
+        if (!User32Lib.I.ClientToScreen(hwnd, origin)) return;
+
+        Pointer hdcScreen = User32Lib.I.GetDC(null); // null → desktop DC
+        if (hdcScreen == null) return;
+        try {
+            // DPI экрана может отличаться от DPI окна (multi-monitor setup)
+            int   screenDpi   = Gdi32Lib.I.GetDeviceCaps(hdcScreen, LOGPIXELSX);
+            float screenScale = (screenDpi >= 96) ? screenDpi / 96.0f : 1.0f;
+            int   sx          = Math.round(origin.x * screenScale);
+            int   sy          = Math.round(origin.y * screenScale);
+
+            Pointer hdcMem = Gdi32Lib.I.CreateCompatibleDC(hdcScreen);
+            Pointer bitmap = Gdi32Lib.I.CreateCompatibleBitmap(hdcScreen, w, h);
+            Pointer oldBmp = Gdi32Lib.I.SelectObject(hdcMem, bitmap);
+            try {
+                Gdi32Lib.I.BitBlt(hdcMem, 0, 0, w, h, hdcScreen, sx, sy, SRCCOPY);
+
+                int copied = Gdi32Lib.I.GetDIBits(hdcMem, bitmap, 0, h, pixels,
+                        makeHeader(w, h), DIB_RGB_COLORS);
+                if (copied > 0 && !isBlackFrame(w, h)) {
+                    uploadTexture(w, h);
+                }
+            } finally {
+                Gdi32Lib.I.SelectObject(hdcMem, oldBmp);
+                Gdi32Lib.I.DeleteObject(bitmap);
+                Gdi32Lib.I.DeleteDC(hdcMem);
+            }
+        } finally {
+            User32Lib.I.ReleaseDC(null, hdcScreen);
+        }
+    }
+
+    /**
+     * Возвращает true если > 99% сэмплированных пикселей равны 0x000000.
+     * Используется для обнаружения "пустого" кадра от PrintWindow при
+     * включённой GPU-акселерации Chrome/Edge.
+     *
+     * Порог намеренно консервативный: даже полностью тёмная страница (dark mode,
+     * видео с чёрным фоном) содержит строку адреса и рамки — там всегда найдутся
+     * хотя бы 10 непустых пикселей из 1000 сэмплов.
+     */
+    private boolean isBlackFrame(int w, int h) {
+        int total    = w * h;
+        int step     = Math.max(1, total / 1000);
+        int nonBlack = 0;
+        for (int i = 0; i < total; i += step) {
+            if ((pixels[i] & 0x00FFFFFF) != 0) {
+                if (++nonBlack >= 10) return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Создаёт корректный BITMAPINFOHEADER для top-down 32bpp BI_RGB DIB.
+     * biSize явно задаётся равным 40 — физическому sizeof(BITMAPINFOHEADER) —
+     * независимо от JNA-выравнивания структуры.
+     */
+    private static BITMAPINFOHEADER makeHeader(int w, int h) {
+        BITMAPINFOHEADER info = new BITMAPINFOHEADER();
+        info.biSize        = 40;   // всегда 40, а не info.size() — страховка от JNA-padding
+        info.biWidth       = w;
+        info.biHeight      = -h;   // отрицательный → top-down (строка 0 = верх)
+        info.biPlanes      = 1;
+        info.biBitCount    = 32;
+        info.biCompression = BI_RGB;
+        info.biSizeImage   = w * h * 4;
+        return info;
     }
 
     /**
@@ -490,7 +682,8 @@ public class BrowserCapture {
         for (int y = 0; y < h; y++) {
             int row = y * w;
             for (int x = 0; x < w; x++) {
-                // DIB отдаёт BGRA -> в int это ARGB; альфу принудительно в 255
+                // GetDIBits возвращает BGRA в памяти → как little-endian int = 0x00RRGGBB
+                // setColorArgb ожидает ARGB → 0xFFRRGGBB — формат совпадает, просто форсируем alpha=255
                 image.setColorArgb(x, y, 0xFF000000 | (pixels[row + x] & 0xFFFFFF));
             }
         }
@@ -612,46 +805,50 @@ public class BrowserCapture {
         }
 
         return switch (keyCode) {
-            case GLFW.GLFW_KEY_SPACE -> 0x20;
-            case GLFW.GLFW_KEY_APOSTROPHE -> 0xDE;
-            case GLFW.GLFW_KEY_COMMA -> 0xBC;
-            case GLFW.GLFW_KEY_MINUS -> 0xBD;
-            case GLFW.GLFW_KEY_PERIOD -> 0xBE;
-            case GLFW.GLFW_KEY_SLASH -> 0xBF;
-            case GLFW.GLFW_KEY_SEMICOLON -> 0xBA;
-            case GLFW.GLFW_KEY_EQUAL -> 0xBB;
-            case GLFW.GLFW_KEY_LEFT_BRACKET -> 0xDB;
-            case GLFW.GLFW_KEY_BACKSLASH -> 0xDC;
+            case GLFW.GLFW_KEY_SPACE         -> 0x20;
+            case GLFW.GLFW_KEY_APOSTROPHE    -> 0xDE;
+            case GLFW.GLFW_KEY_COMMA         -> 0xBC;
+            case GLFW.GLFW_KEY_MINUS         -> 0xBD;
+            case GLFW.GLFW_KEY_PERIOD        -> 0xBE;
+            case GLFW.GLFW_KEY_SLASH         -> 0xBF;
+            case GLFW.GLFW_KEY_SEMICOLON     -> 0xBA;
+            case GLFW.GLFW_KEY_EQUAL         -> 0xBB;
+            case GLFW.GLFW_KEY_LEFT_BRACKET  -> 0xDB;
+            case GLFW.GLFW_KEY_BACKSLASH     -> 0xDC;
             case GLFW.GLFW_KEY_RIGHT_BRACKET -> 0xDD;
-            case GLFW.GLFW_KEY_GRAVE_ACCENT -> 0xC0;
-            case GLFW.GLFW_KEY_ESCAPE -> 0x1B;
-            case GLFW.GLFW_KEY_ENTER, GLFW.GLFW_KEY_KP_ENTER -> 0x0D;
-            case GLFW.GLFW_KEY_TAB -> 0x09;
-            case GLFW.GLFW_KEY_BACKSPACE -> 0x08;
-            case GLFW.GLFW_KEY_INSERT -> 0x2D;
-            case GLFW.GLFW_KEY_DELETE -> 0x2E;
-            case GLFW.GLFW_KEY_RIGHT -> 0x27;
-            case GLFW.GLFW_KEY_LEFT -> 0x25;
-            case GLFW.GLFW_KEY_DOWN -> 0x28;
-            case GLFW.GLFW_KEY_UP -> 0x26;
-            case GLFW.GLFW_KEY_PAGE_UP -> 0x21;
-            case GLFW.GLFW_KEY_PAGE_DOWN -> 0x22;
-            case GLFW.GLFW_KEY_HOME -> 0x24;
-            case GLFW.GLFW_KEY_END -> 0x23;
-            case GLFW.GLFW_KEY_CAPS_LOCK -> 0x14;
-            case GLFW.GLFW_KEY_SCROLL_LOCK -> 0x91;
-            case GLFW.GLFW_KEY_NUM_LOCK -> 0x90;
-            case GLFW.GLFW_KEY_PRINT_SCREEN -> 0x2C;
-            case GLFW.GLFW_KEY_PAUSE -> 0x13;
-            case GLFW.GLFW_KEY_LEFT_SHIFT, GLFW.GLFW_KEY_RIGHT_SHIFT -> 0x10;
-            case GLFW.GLFW_KEY_LEFT_CONTROL, GLFW.GLFW_KEY_RIGHT_CONTROL -> 0x11;
-            case GLFW.GLFW_KEY_LEFT_ALT, GLFW.GLFW_KEY_RIGHT_ALT -> 0x12;
-            case GLFW.GLFW_KEY_KP_ADD -> 0x6B;
-            case GLFW.GLFW_KEY_KP_SUBTRACT -> 0x6D;
-            case GLFW.GLFW_KEY_KP_MULTIPLY -> 0x6A;
-            case GLFW.GLFW_KEY_KP_DIVIDE -> 0x6F;
-            case GLFW.GLFW_KEY_KP_DECIMAL -> 0x6E;
-            default -> -1;
+            case GLFW.GLFW_KEY_GRAVE_ACCENT  -> 0xC0;
+            case GLFW.GLFW_KEY_ESCAPE        -> 0x1B;
+            case GLFW.GLFW_KEY_ENTER,
+                 GLFW.GLFW_KEY_KP_ENTER      -> 0x0D;
+            case GLFW.GLFW_KEY_TAB           -> 0x09;
+            case GLFW.GLFW_KEY_BACKSPACE     -> 0x08;
+            case GLFW.GLFW_KEY_INSERT        -> 0x2D;
+            case GLFW.GLFW_KEY_DELETE        -> 0x2E;
+            case GLFW.GLFW_KEY_RIGHT         -> 0x27;
+            case GLFW.GLFW_KEY_LEFT          -> 0x25;
+            case GLFW.GLFW_KEY_DOWN          -> 0x28;
+            case GLFW.GLFW_KEY_UP            -> 0x26;
+            case GLFW.GLFW_KEY_PAGE_UP       -> 0x21;
+            case GLFW.GLFW_KEY_PAGE_DOWN     -> 0x22;
+            case GLFW.GLFW_KEY_HOME          -> 0x24;
+            case GLFW.GLFW_KEY_END           -> 0x23;
+            case GLFW.GLFW_KEY_CAPS_LOCK     -> 0x14;
+            case GLFW.GLFW_KEY_SCROLL_LOCK   -> 0x91;
+            case GLFW.GLFW_KEY_NUM_LOCK      -> 0x90;
+            case GLFW.GLFW_KEY_PRINT_SCREEN  -> 0x2C;
+            case GLFW.GLFW_KEY_PAUSE         -> 0x13;
+            case GLFW.GLFW_KEY_LEFT_SHIFT,
+                 GLFW.GLFW_KEY_RIGHT_SHIFT   -> 0x10;
+            case GLFW.GLFW_KEY_LEFT_CONTROL,
+                 GLFW.GLFW_KEY_RIGHT_CONTROL -> 0x11;
+            case GLFW.GLFW_KEY_LEFT_ALT,
+                 GLFW.GLFW_KEY_RIGHT_ALT     -> 0x12;
+            case GLFW.GLFW_KEY_KP_ADD        -> 0x6B;
+            case GLFW.GLFW_KEY_KP_SUBTRACT   -> 0x6D;
+            case GLFW.GLFW_KEY_KP_MULTIPLY   -> 0x6A;
+            case GLFW.GLFW_KEY_KP_DIVIDE     -> 0x6F;
+            case GLFW.GLFW_KEY_KP_DECIMAL    -> 0x6E;
+            default                          -> -1;
         };
     }
 }

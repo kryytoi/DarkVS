@@ -192,6 +192,7 @@ import java.util.concurrent.TimeUnit;
             if (mod.getKaguneSetting().getValue()) set.add("kagune");
             if (mod.getMortyPatchSetting().getValue()) set.add("morty");
             if (mod.getNikeCapSetting().getValue()) set.add("nike");
+            if (mod.getRobotTentaclesSetting().getValue()) set.add("robot_tentacles");
         } catch (Throwable ignored) {}
         return set;
     }

@@ -64,10 +64,10 @@ public class BrowserModule extends Module {
                 case Brave -> new String[]{"brave.exe"};
                 case Opera -> new String[]{"opera.exe"};
                 case Vivaldi -> new String[]{"vivaldi.exe"};
-                case Yandex -> new String[]{"browser.exe"};
+                case Yandex -> new String[]{"browser.exe", "yandex.exe"};
                 case Auto -> new String[]{
                         "chrome.exe", "msedge.exe", "firefox.exe", "brave.exe",
-                        "opera.exe", "vivaldi.exe", "browser.exe", "chromium.exe"};
+                        "opera.exe", "vivaldi.exe", "browser.exe", "yandex.exe", "chromium.exe"};
             };
         }
     }

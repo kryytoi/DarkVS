@@ -10,6 +10,7 @@ public final class Builder {
     private static final TextureBuilder TEXTURE_BUILDER = new TextureBuilder();
     private static final TextBuilder TEXT_BUILDER = new TextBuilder();
     private static final BlurBuilder BLUR_BUILDER = new BlurBuilder();
+    private static final LiquidGlassBuilder LIQUID_GLASS_BUILDER = new LiquidGlassBuilder();
     private static final RockstarRectangleBuilder ROCKSTAR_RECTANGLE_BUILDER = new RockstarRectangleBuilder();
     private static final RockstarBlurBuilder ROCKSTAR_BLUR_BUILDER = new RockstarBlurBuilder();
 
@@ -39,5 +40,9 @@ public final class Builder {
 
     public static BlurBuilder blur() {
         return BLUR_BUILDER;
+    }
+
+    public static LiquidGlassBuilder liquidGlass() {
+        return LIQUID_GLASS_BUILDER;
     }
 }

@@ -26,7 +26,10 @@ public class EnumSetting<Value extends Enum<?>> extends Setting<Value> {
 
     public void setEnumValue(String value) {
         for (Value e : (Value[]) this.value.getClass().getEnumConstants()) {
-            if (((Nameable) e).getName().equalsIgnoreCase(value)) {
+            // Gson сохраняет enum по name() («LIQUID_GLASS»), а UI показывает
+            // displayName («Liquid Glass») — принимаем оба варианта, иначе
+            // стиль Liquid Glass не загрузится из конфига.
+            if (((Nameable) e).getName().equalsIgnoreCase(value) || e.name().equalsIgnoreCase(value)) {
                 setValue(e);
                 break;
             }

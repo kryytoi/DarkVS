@@ -19,11 +19,22 @@ public class ClickGuiInputHandler {
 
     private ClickGuiRenderer r() { return ClickGuiRenderer.getInstance(); }
 
+    /** New стиль включается настройкой GUI Style в модуле UI. */
+    private boolean isNewStyle() {
+        var ui = dev.darkvisuals.darkvisuals.getInstance().getModuleManager()
+                .getModule(dev.darkvisuals.modules.impl.render.UI.class);
+        return ui != null && ui.getGuiStyle() == dev.darkvisuals.modules.impl.render.UI.GuiStyle.New;
+    }
+
+    private NewClickGuiRenderer newR() { return NewClickGuiRenderer.getInstance(); }
+
      
      
      
     public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
         Window window = MinecraftClient.getInstance().getWindow();
+        if (isNewStyle()) return newR().scroll(mouseX, mouseY, amount, window, state);
+
         float px = panelX(window), py = panelY(window);
         if (!hit(mouseX, mouseY, px, py, PANEL_W, PANEL_H)) return false;
 
@@ -47,6 +58,8 @@ public class ClickGuiInputHandler {
      
      
     public boolean mouseClicked(double mouseX, double mouseY, int button, Window window) {
+        if (isNewStyle()) return newR().mouseClicked(mouseX, mouseY, button, window, state);
+
         float px = panelX(window), py = panelY(window);
 
          

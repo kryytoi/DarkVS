@@ -70,9 +70,31 @@ public class UI extends Module {
         }
     }
 
+    /** Стиль клик-гуй: Old — нынешний, New — новый, непохожий на старый. */
+    public enum GuiStyle implements Nameable {
+        Old("Old"),
+        New("New");
+
+        private final String displayName;
+
+        GuiStyle(String displayName) {
+            this.displayName = displayName;
+        }
+
+        @Override
+        public String getName() {
+            return displayName;
+        }
+    }
+
     private final EnumSetting<UIMode> uiMode = new EnumSetting<>("UI Mode", UIMode.Minimalist);
+    private final EnumSetting<GuiStyle> guiStyle = new EnumSetting<>("GUI Style", GuiStyle.Old);
 
     public UIMode getUiMode() {
         return uiMode.getValue();
+    }
+
+    public GuiStyle getGuiStyle() {
+        return guiStyle.getValue();
     }
 }

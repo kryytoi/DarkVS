@@ -10,9 +10,10 @@ public class ClickGui extends Screen {
 
     private final ClickGuiState state;
     private final ClickGuiRenderer renderer;
+    private final NewClickGuiRenderer newRenderer;
     private final ClickGuiInputHandler inputHandler;
 
-      
+
     private final SmoothAnimation openAnimation = new SmoothAnimation(0f, 14f);
     private boolean closing = false;
 
@@ -20,7 +21,15 @@ public class ClickGui extends Screen {
         super(Text.of("darkvisuals-clickgui"));
         this.state = new ClickGuiState();
         this.renderer = new ClickGuiRenderer();
+        this.newRenderer = new NewClickGuiRenderer();
         this.inputHandler = new ClickGuiInputHandler(this.state);
+    }
+
+    /** New стиль включается настройкой GUI Style в модуле UI. */
+    private boolean isNewStyle() {
+        var ui = dev.darkvisuals.darkvisuals.getInstance().getModuleManager()
+                .getModule(dev.darkvisuals.modules.impl.render.UI.class);
+        return ui != null && ui.getGuiStyle() == dev.darkvisuals.modules.impl.render.UI.GuiStyle.New;
     }
 
     @Override
@@ -37,7 +46,11 @@ public class ClickGui extends Screen {
         super.render(context, mouseX, mouseY, delta);
 
         float progress = openAnimation.update();
-        renderer.render(context, mouseX, mouseY, delta, this.client.getWindow(), state, progress);
+        if (isNewStyle()) {
+            newRenderer.render(context, mouseX, mouseY, delta, this.client.getWindow(), state, progress);
+        } else {
+            renderer.render(context, mouseX, mouseY, delta, this.client.getWindow(), state, progress);
+        }
 
          
         if (closing && progress <= 0.02f) {

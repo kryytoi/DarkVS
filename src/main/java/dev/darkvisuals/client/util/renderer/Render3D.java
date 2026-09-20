@@ -10,6 +10,7 @@ import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Box;
+import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
@@ -463,6 +464,79 @@ public class Render3D implements Wrapper {
 		float a = color.getAlpha() / 255.0f;
 
 		 
+		buffer.vertex(matrix, (float) bottomLeft.x, (float) bottomLeft.y, (float) bottomLeft.z)
+				.texture(0.0f, 1.0f).color(r, g, b, a);
+		buffer.vertex(matrix, (float) bottomRight.x, (float) bottomRight.y, (float) bottomRight.z)
+				.texture(1.0f, 1.0f).color(r, g, b, a);
+		buffer.vertex(matrix, (float) topRight.x, (float) topRight.y, (float) topRight.z)
+				.texture(1.0f, 0.0f).color(r, g, b, a);
+		buffer.vertex(matrix, (float) topLeft.x, (float) topLeft.y, (float) topLeft.z)
+				.texture(0.0f, 0.0f).color(r, g, b, a);
+
+		BufferRenderer.drawWithGlobalProgram(buffer.end());
+
+	 RenderSystem.enableCull();
+	 RenderSystem.depthMask(true);
+	 RenderSystem.disableBlend();
+	}
+
+	/**
+	 * Декаль на грани блока: лежит на стороне side, как картина,
+	 * и не поворачивается за камерой. Ограничивающий прямоугольник
+	 * остаётся горизонтальным/вертикальным относительно мира.
+	 */
+	public static void drawDecalTexture(MatrixStack matrices, Vec3d worldPos, Direction side, float size, Identifier texture, Color color) {
+		RenderSystem.setShader(ShaderProgramKeys.POSITION_TEX_COLOR);
+		RenderSystem.setShaderTexture(0, texture);
+		RenderSystem.enableBlend();
+		RenderSystem.blendFuncSeparate(
+				GlStateManager.SrcFactor.SRC_ALPHA, GlStateManager.DstFactor.ONE_MINUS_SRC_ALPHA,
+				GlStateManager.SrcFactor.ONE, GlStateManager.DstFactor.ZERO
+		);
+		RenderSystem.disableCull();
+		RenderSystem.enableDepthTest();
+		RenderSystem.depthFunc(GL11.GL_LEQUAL);
+		RenderSystem.depthMask(false);
+
+		Vec3d normal = Vec3d.of(side.getVector());
+		Vec3d worldUp = new Vec3d(0, 1, 0);
+
+		Vec3d right;
+		Vec3d up;
+		if (side.getAxis() == Direction.Axis.Y) {
+			// фиксированная горизонтальная ось — поставленная декаль не
+			// дёргается вслед за камерой, как картина на полу
+			right = new Vec3d(1, 0, 0);
+			up = normal.crossProduct(right).normalize();
+		} else {
+			right = worldUp.crossProduct(normal).normalize();
+			if (right.lengthSquared() < 1.0E-6) right = new Vec3d(1, 0, 0);
+			up = normal.crossProduct(right).normalize();
+		}
+
+		right = right.multiply(size);
+		up = up.multiply(size);
+
+		Vec3d topLeft = worldPos.add(up).subtract(right);
+		Vec3d topRight = worldPos.add(up).add(right);
+		Vec3d bottomLeft = worldPos.subtract(up).subtract(right);
+		Vec3d bottomRight = worldPos.subtract(up).add(right);
+
+		Vec3d cameraPosVec = mc.getEntityRenderDispatcher().camera.getPos();
+		topLeft = topLeft.subtract(cameraPosVec);
+		topRight = topRight.subtract(cameraPosVec);
+		bottomLeft = bottomLeft.subtract(cameraPosVec);
+		bottomRight = bottomRight.subtract(cameraPosVec);
+
+		Matrix4f matrix = matrices.peek().getPositionMatrix();
+		Tessellator tessellator = Tessellator.getInstance();
+		BufferBuilder buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
+
+		float r = color.getRed() / 255.0f;
+		float g = color.getGreen() / 255.0f;
+		float b = color.getBlue() / 255.0f;
+		float a = color.getAlpha() / 255.0f;
+
 		buffer.vertex(matrix, (float) bottomLeft.x, (float) bottomLeft.y, (float) bottomLeft.z)
 				.texture(0.0f, 1.0f).color(r, g, b, a);
 		buffer.vertex(matrix, (float) bottomRight.x, (float) bottomRight.y, (float) bottomRight.z)
