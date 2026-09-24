@@ -55,6 +55,7 @@ public class HitEffect extends Module {
     private static final int MAX_FX = 400;
     private static final float GRAVITY = 16f;
     private static final long GLASS_FREEZE_MS = 90L;
+    private static final double HIT_SURFACE_OFFSET = 0.035D;
 
     private final List<Fx> effects = new CopyOnWriteArrayList<>();
     private long lastNanos = System.nanoTime();
@@ -74,29 +75,70 @@ public class HitEffect extends Module {
     @EventHandler
     private void onAttack(EventAttackEntity e) {
         if (fullNullCheck()) return;
+        if (e.getPlayer() != mc.player) return;
         if (!(e.getTarget() instanceof LivingEntity target) || target == mc.player) return;
-        if (!target.isAlive() || !e.isEffectsAllowed()) return;
+        if (!target.isAlive() || target.isRemoved() || !e.isEffectsAllowed()) return;
         if (!e.canProcess()) return;
         if (onlyPlayers.getValue() && !(target instanceof PlayerEntity)) return;
-        if (effects.size() > MAX_FX) return;
+        if (effects.size() >= MAX_FX) return;
 
         Vec3d hit = findHitPos(target);
+
         switch (style.getValue()) {
             case BLOOD -> spawnBlood(hit);
             case IMPACT -> effects.add(new Impact(hit));
             case GLASS -> spawnGlass(hit);
             case PULSE -> effects.add(new Pulse(target, hit));
         }
+
         if (sound.getValue()) playSound(hit);
     }
 
     private Vec3d findHitPos(LivingEntity entity) {
-        HitResult ch = mc.crosshairTarget;
-        if (ch instanceof EntityHitResult ehr && ehr.getEntity() == entity) return ehr.getPos();
-        Vec3d start = mc.player.getEyePos();
-        Vec3d end = start.add(mc.player.getRotationVec(1f).multiply(6.0));
-        Optional<Vec3d> res = entity.getBoundingBox().raycast(start, end);
-        return res.orElse(entity.getPos().add(0, entity.getHeight() / 2f, 0));
+        Vec3d eye = mc.player.getEyePos();
+        Box box = entity.getBoundingBox().expand(0.08D);
+
+        if (mc.crosshairTarget instanceof EntityHitResult ehr && ehr.getEntity() == entity) {
+            return pushOutside(box, eye, ehr.getPos());
+        }
+
+        Vec3d center = box.getCenter();
+        Optional<Vec3d> traced = box.raycast(eye, center);
+        if (traced.isPresent()) {
+            return pushOutside(box, eye, traced.get());
+        }
+
+        Vec3d toEye = eye.subtract(center);
+        if (toEye.lengthSquared() < 1.0E-6D) {
+            return center.add(0.0D, entity.getHeight() * 0.35D, 0.0D);
+        }
+
+        Vec3d normal = toEye.normalize();
+        double hx = box.getLengthX() * 0.5D;
+        double hy = box.getLengthY() * 0.5D;
+        double hz = box.getLengthZ() * 0.5D;
+
+        double tx = Math.abs(normal.x) < 1.0E-6D ? Double.POSITIVE_INFINITY : hx / Math.abs(normal.x);
+        double ty = Math.abs(normal.y) < 1.0E-6D ? Double.POSITIVE_INFINITY : hy / Math.abs(normal.y);
+        double tz = Math.abs(normal.z) < 1.0E-6D ? Double.POSITIVE_INFINITY : hz / Math.abs(normal.z);
+
+        double scale = Math.min(tx, Math.min(ty, tz));
+        return center.add(normal.multiply(scale + HIT_SURFACE_OFFSET));
+    }
+
+    private Vec3d pushOutside(Box box, Vec3d eye, Vec3d hit) {
+        Vec3d center = box.getCenter();
+        Vec3d normal = hit.subtract(center);
+
+        if (normal.lengthSquared() < 1.0E-6D) {
+            normal = hit.subtract(eye);
+        }
+
+        if (normal.lengthSquared() < 1.0E-6D) {
+            normal = new Vec3d(0.0D, 1.0D, 0.0D);
+        }
+
+        return hit.add(normal.normalize().multiply(HIT_SURFACE_OFFSET));
     }
 
     private void spawnBlood(Vec3d hit) {
