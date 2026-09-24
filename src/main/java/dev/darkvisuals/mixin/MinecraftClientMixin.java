@@ -18,6 +18,19 @@ public abstract class MinecraftClientMixin implements Wrapper {
 
     private static int tickCounter = 0;
 
+    @Inject(method = "setScreen", at = @At("HEAD"), cancellable = true)
+    private void darkvisuals$replaceDeathScreen(net.minecraft.client.gui.screen.Screen screen, CallbackInfo ci) {
+        if (!(screen instanceof net.minecraft.client.gui.screen.DeathScreen)) return;
+        if (!dev.darkvisuals.modules.impl.render.CustomDeathScreen.shouldReplace()) return;
+
+        ci.cancel();
+        dev.darkvisuals.client.ui.death.DarkDeathScreen custom =
+                new dev.darkvisuals.client.ui.death.DarkDeathScreen(
+                        ((dev.darkvisuals.mixin.accessors.IDeathScreenAccessor) screen).darkvisuals$getMessage(),
+                        ((dev.darkvisuals.mixin.accessors.IDeathScreenAccessor) screen).darkvisuals$isHardcore());
+        ((MinecraftClient) (Object) this).setScreen(custom);
+    }
+
     @Inject(method = "tick", at = @At("HEAD"))
     public void tick(CallbackInfo ci) {
         EventTick event = new EventTick();

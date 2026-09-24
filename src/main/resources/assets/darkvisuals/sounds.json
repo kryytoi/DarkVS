@@ -138,5 +138,19 @@
         "name": "darkvisuals:hit3"
       }
     ]
+  },
+  "clickgui_enable": {
+    "sounds": [
+      {
+        "name": "darkvisuals:clickgui/enable"
+      }
+    ]
+  },
+  "clickgui_disable": {
+    "sounds": [
+      {
+        "name": "darkvisuals:clickgui/disable"
+      }
+    ]
   }
 }

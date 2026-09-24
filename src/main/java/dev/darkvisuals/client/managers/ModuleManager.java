@@ -101,6 +101,11 @@ public class ModuleManager implements Wrapper {
                 new HitRange(),
                 new TnTEffect(),
                 new SkyShader(),
+                new Rain(),
+                new ShieldBreakFX(),
+                new CrystalBreakFX(),
+                new CustomWings(),
+                new SoundBasVisual(),
                 new Particles(),
                 new Fireflies(),
                 new FallingLeaves(),
@@ -156,6 +161,9 @@ public class ModuleManager implements Wrapper {
                 new ConsumeTimer(),
                 new PingDisplay(),
                 new Graffity(),
+                new BlockBreakProgress(),
+                new CustomDeathScreen(),
+                new FriendGlow(),
                 new Portal()
         );
 

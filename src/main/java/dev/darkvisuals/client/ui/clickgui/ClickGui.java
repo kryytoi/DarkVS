@@ -21,7 +21,7 @@ public class ClickGui extends Screen {
         super(Text.of("darkvisuals-clickgui"));
         this.state = new ClickGuiState();
         this.renderer = new ClickGuiRenderer();
-        this.newRenderer = new NewClickGuiRenderer();
+        this.newRenderer = NewClickGuiRenderer.getInstance();
         this.inputHandler = new ClickGuiInputHandler(this.state);
     }
 
@@ -35,9 +35,12 @@ public class ClickGui extends Screen {
     @Override
     protected void init() {
         super.init();
-         
+
         if (!closing) {
             openAnimation.setTarget(1f);
+            // New стиль не использует отдельный экран настроек —
+            // сбрасываем возможное «залипшее» значение, иначе ESC не закроет GUI
+            if (isNewStyle()) ClickGuiRenderer.openedSettingsModule = null;
         }
     }
 
@@ -110,7 +113,8 @@ public class ClickGui extends Screen {
          
         if (keyCode == GLFW.GLFW_KEY_ESCAPE
                 && ClickGuiRenderer.openedSettingsModule == null
-                && ClickGuiRenderer.editingStringSetting == null) {
+                && ClickGuiRenderer.editingStringSetting == null
+                && !NewClickGuiRenderer.getInstance().isKeyOrInputFocused()) {
             this.close();
             return true;
         }

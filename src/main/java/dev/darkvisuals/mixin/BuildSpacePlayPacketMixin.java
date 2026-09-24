@@ -1,7 +1,7 @@
 package dev.darkvisuals.mixin;
 
 import dev.darkvisuals.client.managers.BuildSpaceManager;
-import net.minecraft.client.network.ClientPlayNetworkHandler;
+import net.minecraft.client.network.ClientCommonNetworkHandler;
 import net.minecraft.network.packet.Packet;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * сетевом хендлере, а в игровом — работает этот миксин.
  * require = 0: несовпавшая сигнатура просто пропускается, без краша.
  */
-@Mixin(ClientPlayNetworkHandler.class)
+@Mixin(ClientCommonNetworkHandler.class)
 public abstract class BuildSpacePlayPacketMixin {
 
     @Inject(method = "sendPacket(Lnet/minecraft/network/packet/Packet;)V",

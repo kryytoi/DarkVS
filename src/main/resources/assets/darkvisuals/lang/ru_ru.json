@@ -379,5 +379,9 @@
   "module.totempops.description": "Счётчик сломанных тотемов",
   "module.sessionstats.description": "Статистика игровой сессии",
   "module.consumetimer.description": "Прогресс использования предмета",
-  "module.pingdisplay.description": "Пинг в стеклянной панели"
+  "module.pingdisplay.description": "Пинг в стеклянной панели",
+  "module.shieldbreakfx.description": "Эффект при пробитии или отключении щита",
+  "module.crystalbreakfx.description": "Взрыв кристаллов с осколками и ударной волной",
+  "module.customwings.description": "3D анимированные крылья на спине",
+  "module.soundbasvisual.description": "Визуализация басов музыки и звуков в небе"
 }

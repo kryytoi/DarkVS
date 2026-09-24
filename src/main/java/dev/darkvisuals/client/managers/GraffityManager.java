@@ -64,6 +64,12 @@ public final class GraffityManager {
                 names.add(name);
             }
 
+            // Custom user-made sprays from {gameDir}/darkvisuals/grafi/*.png
+            loadCustomTextures();
+
+            // Custom user-made sprays from {gameDir}/darkvisuals/grafi/*.png
+            loadCustomTextures();
+
             loaded = true;
             darkvisuals.LOGGER.info("[Graffity] Загружено граффити: {}", textures.size());
         } catch (Exception e) {
@@ -115,6 +121,32 @@ public final class GraffityManager {
 
     /** Зарегистрировать граффити во время игры (для теста/аддонов) —
      *  принимает уже готовую NativeImage, регистрирует её в менеджере текстур. */
+    /** Loads user-made PNGs from {gameDir}/darkvisuals/grafi into the texture list. */
+    private static void loadCustomTextures() {
+        try {
+            java.nio.file.Path dir = dev.darkvisuals.darkvisuals.getInstance().getGlobalsDir().toPath().resolve(GRAFI_DIR);
+            if (!java.nio.file.Files.isDirectory(dir)) return;
+            try (var files = java.nio.file.Files.list(dir)) {
+                files.filter(pf -> pf.toString().toLowerCase(java.util.Locale.ROOT).endsWith(".png"))
+                     .sorted()
+                     .forEach(pf -> {
+                         try {
+                             String name = pf.getFileName().toString();
+                             name = name.substring(0, name.lastIndexOf('.'));
+                             if (names.contains(name)) return;
+                             net.minecraft.client.texture.NativeImage img = net.minecraft.client.texture.NativeImage.read(
+                                     java.nio.file.Files.newInputStream(pf));
+                             Identifier id = Identifier.of("darkvisuals", GRAFI_DIR + "/" + name);
+                             MinecraftClient.getInstance().getTextureManager().registerTexture(id, new net.minecraft.client.texture.NativeImageBackedTexture(img));
+                             textures.add(id);
+                             names.add(name);
+                         } catch (Exception ignored) {}
+                     });
+            }
+        } catch (Exception e) {
+            darkvisuals.LOGGER.error("[Graffity] custom textures load failed", e);
+        }
+    }
     public static Identifier registerDynamic(String name, NativeImage image) {
         Identifier id = Identifier.of("darkvisuals", GRAFI_DIR + "/" + name);
         MinecraftClient.getInstance().getTextureManager().registerTexture(

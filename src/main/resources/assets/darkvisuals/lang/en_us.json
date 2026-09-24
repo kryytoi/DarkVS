@@ -376,5 +376,9 @@
   "module.totempops.description": "Totem pop counter",
   "module.sessionstats.description": "Play session statistics",
   "module.consumetimer.description": "Item use progress",
-  "module.pingdisplay.description": "Ping in a glass panel"
+  "module.pingdisplay.description": "Ping in a glass panel",
+  "module.shieldbreakfx.description": "Shield break and disable visual effects",
+  "module.crystalbreakfx.description": "Crystal explosion with shards and shockwaves",
+  "module.customwings.description": "3D animated wings on player back",
+  "module.soundbasvisual.description": "Sky music bass and sound visualizer"
 }

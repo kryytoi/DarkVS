@@ -3,6 +3,7 @@ package dev.darkvisuals.modules.impl.render;
 import dev.darkvisuals.client.events.impl.EventKey;
 import dev.darkvisuals.client.events.impl.EventRender3D;
 import dev.darkvisuals.client.managers.GraffityManager;
+import dev.darkvisuals.client.ui.graffity.GraffityEditorScreen;
 import dev.darkvisuals.client.ui.graffity.GraffityWheelScreen;
 import dev.darkvisuals.client.util.perf.Perf;
 import dev.darkvisuals.client.util.renderer.Render3D;
@@ -67,6 +68,8 @@ public class Graffity extends Module {
     private static final long TTL_MILLIS = TimeUnit.MINUTES.toMillis(20);
 
     // бинд, по которому открывается круг выбора граффити
+    // Key that opens the graffiti editor (paint your own decal).
+    private final BindSetting editorBind = new BindSetting("Graffity editor bind", new Bind(GLFW.GLFW_KEY_H, false));
     private final BindSetting wheelBind = new BindSetting("Бинды круга", new Bind(GLFW.GLFW_KEY_G, false));
 
     private final NumberSetting size = new NumberSetting("Размер", 2.0f, 0.5f, 8.0f, 0.25f);
@@ -74,11 +77,16 @@ public class Graffity extends Module {
     public Graffity() {
         super("Graffity", Category.Render, I18n.translate("module.graffity.description"));
         getSettings().add(wheelBind);
+        getSettings().add(editorBind);
         getSettings().add(size);
     }
 
     public BindSetting getWheelBind() {
         return wheelBind;
+    }
+
+    public BindSetting getEditorBind() {
+        return editorBind;
     }
 
     public List<Decal> getDecals() {
@@ -112,6 +120,19 @@ public class Graffity extends Module {
         }
 
         mc.setScreen(new GraffityWheelScreen(this));
+    }
+
+    @EventHandler
+    public void onEditorKey(EventKey e) {
+        if (fullNullCheck()) return;
+        if (mc.currentScreen != null) return;
+
+        Bind eBind = editorBind.getValue();
+        if (eBind == null || eBind.isEmpty() || eBind.isMouse()) return;
+        if (e.getKey() != eBind.getKey()) return;
+        if (e.getAction() != GLFW.GLFW_PRESS) return;
+
+        mc.setScreen(new GraffityEditorScreen());
     }
 
     @EventHandler

@@ -34,8 +34,7 @@ vec3 skyViewRay(vec2 screenPos) {
     float pitch = uCameraDir.y;
     float cp = cos(pitch);
     vec3 forward = vec3(sin(yaw) * cp, -sin(pitch), cos(yaw) * cp);
-    vec3 worldUp = vec3(0.0, 1.0, 0.0);
-    vec3 right = normalize(cross(forward, worldUp));
+    vec3 right = vec3(-cos(yaw), 0.0, sin(yaw));
     vec3 up = cross(right, forward);
     float aspect = uResolution.x / max(uResolution.y, 1.0);
     float tanHalf = tan(radians(uFov) * 0.5);

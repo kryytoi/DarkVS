@@ -182,6 +182,7 @@ private float globalAlpha = 1f;
         List<Module> out = new ArrayList<>();
         if (q.isEmpty()) return out;
         for (Module m : darkvisuals.getInstance().getModuleManager().getModules()) {
+            if (dev.darkvisuals.liteapi.LiteApi.isBlocked(m.getName())) continue;
             String raw = m.getName() == null ? "" : m.getName().toLowerCase();
             String tr = I18n.translate(m.getName()).toLowerCase();
             if (raw.contains(q) || tr.contains(q)) out.add(m);

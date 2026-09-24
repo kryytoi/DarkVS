@@ -25,6 +25,7 @@
     "EntityRenderDispatcherMixin",
     "BlockEntityRenderDispatcherMixin",
     "accessors.IGameRenderer",
+    "accessors.IDeathScreenAccessor",
     "accessors.IMinecraftClientSessionAccessor"
   ],
   "client": [

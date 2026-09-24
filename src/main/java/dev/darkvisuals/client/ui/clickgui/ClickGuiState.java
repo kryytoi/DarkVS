@@ -7,6 +7,7 @@ import dev.darkvisuals.modules.api.Module;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.ArrayList;
 import java.util.Collections;
 
 public class ClickGuiState {
@@ -32,7 +33,12 @@ public class ClickGuiState {
     }
 
     public List<Module> getModules(Category category) {
-        if (category == Category.Theme) return Collections.emptyList();  
-        return darkvisuals.getInstance().getModuleManager().getModules(category);
+    if (category == Category.Theme) return Collections.emptyList();
+    List<Module> out = new ArrayList<>();
+    for (Module m : darkvisuals.getInstance().getModuleManager().getModules(category)) {
+        if (dev.darkvisuals.liteapi.LiteApi.isBlocked(m.getName())) continue; // <- вставить
+        out.add(m);
+    }
+    return out;
     }
 }

@@ -8,6 +8,6 @@ uniform mat4 ProjMat;
 out vec2 ScreenPos;
 
 void main() {
-    gl_Position = ProjMat * ModelViewMat * vec4(Position, 1.0);
+    gl_Position = vec4(Position.xy, 1.0, 1.0);
     ScreenPos = Position.xy;
 }

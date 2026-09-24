@@ -10,7 +10,17 @@
       "PowerShell($log = \"C:\\\\Users\\\\MrDarko\\\\Desktop\\\\DarkVS\\\\DarkVS\\\\run\\\\logs\\\\latest.log\"; $lines = Get-Content $log; $idx = 0; $found = $false; foreach \\($l in $lines\\) { $idx++; if \\($l -match \"GL_INVALID_VALUE\"\\) { if \\(-not $found\\) { $start = [Math]::Max\\(1, $idx - 12\\); $found = $true } } }; if \\($found\\) { $lines | Select-Object -Skip \\($start - 1\\) -First 22 } else { Write-Output \"no GL errors found\" })",
       "PowerShell($log = \"C:\\\\Users\\\\MrDarko\\\\Desktop\\\\DarkVS\\\\DarkVS\\\\run\\\\logs\\\\latest.log\"; $lines = Get-Content $log; $gl = \\($lines | Select-String \"GL_INVALID_VALUE\"\\).Count; $last = $lines | Select-Object -Last 8; Write-Output \"GL_INVALID_VALUE count: $gl\"; Write-Output \"--- last lines:\"; $last)",
       "PowerShell(cd \"C:\\\\Users\\\\MrDarko\\\\Desktop\\\\DarkVS\\\\DarkVS\"; & .\\\\gradlew.bat processResources --console=plain 2>&1 | Select-String -Pattern \"BUILD SUCC|BUILD FAIL\" | Select-Object -First 3; $out = \"C:\\\\Users\\\\MrDarko\\\\Desktop\\\\DarkVS\\\\DarkVS\\\\build\\\\resources\\\\main\\\\assets\\\\darkvisuals\\\\grafi\\\\test_tag.png\"; if \\(Test-Path $out\\) { Write-Output \\(\"copied to build: \" + \\(Get-Item $out\\).Length + \" bytes\"\\) } else { Write-Output \"NOT in build\" })",
-      "PowerShell($d = \"src\\\\main\\\\java\\\\dev\\\\darkvisuals\\\\emotes\"; Get-ChildItem $d | ForEach-Object { \"=== $\\($_.Name\\) — $\\(\\(Get-Content $_.FullName -Encoding UTF8\\).Count\\) lines ===\" })"
+      "PowerShell($d = \"src\\\\main\\\\java\\\\dev\\\\darkvisuals\\\\emotes\"; Get-ChildItem $d | ForEach-Object { \"=== $\\($_.Name\\) — $\\(\\(Get-Content $_.FullName -Encoding UTF8\\).Count\\) lines ===\" })",
+      "Bash(./gradlew compileJava --offline -q)",
+      "Bash(cmd.exe /c \"gradlew.bat compileJava --offline -q\")",
+      "Bash(cmd.exe //c \"gradlew.bat compileJava --offline\")",
+      "Bash(cd C:/Users/MrDarko/Desktop/DarkVS/DarkVS && ls build/classes/java/ 2>/dev/null && find ~/.gradle/caches -name \"*.jar\" 2>/dev/null | wc -l)",
+      "Bash(cd C:/Users/MrDarko/Desktop/DarkVS/DarkVS && find ~/.gradle/caches -name '*.jar' | grep -Ev 'sources|javadoc' > /tmp/cp.txt && wc -l /tmp/cp.txt)",
+      "Bash(echo \"exit=$?\")",
+      "Bash(cp C:/tmp/out/dev/darkvisuals/client/ui/clickgui/*.class build/classes/java/main/dev/darkvisuals/client/ui/clickgui/)",
+      "Bash(cp C:/tmp/out/dev/darkvisuals/modules/impl/render/UI.class build/classes/java/main/dev/darkvisuals/modules/impl/render/)",
+      "Bash(cp C:/tmp/out/dev/darkvisuals/client/managers/DarkaManager*.class build/classes/java/main/dev/darkvisuals/client/managers/)",
+      "Read(//c/Users/MrDarko/Downloads/src/main/**)"
     ]
   }
 }

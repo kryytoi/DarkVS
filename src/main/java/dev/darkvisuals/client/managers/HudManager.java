@@ -7,6 +7,7 @@ import dev.darkvisuals.modules.api.Module;
 import dev.darkvisuals.client.events.impl.EventMouse;
 import dev.darkvisuals.client.events.impl.EventRender2D;
 import dev.darkvisuals.client.ui.hud.HudElement;
+import dev.darkvisuals.client.ui.hud.HudEditorScreen;
 import dev.darkvisuals.client.ui.hud.windows.Window;
 import dev.darkvisuals.client.util.render.Wrapper;
 import dev.darkvisuals.modules.settings.Setting;
@@ -79,7 +80,7 @@ public class HudManager implements Wrapper {
         if (Module.fullNullCheck()) return;
 
         if (window != null) {
-            if (!(mc.currentScreen instanceof ChatScreen)) window.reset();
+            if (!HudElement.isEditContext()) window.reset();
 
             if (window.closed()) {
                 window = null;
@@ -92,7 +93,7 @@ public class HudManager implements Wrapper {
 
     @EventHandler
     public void onMouse(EventMouse e) {
-        if (!(mc.currentScreen instanceof ChatScreen) || Module.fullNullCheck()) return;
+        if (!HudElement.isEditContext() || Module.fullNullCheck()) return;
 
         if (e.getAction() == 1) {
             if (window != null) {

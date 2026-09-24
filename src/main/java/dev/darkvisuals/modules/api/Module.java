@@ -53,8 +53,14 @@ public abstract class Module implements Wrapper {
     }
 
     public void setToggled(boolean toggled) {
-        if (toggled) onEnable();
-        else onDisable();
+    if (toggled && dev.darkvisuals.liteapi.LiteApi.isBlocked(name)) {
+        if (!fullNullCheck()) {
+            darkvisuals.getInstance().getNotifyManager().add(new Notify(NotifyIcons.failIcon, "Функция заблокирована сервером", 1500));
+        }
+        return;
+    }
+    if (toggled) onEnable();
+    else onDisable();
          
         try {
             dev.darkvisuals.client.managers.AutoSaveManager asm = darkvisuals.getInstance().getAutoSaveManager();

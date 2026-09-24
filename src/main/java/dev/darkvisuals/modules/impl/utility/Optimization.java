@@ -95,6 +95,16 @@ public class Optimization extends Module {
     public @NotNull NumberSetting maxRenderDistance = new NumberSetting("Макс. дальность прорисовки", 8f, 4f, 32f, 1f, adaptiveRenderDistance::getValue);
 
 
+    // ===== New optimization options =====
+    private static Optimization instance;
+
+    public @NotNull BooleanSetting hudOptimize = new BooleanSetting("Optimizaciya HUD", false);
+    public @NotNull BooleanSetting hudFastBackground = new BooleanSetting("Ploskiy fon HUD", false, hudOptimize::getValue);
+    public @NotNull BooleanSetting hudStaticAnimations = new BooleanSetting("Statichnye animacii HUD", false, hudOptimize::getValue);
+    public @NotNull BooleanSetting hudSlowCounters = new BooleanSetting("Redkie obnovleniya schetchikov", false, hudOptimize::getValue);
+    public @NotNull BooleanSetting noWeather = new BooleanSetting("Otklyuchit pogodu", false);
+    public @NotNull BooleanSetting limitFps = new BooleanSetting("Ogranichit FPS", false);
+    public @NotNull NumberSetting fpsLimit = new NumberSetting("Limit FPS", 120f, 30f, 360f, 5f, limitFps::getValue);
     private double baseEntityDistance = 1.0;
     private boolean adaptiveActive = false;
 
@@ -122,6 +132,14 @@ public class Optimization extends Module {
         getSettings().add(fpsProtectThreshold);
         getSettings().add(adaptiveRenderDistance);
         getSettings().add(maxRenderDistance);
+        getSettings().add(hudOptimize);
+        getSettings().add(hudFastBackground);
+        getSettings().add(hudStaticAnimations);
+        getSettings().add(hudSlowCounters);
+        getSettings().add(noWeather);
+        getSettings().add(limitFps);
+        getSettings().add(fpsLimit);
+        instance = this;
     }
 
     @Override
@@ -161,7 +179,7 @@ public class Optimization extends Module {
             mc.options.getAo().setValue(false);
             mc.options.getBobView().setValue(false);
             mc.options.getMipmapLevels().setValue(0);
-            mc.options.getMaxFps().setValue(260);
+            mc.options.getMaxFps().setValue(getEffectiveMaxFps());
             mc.options.getEnableVsync().setValue(false);
 
 
@@ -313,6 +331,36 @@ public class Optimization extends Module {
     }
 
 
+    public static Optimization getInstanceSafe() {
+        return instance;
+    }
+
+    /** Effective FPS cap: user limit if enabled, otherwise 260. */
+    public int getEffectiveMaxFps() {
+        return limitFps.getValue() ? Math.max(30, Math.round(fpsLimit.getValue())) : 260;
+    }
+
+    // HUD optimization flags (queried from render hot paths, no module lookups).
+    public static boolean isHudFastBackground() {
+        Optimization o = instance;
+        return o != null && o.isToggled() && o.hudOptimize.getValue() && o.hudFastBackground.getValue();
+    }
+
+    public static boolean isHudStaticAnimations() {
+        Optimization o = instance;
+        return o != null && o.isToggled() && o.hudOptimize.getValue() && o.hudStaticAnimations.getValue();
+    }
+
+    public static boolean isHudSlowCounters() {
+        Optimization o = instance;
+        return o != null && o.isToggled() && o.hudOptimize.getValue() && o.hudSlowCounters.getValue();
+    }
+
+    public static boolean isWeatherHidden() {
+        Optimization o = instance;
+        return o != null && o.isToggled() && o.noWeather.getValue();
+    }
+
     public boolean isFpsProtectorActive() { return isToggled() && fpsProtector.getValue(); }
 
     /**
@@ -351,7 +399,7 @@ public class Optimization extends Module {
 
         try {
             if (focused) {
-                mc.options.getMaxFps().setValue(260);
+                mc.options.getMaxFps().setValue(getEffectiveMaxFps());
             } else {
                 int bg = Math.max(1, Math.round(backgroundFps.getValue()));
                 mc.options.getMaxFps().setValue(bg);

@@ -308,11 +308,46 @@ public class ClickGuiInputHandler {
      
      
      
+    public static String getClipboard() {
+        try {
+            var client = MinecraftClient.getInstance();
+            if (client != null && client.keyboard != null) {
+                String c = client.keyboard.getClipboard();
+                if (c != null && !c.isEmpty()) return c;
+            }
+        } catch (Throwable ignored) {}
+        try {
+            var client = MinecraftClient.getInstance();
+            if (client != null && client.getWindow() != null) {
+                String c = GLFW.glfwGetClipboardString(client.getWindow().getHandle());
+                if (c != null && !c.isEmpty()) return c;
+            }
+        } catch (Throwable ignored) {}
+        return "";
+    }
+
     public boolean keyPressed(int k, int m) {
         boolean enter = k == GLFW.GLFW_KEY_ENTER || k == GLFW.GLFW_KEY_KP_ENTER;
+        boolean ctrl = net.minecraft.client.gui.screen.Screen.hasControlDown() || (m & GLFW.GLFW_MOD_CONTROL) != 0;
+        boolean paste = net.minecraft.client.gui.screen.Screen.isPaste(k) || (ctrl && k == GLFW.GLFW_KEY_V);
+
+        if (isNewStyle() && newR().handleKeyPressed(k, m)) return true;
 
         if (editingStringSetting != null) {
             StringSetting ss = editingStringSetting;
+            if (paste) {
+                String clip = getClipboard();
+                if (clip != null && !clip.isEmpty()) {
+                    String clean = clip.trim().replace("\r", "").replace("\n", "");
+                    String cur = ss.getValue() == null ? "" : ss.getValue();
+                    if (cur.length() + clean.length() <= 256) {
+                        ss.setValue(cur + clean);
+                    } else {
+                        ss.setValue(clean.length() <= 256 ? clean : clean.substring(0, 256));
+                    }
+                }
+                return true;
+            }
             if (k == GLFW.GLFW_KEY_BACKSPACE) {
                 String v = ss.getValue();
                 if (v != null && !v.isEmpty()) ss.setValue(v.substring(0, v.length() - 1));
@@ -353,6 +388,8 @@ public class ClickGuiInputHandler {
     }
 
     public boolean charTyped(char c, int m) {
+        if (isNewStyle() && newR().handleCharTyped(c)) return true;
+
         if (Character.isISOControl(c)) return editingStringSetting != null || searchInputFocused
                 || friendInputFocused || markerFocusedField != 0 || configInputFocused;
 
@@ -360,7 +397,7 @@ public class ClickGuiInputHandler {
             StringSetting ss = editingStringSetting;
             if (ss.isOnlyDigit() && !Character.isDigit(c)) return true;
             String cur = ss.getValue() == null ? "" : ss.getValue();
-            if (cur.length() < 32) ss.setValue(cur + c);
+            if (cur.length() < 256) ss.setValue(cur + c);
             return true;
         }
         if (searchInputFocused) {

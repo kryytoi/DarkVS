@@ -21,6 +21,7 @@ import lombok.Setter;
 import meteordevelopment.orbit.EventHandler;
 
 import net.minecraft.client.gui.screen.ChatScreen;
+import dev.darkvisuals.client.ui.hud.HudEditorScreen;
 import net.minecraft.client.resource.language.I18n;
 
 import java.awt.*;
@@ -62,7 +63,7 @@ public abstract class HudElement extends Module {
             }
 
              
-            if (!(mc.currentScreen instanceof ChatScreen)) {
+            if (!isEditContext()) {
                 dragging = false;
                 button = false;
                 darkvisuals.getInstance().getHudManager().setCurrentDragging(null);
@@ -131,7 +132,7 @@ public abstract class HudElement extends Module {
         }
 
          
-        if (mc.currentScreen instanceof ChatScreen && cornerAnimation.getValue() > 0) {
+        if (isEditContext() && cornerAnimation.getValue() > 0) {
             float animationValue = cornerAnimation.getValue();
             float animatedCornerSize = 16f * animationValue;  
             int alpha = (int) (255 * animationValue);  
@@ -156,7 +157,7 @@ public abstract class HudElement extends Module {
         }
 
          
-        if (mc.currentScreen instanceof ChatScreen && dragging) {
+        if (isEditContext() && dragging) {
             float sw = mc.getWindow().getScaledWidth();
             float sh = mc.getWindow().getScaledHeight();
             float edgePad = 4f;
@@ -195,7 +196,7 @@ public abstract class HudElement extends Module {
         }
 
 
-        if (mc.currentScreen instanceof ChatScreen) {
+        if (isEditContext()) {
             String text = I18n.translate("RMB.setting");
             int textWidth = mc.textRenderer.getWidth(text);
             int x = 10;
@@ -237,7 +238,7 @@ public abstract class HudElement extends Module {
 
     @EventHandler
     public void onMouse(EventMouse e) {
-        if (!(mc.currentScreen instanceof ChatScreen) || fullNullCheck()) return;
+        if (!isEditContext() || fullNullCheck()) return;
 
         if (e.getAction() == 0) {
             button = false;
@@ -278,6 +279,10 @@ public abstract class HudElement extends Module {
                 }
             }
         }
+    }
+
+    public static boolean isEditContext() {
+        return mc.currentScreen instanceof ChatScreen || HudEditorScreen.isOpen();
     }
 
     public float getX() {
