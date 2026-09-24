@@ -164,7 +164,8 @@ public class ModuleManager implements Wrapper {
                 new BlockBreakProgress(),
                 new CustomDeathScreen(),
                 new FriendGlow(),
-                new Portal()
+                new Portal(),
+                new HitEffect()
         );
 
         for (Module module : modules) {

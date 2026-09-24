@@ -27,7 +27,9 @@ public class CommandManager implements Wrapper {
                 new GpsCommand(),
                 new PrefixCommand(),
                 new BindCommand(),
-                new ResetCommand()
+                new ResetCommand(),
+                new WatermarkCommand(),
+                new HudCommand()
         );
     }
 

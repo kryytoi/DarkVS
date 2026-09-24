@@ -1,6 +1,7 @@
 package dev.darkvisuals.client.ui.hud.impl;
 
 import dev.darkvisuals.client.events.impl.EventRender2D;
+import dev.darkvisuals.client.ui.hud.CustomLogo;
 import dev.darkvisuals.client.ui.hud.HudElement;
 import dev.darkvisuals.client.ui.hud.HudStyle;
 import dev.darkvisuals.client.managers.ThemeManager;
@@ -10,7 +11,7 @@ import dev.darkvisuals.client.util.renderer.Render2D;
 import dev.darkvisuals.client.util.renderer.fonts.Fonts;
 import dev.darkvisuals.client.util.renderer.fonts.Font;
 import dev.darkvisuals.client.util.perf.Perf;
-import dev.darkvisuals.modules.impl.utility.Optimization;
+import dev.darkvisuals.modules.impl.render.HUD;
 
 import net.minecraft.client.network.PlayerListEntry;
 import net.minecraft.client.util.math.MatrixStack;
@@ -29,19 +30,10 @@ public class Watermark extends HudElement implements ThemeManager.ThemeChangeLis
 
     private float totalWidth, totalHeight;
 
-    // плавные значения FPS/пинга — цифры «докручиваются», а не прыгают
     private float displayFps = 60f;
     private float displayPing = 0f;
 
-    // собственная анимация наведения (hover в базовом классе приватный)
     private final Animation wmHover = new Animation(300, 1f, false, Easing.SMOOTH_STEP);
-
-    // Cached HUD text: FPS/ping strings are rebuilt only when the rounded value changes.
-    private int cachedFpsShown = -1;
-    private int cachedPingShown = -1;
-    private String cachedFpsText = "";
-    private String cachedPingText = "";
-    private long lastCounterUpdateMs = 0L;
 
     public Watermark() {
         super("Watermark");
@@ -58,6 +50,11 @@ public class Watermark extends HudElement implements ThemeManager.ThemeChangeLis
     @Override
     public void onThemeChanged(ThemeManager.Theme theme) {
         applyTheme(theme);
+    }
+
+    private String wmTitle() {
+        HUD hud = HUD.getInstance();
+        return hud != null ? hud.getWatermarkName() : "Dark Visuals";
     }
 
     private String getUsername() {
@@ -80,7 +77,6 @@ public class Watermark extends HudElement implements ThemeManager.ThemeChangeLis
         return 0;
     }
 
-    /** Цвет FPS: зелёный -> жёлтый -> красный по величине. */
     private Color fpsColor(float fps) {
         if (fps >= 120f) return new Color(110, 235, 130);
         if (fps >= 60f) return new Color(235, 205, 100);
@@ -92,12 +88,8 @@ public class Watermark extends HudElement implements ThemeManager.ThemeChangeLis
         if (fullNullCheck() || closed()) return;
         Perf.tryBeginFrame();
         try (var __ = Perf.scopeCpu("Watermark.onRender2D")) {
-            // докручиваем плавные значения к реальным
-            if (!Optimization.isHudSlowCounters() || System.currentTimeMillis() - lastCounterUpdateMs >= 250L) {
-                lastCounterUpdateMs = System.currentTimeMillis();
-                displayFps += (mc.getCurrentFps() - displayFps) * 0.15f;
-                displayPing += (getPing() - displayPing) * 0.12f;
-            }
+            displayFps += (mc.getCurrentFps() - displayFps) * 0.15f;
+            displayPing += (getPing() - displayPing) * 0.12f;
 
             if (HudStyle.isMinimalistic()) {
                 renderMinimalistic(e);
@@ -108,7 +100,6 @@ public class Watermark extends HudElement implements ThemeManager.ThemeChangeLis
         }
     }
 
-    /** Трансформация появления: выезд сверху + лёгкое увеличение при наведении. */
     private void pushEntrance(MatrixStack matrices, float fade) {
         wmHover.update(mouseX() >= getX() && mouseX() <= getX() + getWidth()
                 && mouseY() >= getY() && mouseY() <= getY() + getHeight());
@@ -122,18 +113,30 @@ public class Watermark extends HudElement implements ThemeManager.ThemeChangeLis
         matrices.translate(0f, -slide, 0f);
     }
 
+    private void drawSweep(EventRender2D e, float x, float y, float w, float h, float fade) {
+        if (fade < 0.05f) return;
+        long now = System.currentTimeMillis();
+        float sweepT = (now % 2800L) / 2800f;
+        float segW = Math.max(24f, w * 0.3f);
+        float segX = x + sweepT * (w + segW) - segW;
+
+        var context = e.getContext();
+        context.enableScissor((int) x, (int) (y + h - 3f), (int) (x + w), (int) (y + h + 1f));
+        Color accent = themeManager.getCurrentTheme().getAccentColor();
+        Render2D.drawRoundedRect(context.getMatrices(), segX, y + h - 1.6f, segW, 1.3f, 0.65f,
+                new Color(accent.getRed(), accent.getGreen(), accent.getBlue(), (int) (190 * fade)));
+        context.disableScissor();
+    }
 
     private void renderMinimalistic(EventRender2D e) {
         MatrixStack matrices = e.getContext().getMatrices();
         Font font = Fonts.MEDIUM;
 
-        String title = "Dark Visuals";
+        String title = wmTitle();
         int fpsShown = Math.max(0, Math.round(displayFps));
-        if (fpsShown != cachedFpsShown) { cachedFpsShown = fpsShown; cachedFpsText = fpsShown + " FPS"; }
-        String fps = cachedFpsText;
+        String fps = fpsShown + " FPS";
         int pingShown = Math.max(0, Math.round(displayPing));
-        if (pingShown != cachedPingShown) { cachedPingShown = pingShown; cachedPingText = pingShown + " ms"; }
-        String ping = cachedPingText;
+        String ping = pingShown + " ms";
 
         float fontSize = 7f;
         float iconSize = 15f;
@@ -162,30 +165,22 @@ public class Watermark extends HudElement implements ThemeManager.ThemeChangeLis
         float x = getX(), y = getY();
         float r = totalHeight / 2f;
         float fade = toggledAnimation.getValue();
-        Color liveAccent = themeManager.getCurrentTheme().getAccentColor();
         Color purple = new Color(0xA0, 0x00, 0xFF, (int) (255 * fade));
 
-        if (Optimization.isHudStaticAnimations()) {
-            matrices.push();
-        } else {
-            pushEntrance(matrices, fade);
-        }
+        pushEntrance(matrices, fade);
 
-        if (Optimization.isHudFastBackground()) {
-            Render2D.drawRoundedRect(matrices, x, y, totalWidth, totalHeight, r,
-                    new Color(13, 13, 13, (int) (205 * fade)));
-        } else {
-            Render2D.drawHudBackground(matrices, x, y, totalWidth, totalHeight, r, fade);
-        }
+        Render2D.drawHudBackground(matrices, x, y, totalWidth, totalHeight, r, fade);
+        drawSweep(e, x, y, totalWidth, totalHeight, fade);
 
         float textY = y + (totalHeight - font.getHeight(fontSize)) / 2f;
         float cursor = x + padX;
 
-        // логотип мягко «дышит»
-        float breathe = Optimization.isHudStaticAnimations() ? 1f : 1f + 0.04f * (float) Math.sin(System.currentTimeMillis() / 900.0);
+        Identifier logo = CustomLogo.get(LOGO_TEXTURE);
+        Color logoTint = logo == LOGO_TEXTURE ? purple : withAlpha(Color.WHITE, fade);
+        float breathe = 1f + 0.04f * (float) Math.sin(System.currentTimeMillis() / 900.0);
         float logoSize = iconSize * breathe;
         Render2D.drawTexture(matrices, cursor + (iconSize - logoSize) / 2f, y + (totalHeight - logoSize) / 2f,
-                logoSize, logoSize, 0f, LOGO_TEXTURE, purple);
+                logoSize, logoSize, 0f, logo, logoTint);
         cursor += iconSize + gap;
         Render2D.drawHudText(matrices, font.getFont(fontSize), title, cursor, textY, withAlpha(textColor, fade));
         cursor += titleW + sepGap;
@@ -224,14 +219,12 @@ public class Watermark extends HudElement implements ThemeManager.ThemeChangeLis
         var matrices = e.getContext().getMatrices();
         Font font = Fonts.MEDIUM;
 
-        String title = "DarkVisuals";
+        String title = wmTitle();
         String username = getUsername();
         int fpsShown = Math.max(0, Math.round(displayFps));
-        if (fpsShown != cachedFpsShown) { cachedFpsShown = fpsShown; cachedFpsText = fpsShown + " fps"; }
-        String fps = cachedFpsText;
+        String fps = fpsShown + " fps";
         int pingShown = Math.max(0, Math.round(displayPing));
-        if (pingShown != cachedPingShown) { cachedPingShown = pingShown; cachedPingText = pingShown + " ms"; }
-        String ping = cachedPingText;
+        String ping = pingShown + " ms";
 
         float fontSize = 7f;
         float dotGap = 8f;
@@ -241,9 +234,9 @@ public class Watermark extends HudElement implements ThemeManager.ThemeChangeLis
         float iconGap = 8f;
 
         float titleW = font.getWidth(title, fontSize);
-        float userW  = font.getWidth(username, fontSize);
-        float fpsW   = font.getWidth(fps, fontSize);
-        float pingW  = font.getWidth(ping, fontSize);
+        float userW = font.getWidth(username, fontSize);
+        float fpsW = font.getWidth(fps, fontSize);
+        float pingW = font.getWidth(ping, fontSize);
 
         float sepW = dotGap + dotSize + dotGap;
 
@@ -261,26 +254,18 @@ public class Watermark extends HudElement implements ThemeManager.ThemeChangeLis
         Color liveAccent = themeManager.getCurrentTheme().getAccentColor();
         float fade = toggledAnimation.getValue();
 
-        if (Optimization.isHudStaticAnimations()) {
-            matrices.push();
-        } else {
-            pushEntrance(matrices, fade);
-        }
+        pushEntrance(matrices, fade);
 
-        if (Optimization.isHudFastBackground()) {
-            Render2D.drawRoundedRect(matrices, x, y, totalWidth, totalHeight, r,
-                    new Color(13, 13, 13, (int) (205 * fade)));
-        } else {
-            Render2D.drawHudBackground(matrices, x, y, totalWidth, totalHeight, r, fade);
-        }
+        Render2D.drawHudBackground(matrices, x, y, totalWidth, totalHeight, r, fade);
+        drawSweep(e, x, y, totalWidth, totalHeight, fade);
 
         float iconX = x + paddingX;
         float iconY = y + (totalHeight - iconSize) / 2f;
-        // логотип мягко «дышит»
-        float breathe = Optimization.isHudStaticAnimations() ? 1f : 1f + 0.05f * (float) Math.sin(System.currentTimeMillis() / 850.0);
+        Identifier logo = CustomLogo.get(LOGO_TEXTURE);
+        float breathe = 1f + 0.05f * (float) Math.sin(System.currentTimeMillis() / 850.0);
         float logoSize = iconSize * breathe;
         Render2D.drawTexture(matrices, iconX + (iconSize - logoSize) / 2f, iconY + (iconSize - logoSize) / 2f,
-                logoSize, logoSize, 0f, LOGO_TEXTURE, Color.WHITE);
+                logoSize, logoSize, 0f, logo, Color.WHITE);
 
         float textY = y + (totalHeight - font.getHeight(fontSize)) / 2f;
         float cursorX = iconX + iconSize + iconGap;
@@ -304,20 +289,19 @@ public class Watermark extends HudElement implements ThemeManager.ThemeChangeLis
     }
 
     private void drawGlassText(net.minecraft.client.util.math.MatrixStack matrices,
-                               Font font, float fontSize, String text, float x, float y, float fade) {
+                                Font font, float fontSize, String text, float x, float y, float fade) {
         drawGlassText(matrices, font, fontSize, text, x, y, fade, withAlpha(textColor, fade));
     }
 
     private void drawGlassText(net.minecraft.client.util.math.MatrixStack matrices,
-                               Font font, float fontSize, String text, float x, float y, float fade, Color color) {
+                                Font font, float fontSize, String text, float x, float y, float fade, Color color) {
         Render2D.drawHudText(matrices, font.getFont(fontSize), text, x, y, color);
     }
 
     private float drawSep(net.minecraft.client.util.math.MatrixStack matrices,
-                          float cursorX, float y, float h, float dotGap, float dotSize, Color accent, float fade) {
+                           float cursorX, float y, float h, float dotGap, float dotSize, Color accent, float fade) {
         long now = System.currentTimeMillis();
-        // точки-разделители пульсируют по очереди
-        float pulse = Optimization.isHudStaticAnimations() ? 0.65f : 0.65f + 0.35f * (float) Math.sin(now / 500.0 + cursorX * 0.15);
+        float pulse = 0.65f + 0.35f * (float) Math.sin(now / 500.0 + cursorX * 0.15);
         float dot = dotSize * (0.8f + 0.35f * pulse);
         float dotX = cursorX + dotGap + (dotSize - dot) / 2f;
         float dotY = y + (h - dot) / 2f;

@@ -1,183 +1,98 @@
 package dev.darkvisuals.client.ui.hud;
 
-import dev.darkvisuals.client.managers.HudManager;
 import dev.darkvisuals.client.managers.ThemeManager;
-import dev.darkvisuals.client.util.renderer.Render2D;
-import dev.darkvisuals.client.util.renderer.fonts.Fonts;
 import dev.darkvisuals.darkvisuals;
-import dev.darkvisuals.modules.settings.impl.BooleanSetting;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.text.Text;
+import net.minecraft.client.gui.screen.ChatScreen;
+import org.lwjgl.glfw.GLFW;
 
-import java.awt.Color;
-import java.util.ArrayList;
-import java.util.List;
+public class HudEditorScreen extends ChatScreen {
 
-/**
- * HudEditorScreen - полноэкранный редактор HUD.
- *
- * Открывается по бинду из модуля HUD (по умолчанию J). Пока редактор открыт,
- * все HUD-элементы можно свободно перетаскивать мышью (используется штатный
- * механизм перетаскивания HudElement, для которого редактор считается
- * edit-контекстом наравне с чатом). ПКМ по элементу открывает его настройки,
- * ПКМ по пустому месту - общий список видимости элементов.
- *
- * ESC - выход. Кнопка "Сбросить" раскладывает элементы каскадом.
- */
-public class HudEditorScreen extends Screen {
-
-    private static boolean open = false;
-
-    private boolean resetHovered = false;
-    private boolean closeHovered = false;
+    private static final int GRID = 16;
+    private static boolean isOpen = false;
 
     public HudEditorScreen() {
-        super(Text.of("darkvisuals-hud-editor"));
+        super("");
     }
 
-    /** true, пока открыт редактор - HudElement/HudManager считают это edit-контекстом. */
     public static boolean isOpen() {
-        return open;
+        return isOpen;
     }
 
     @Override
     protected void init() {
         super.init();
-        open = true;
+        isOpen = true;
+        if (chatField != null) {
+            chatField.setVisible(false);
+            chatField.setEditable(false);
+            chatField.setFocused(false);
+        }
+        setFocused(null);
     }
 
     @Override
-    public boolean shouldPause() {
-        return false;
-    }
+    public void render(DrawContext ctx, int mouseX, int mouseY, float delta) {
+        int w = width, h = height;
+        int accent = ThemeManager.getInstance().getCurrentTheme().getAccentColor().getRGB() | 0xFF000000;
 
-    @Override
-    public void removed() {
-        super.removed();
-        open = false;
-    }
+        for (int x = 0; x < w; x += GRID) ctx.fill(x, 0, x + 1, h, 0x12FFFFFF);
+        for (int y = 0; y < h; y += GRID) ctx.fill(0, y, w, y + 1, 0x12FFFFFF);
+        ctx.fill(w / 2, 0, w / 2 + 1, h, 0x33FFFFFF);
+        ctx.fill(0, h / 2, w, h / 2 + 1, 0x33FFFFFF);
 
-    @Override
-    public void close() {
-        open = false;
-        if (this.client != null) this.client.setScreen(null);
+        for (HudElement el : darkvisuals.getInstance().getHudManager().getHudElements()) {
+            if (el.getWidth() <= 0 || el.getHeight() <= 0) continue;
+            int x = (int) el.getX() - 2, y = (int) el.getY() - 2;
+            int ew = (int) el.getWidth() + 4, eh = (int) el.getHeight() + 4;
+            boolean hover = mouseX >= x && mouseX <= x + ew && mouseY >= y && mouseY <= y + eh;
+
+            ctx.drawBorder(x, y, ew, eh, hover || el.isDragging() ? accent : 0x40FFFFFF);
+            if (hover || el.isDragging()) {
+                String label = el.getName() + "  " + (int) el.getX() + ", " + (int) el.getY();
+                ctx.drawTextWithShadow(textRenderer, label, x, y - 10, 0xFFFFFFFF);
+            }
+        }
+
+        ctx.fill(w / 2 - 150, 4, w / 2 + 150, 30, 0x88000000);
+        ctx.drawCenteredTextWithShadow(textRenderer, "Редактор HUD", w / 2, 8, accent);
+        ctx.drawCenteredTextWithShadow(textRenderer,
+                "ЛКМ тащить  |  ПКМ настройки  |  R сброс  |  ESC выход", w / 2, 19, 0xFFAAAAAA);
     }
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        if (keyCode == org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE) {
-            close();
-            return true;
-        }
-        return super.keyPressed(keyCode, scanCode, modifiers);
+        if (keyCode == GLFW.GLFW_KEY_ESCAPE) { close(); return true; }
+        if (keyCode == GLFW.GLFW_KEY_R) { resetLayout(); return true; }
+        return true;
     }
 
-    @Override
-    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        MatrixStack stack = context.getMatrices();
-        Color accent = ThemeManager.getInstance().getCurrentTheme().getAccentColor();
+    @Override public boolean charTyped(char chr, int modifiers) { return true; }
+    @Override public boolean mouseClicked(double mouseX, double mouseY, int button) { return true; }
+    @Override public boolean mouseScrolled(double mx, double my, double h, double v) { return true; }
 
-        // Затемнение мира за редактором
-        Render2D.drawRoundedRect(stack, 0, 0, this.width, this.height, 0f, new Color(5, 5, 8, 150));
-
-        // Сетка
-        int step = 40;
-        Color grid = new Color(255, 255, 255, 18);
-        for (int x = step; x < this.width; x += step) {
-            Render2D.drawRoundedRect(stack, x, 0, 1f, this.height, 0f, grid);
-        }
-        for (int y = step; y < this.height; y += step) {
-            Render2D.drawRoundedRect(stack, 0, y, this.width, 1f, 0f, grid);
-        }
-        // Центральные оси
-        Render2D.drawRoundedRect(stack, this.width / 2f - 0.5f, 0, 1f, this.height, 0f, new Color(255, 255, 255, 45));
-        Render2D.drawRoundedRect(stack, 0, this.height / 2f - 0.5f, this.width, 1f, 0f, new Color(255, 255, 255, 45));
-
-        // Заголовок
-        String title = "HUD Editor";
-        float ts = 10f;
-        float tw = Fonts.SEMIBOLD.getWidth(title, ts);
-        Render2D.drawFont(stack, Fonts.SEMIBOLD.getFont(ts), title, this.width / 2f - tw / 2f, 10f,
-                new Color(255, 255, 255, 235));
-
-        String hint = "ЛКМ - двигать | ПКМ по элементу - настройки | ПКМ по фону - список | ESC - выход";
-        float hs = 7f;
-        float hw = Fonts.MEDIUM.getWidth(hint, hs);
-        Render2D.drawFont(stack, Fonts.MEDIUM.getFont(hs), hint, this.width / 2f - hw / 2f, 26f,
-                new Color(255, 255, 255, 140));
-
-        // Кнопки: Сбросить (слева внизу), Закрыть (справа внизу)
-        float btnW = 90f, btnH = 22f, pad = 12f;
-        float resetX = pad, btnY = this.height - btnH - pad;
-        float closeX = this.width - btnW - pad;
-
-        resetHovered = mouseX >= resetX && mouseX <= resetX + btnW && mouseY >= btnY && mouseY <= btnY + btnH;
-        closeHovered = mouseX >= closeX && mouseX <= closeX + btnW && mouseY >= btnY && mouseY <= btnY + btnH;
-
-        drawButton(stack, "Сбросить", resetX, btnY, btnW, btnH,
-                resetHovered ? accent : new Color(18, 18, 24, 220));
-        drawButton(stack, "Закрыть", closeX, btnY, btnW, btnH,
-                closeHovered ? new Color(200, 60, 60, 235) : new Color(18, 18, 24, 220));
-    }
-
-    private void drawButton(MatrixStack stack, String text, float x, float y, float w, float h, Color bg) {
-        Render2D.drawRoundedRect(stack, x, y, w, h, 6f, bg);
-        float fs = 7.5f;
-        float tw = Fonts.MEDIUM.getWidth(text, fs);
-        Render2D.drawFont(stack, Fonts.MEDIUM.getFont(fs), text, x + (w - tw) / 2f, y + (h - Fonts.MEDIUM.getHeight(fs)) / 2f,
-                new Color(255, 255, 255, 240));
-    }
-
-    @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        float btnW = 90f, btnH = 22f, pad = 12f;
-        float btnY = this.height - btnH - pad;
-
-        if (button == 0) {
-            // Сбросить
-            if (mouseX >= pad && mouseX <= pad + btnW && mouseY >= btnY && mouseY <= btnY + btnH) {
-                resetLayout();
-                return true;
-            }
-            // Закрыть
-            float closeX = this.width - btnW - pad;
-            if (mouseX >= closeX && mouseX <= closeX + btnW && mouseY >= btnY && mouseY <= btnY + btnH) {
-                close();
-                return true;
-            }
-        }
-        // Клик по пустому месту / элементам: не глотаем, чтобы штатный
-        // механизм перетаскивания HudElement (через EventMouse) работал.
-        return super.mouseClicked(mouseX, mouseY, button);
-    }
-
-    /** Каскадно раскладывает все элементы слева сверху. */
     private void resetLayout() {
-        HudManager hudManager = darkvisuals.getInstance().getHudManager();
-        if (hudManager == null) return;
-
-        List<HudElement> elements = hudManager.getHudElements();
-        float sw = this.client.getWindow().getScaledWidth();
-        float sh = this.client.getWindow().getScaledHeight();
-
-        float x = 12f;
-        float y = 40f;
-        for (HudElement element : elements) {
-            float w = Math.max(1f, element.getWidth());
-            float h = Math.max(1f, element.getHeight());
-            if (y + h > sh - 30f) {
-                y = 40f;
-                x += w + 16f;
-            }
-            element.getPosition().getValue().setX(x / sw);
-            element.getPosition().getValue().setY(y / sh);
-            y += h + 10f;
+        float y = 0.02f;
+        for (HudElement el : darkvisuals.getInstance().getHudManager().getHudElements()) {
+            el.getPosition().getValue().setX(0.01f);
+            el.getPosition().getValue().setY(y);
+            y += Math.max(0.04f, (el.getHeight() + 4f) / height);
+            if (y > 0.9f) y = 0.02f;
         }
+        save();
+    }
+
+    @Override
+    public void removed() {
+        isOpen = false;
+        save();
+        super.removed();
+    }
+
+    private void save() {
         try {
-            if (darkvisuals.getInstance().getAutoSaveManager() != null)
-                darkvisuals.getInstance().getAutoSaveManager().scheduleAutoSave();
+            var asm = darkvisuals.getInstance().getAutoSaveManager();
+            if (asm != null) asm.scheduleAutoSave();
         } catch (Throwable ignored) {}
     }
 }
