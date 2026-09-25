@@ -97,10 +97,24 @@
       }
     ]
   },
+  "clickguion": {
+    "sounds": [
+      {
+        "name": "darkvisuals:clickguion"
+      }
+    ]
+  },
   "moan2": {
     "sounds": [
       {
         "name": "darkvisuals:moan2"
+      }
+    ]
+  },
+  "clickguioff": {
+    "sounds": [
+      {
+        "name": "darkvisuals:clickguioff"
       }
     ]
   },
