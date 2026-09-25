@@ -1,12 +1,12 @@
 package dev.darkvisuals.mixin;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import dev.darkvisuals.darkvisuals;
 import dev.darkvisuals.modules.impl.render.CustomFog;
 import dev.darkvisuals.modules.impl.render.NoFluid;
 import net.minecraft.block.enums.CameraSubmersionType;
 import net.minecraft.client.render.BackgroundRenderer;
 import net.minecraft.client.render.Camera;
+import net.minecraft.client.render.Fog;
 import net.minecraft.client.render.FogShape;
 import net.minecraft.client.world.ClientWorld;
 import org.joml.Vector4f;
@@ -14,7 +14,6 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(BackgroundRenderer.class)
@@ -47,24 +46,37 @@ public class BackgroundRendererMixin {
 		return viewDistance;
 	}
 
-	@Inject(method = "applyFog", at = @At("TAIL"))
-	private static void onApplyFogTail(Camera camera, BackgroundRenderer.FogType fogType, float viewDistance, boolean thickFog, float tickDelta, CallbackInfo ci) {
+	@Inject(method = "applyFog", at = @At("RETURN"), cancellable = true)
+	private static void onApplyFogReturn(
+			Camera camera,
+			BackgroundRenderer.FogType fogType,
+			Vector4f color,
+			float viewDistance,
+			boolean thickFog,
+			float tickDelta,
+			CallbackInfoReturnable<Fog> cir
+	) {
 		NoFluid noFluid = darkvisuals.getInstance().getModuleManager().getModule(NoFluid.class);
 		if (noFluid == null) return;
 
 		CameraSubmersionType submersionType = camera.getSubmersionType();
 		if (!noFluid.shouldRemoveFog(submersionType)) return;
 
+		Fog originalFog = cir.getReturnValue();
+		float red = originalFog != null ? originalFog.red() : color.x;
+		float green = originalFog != null ? originalFog.green() : color.y;
+		float blue = originalFog != null ? originalFog.blue() : color.z;
+		float alpha = originalFog != null ? originalFog.alpha() : color.w;
+
 		if (submersionType == CameraSubmersionType.WATER) {
-			// Отодвигаем границы подводного тумана
-			RenderSystem.setShaderFogStart(-8.0F);
-			RenderSystem.setShaderFogEnd(Math.max(viewDistance, 256.0F));
-			RenderSystem.setShaderFogShape(FogShape.SPHERE);
+			float fogEnd = Math.max(viewDistance, 256.0F);
+			cir.setReturnValue(new Fog(-8.0F, fogEnd, FogShape.SPHERE, red, green, blue, alpha));
 		} else if (submersionType == CameraSubmersionType.LAVA) {
-			// Убираем плотный туман лавы для чистой видимости
-			RenderSystem.setShaderFogStart(0.0F);
-			RenderSystem.setShaderFogEnd(Math.max(viewDistance, 192.0F));
-			RenderSystem.setShaderFogShape(FogShape.SPHERE);
+			float fogEnd = Math.max(viewDistance, 192.0F);
+			cir.setReturnValue(new Fog(0.0F, fogEnd, FogShape.SPHERE, red, green, blue, alpha));
+		} else if (submersionType == CameraSubmersionType.POWDER_SNOW) {
+			float fogEnd = Math.max(viewDistance, 128.0F);
+			cir.setReturnValue(new Fog(0.0F, fogEnd, FogShape.SPHERE, red, green, blue, alpha));
 		}
 	}
 }

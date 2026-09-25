@@ -10,12 +10,14 @@ public class NoFluid extends Module {
 
     private final BooleanSetting water = new BooleanSetting("Вода", true);
     private final BooleanSetting lava = new BooleanSetting("Лава", true);
+    private final BooleanSetting powderSnow = new BooleanSetting("Рыхлый снег", true);
 
     public NoFluid() {
-        super("NoFluid", Category.Render, safeTranslate("module.nofluid.description", "Убирает туман при погружении в воду или лаву"));
+        super("NoFluid", Category.Render, safeTranslate("module.nofluid.description", "Убирает туман при погружении в воду, лаву или рыхлый снег"));
 
         getSettings().add(water);
         getSettings().add(lava);
+        getSettings().add(powderSnow);
     }
 
     public boolean shouldRemoveFog(CameraSubmersionType submersionType) {
@@ -29,6 +31,10 @@ public class NoFluid extends Module {
             return true;
         }
 
+        if (submersionType == CameraSubmersionType.POWDER_SNOW && powderSnow.getValue()) {
+            return true;
+        }
+
         return false;
     }
 
@@ -38,6 +44,10 @@ public class NoFluid extends Module {
 
     public boolean isLava() {
         return lava.getValue();
+    }
+
+    public boolean isPowderSnow() {
+        return powderSnow.getValue();
     }
 
     private static String safeTranslate(String key, String fallback) {

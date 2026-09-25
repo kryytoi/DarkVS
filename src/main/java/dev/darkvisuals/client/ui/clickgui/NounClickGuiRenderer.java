@@ -255,7 +255,7 @@ public class NounClickGuiRenderer {
         fill(context, fx + SIDEBAR_W, fy, 1f, FRAME_H, lineCol);
         fill(context, fx, fy + HEADER_H, FRAME_W, 1f, lineCol);
 
-        // ── Увеличенный логотип в левом верхнем углу сайдбара ──────────
+        // ── Логотип в левом верхнем углу сайдбара ──────────────────────
         renderTopLeftLogo(context, fx, fy, fade);
 
         // ── Сайдбар с категориями и серыми разделителями ──────────────
@@ -276,10 +276,10 @@ public class NounClickGuiRenderer {
             renderScrollBar(context, fx, fy, state, fade);
         }
 
-        // ── Амонгус сверху справа (сидит на верхней планке, без свечения) ─
+        // ── Амонгус сверху справа ─────────────────────────────────────
         renderSittingAmongus(context, fx, fy, fade);
 
-        // ── Корона слева сверху (парит ПОВЕРХ МЕНЮ и логотипа, без свечения) ───
+        // ── Корона слева сверху ───────────────────────────────────────
         renderFloatingCrown(context, fx, fy, fade);
 
         // Описание при наведении на функцию
@@ -290,17 +290,14 @@ public class NounClickGuiRenderer {
 
     private void renderFloatingCrown(DrawContext ctx, float fx, float fy, float fade) {
         float crownSize = 40f;
-        // Позиционируем так, чтобы корона заходила на угол фрейма и перекрывала меню и логотип
         float cx = fx - 12f;
         float cy = fy - 18f;
 
         var ms = ctx.getMatrices();
         ms.push();
         ms.translate(cx + crownSize / 2f, cy + crownSize / 2f, 200f);
-        // Наклон короны влево как на референсе
         ms.multiply(net.minecraft.util.math.RotationAxis.POSITIVE_Z.rotationDegrees(-22f));
 
-        // Чистая белая корона без размытого свечения
         tex(ctx, ICON_CROWN, -crownSize / 2f, -crownSize / 2f, crownSize, crownSize,
                 withAlpha(C_TEXT, (int) (255f * fade)));
         ms.pop();
@@ -309,20 +306,17 @@ public class NounClickGuiRenderer {
     private void renderSittingAmongus(DrawContext ctx, float fx, float fy, float fade) {
         float auW = 28f;
         float auH = 30f;
-        // Сидит на верхней кромке над правой секцией
         float auX = fx + FRAME_W - 125f;
         float auY = fy - 23f;
 
         var ms = ctx.getMatrices();
         ms.push();
         ms.translate(0, 0, 180f);
-        // Чистый белый персонаж без размытого свечения
         tex(ctx, ICON_AMONGUS, auX, auY, auW, auH, withAlpha(C_TEXT, (int) (255f * fade)));
         ms.pop();
     }
 
     private void renderTopLeftLogo(DrawContext ctx, float fx, float fy, float fade) {
-        // Увеличенный размер логотипа (было 22f -> стало 28f)
         float logoSize = 28f;
         float lx = fx + (SIDEBAR_W - logoSize) / 2f;
         float ly = fy + (HEADER_H - logoSize) / 2f;
@@ -369,13 +363,11 @@ public class NounClickGuiRenderer {
             float hovT = aval("sidehov:" + cat.name(), hov ? 1f : 0f, 12f);
             float selT = aval("sidesel:" + cat.name(), active ? 1f : 0f, 14f);
 
-            // Подложка при наведении курсора
             if (hovT > 0.02f) {
                 int hovBg = isLiquidGlass() ? withAlpha(0xFFFFFFFF, (int) (40f * fade * hovT)) : withAlpha(C_SIDE_HOV, (int) (255f * fade * hovT));
                 rect(ctx, fx + 6f, y + 4f, SIDEBAR_W - 12f, step - 8f, 7f, hovBg);
             }
 
-            // Фиолетовая вертикальная полоска-индикатор активной категории
             if (selT > 0.02f) {
                 float barH = 18f * selT;
                 rect(ctx, fx + 3f, y + (step - barH) / 2f, 3f, barH, 1.5f,
@@ -399,7 +391,7 @@ public class NounClickGuiRenderer {
     }
 
     private void renderTopBar(DrawContext ctx, float fx, float fy, float fade) {
-        String title = catLabel(ClickGuiRenderer.currentCategory);
+        String title = ClickGuiRenderer.isSearching() ? "Поиск" : catLabel(ClickGuiRenderer.currentCategory);
         text(ctx, Fonts.BOLD, title, fx + SIDEBAR_W + 14f, fy + 12f,
                 withAlpha(C_TEXT, (int) (255f * fade)), 12.5f);
 
@@ -449,18 +441,33 @@ public class NounClickGuiRenderer {
         String query = ClickGuiRenderer.searchBuffer.toString();
         boolean placeholder = query.isEmpty() && !focused;
         String display = placeholder ? "Поиск..." : query;
-        text(ctx, Fonts.MEDIUM, display, searchBoxX + 10f, searchBoxY + 6.5f,
+
+        float maxTextW = searchBoxW - 32f;
+        String textToRender = display;
+        if (!placeholder) {
+            while (Fonts.MEDIUM.getWidth(textToRender, 8.5f) > maxTextW && textToRender.length() > 1) {
+                textToRender = textToRender.substring(1);
+            }
+        }
+
+        text(ctx, Fonts.MEDIUM, textToRender, searchBoxX + 10f, searchBoxY + 6.5f,
                 placeholder ? withAlpha(C_TEXT_DIM, (int) (210f * fade)) : withAlpha(C_TEXT, (int) (255f * fade)), 8.5f);
 
         if (focused && (System.currentTimeMillis() / 500L) % 2L == 0L) {
-            float cw = Fonts.MEDIUM.getWidth(query, 8.5f);
+            float cw = placeholder ? 0f : Fonts.MEDIUM.getWidth(textToRender, 8.5f);
             fill(ctx, searchBoxX + 10f + cw + 1f, searchBoxY + 5f, 1f, searchBoxH - 10f,
                     withAlpha(C_TEXT, (int) (240f * fade)));
         }
 
-        float searchIconSize = 11f;
-        tex(ctx, ICON_SEARCH, searchBoxX + searchBoxW - 16f, searchBoxY + (searchBoxH - searchIconSize) / 2f,
-                searchIconSize, searchIconSize, withAlpha(C_TEXT_DIM, (int) (240f * fade)));
+        if (!query.isEmpty()) {
+            float closeW = Fonts.BOLD.getWidth("×", 9.5f);
+            text(ctx, Fonts.BOLD, "×", searchBoxX + searchBoxW - 14f - closeW / 2f, searchBoxY + 5.5f,
+                    withAlpha(C_TEXT_DIM, (int) (240f * fade)), 9.5f);
+        } else {
+            float searchIconSize = 11f;
+            tex(ctx, ICON_SEARCH, searchBoxX + searchBoxW - 16f, searchBoxY + (searchBoxH - searchIconSize) / 2f,
+                    searchIconSize, searchIconSize, withAlpha(C_TEXT_DIM, (int) (240f * fade)));
+        }
     }
 
     private void renderModules(DrawContext ctx, float fx, float fy, int mx, int my,
@@ -506,7 +513,6 @@ public class NounClickGuiRenderer {
             float hovT = aval("hov:" + m.getName(), hov ? 1f : 0f, 10f);
             float expT = aval("exp:" + m.getName(), expanded ? 1f : 0f, 12f);
 
-            // Карточка модуля без обводки (с поддержкой Liquid Glass)
             int cardBase = isLiquidGlass() ? withAlpha(0xFF1E2026, (int) (110f * fade)) : withAlpha(C_CARD, (int) (255f * fade));
             int cardHov  = isLiquidGlass() ? withAlpha(0xFF2B2E38, (int) (155f * fade)) : withAlpha(C_CARD_HOV, (int) (255f * fade));
             rect(ctx, cX, y, CARD_W, CARD_H, CARD_R, lerpColor(cardBase, cardHov, hovT));
@@ -540,14 +546,13 @@ public class NounClickGuiRenderer {
             }
         }
 
-        // Карточка настроек модуля без обводки (с поддержкой Liquid Glass)
         if (expIdx >= 0 && expIdx < mods.size()) {
             Module em = mods.get(expIdx);
             float expFade = aval("exp:" + em.getName(), 1f, 12f);
             if (expFade > 0.02f) {
-                int col = expIdx % GRID_COLS, rIdx = expIdx / GRID_COLS;
+                int col = expIdx % GRID_COLS, erow = expIdx / GRID_COLS;
                 float cX = cardX(fx, col);
-                float rowY = lTop + 4f - scroll + rIdx * gridRowH();
+                float rowY = lTop + 4f - scroll + erow * gridRowH();
                 float boxY = rowY + CARD_H + EXPAND_GAP;
                 float boxH = expandPanelContentH(em);
 
@@ -584,7 +589,7 @@ public class NounClickGuiRenderer {
         }
 
         if (mods.isEmpty()) {
-            text(ctx, Fonts.MEDIUM, "Нет модулей", contentLeft(fx) + 8f, lTop + 8f,
+            text(ctx, Fonts.MEDIUM, "Ничего не найдено", contentLeft(fx) + 8f, lTop + 8f,
                     withAlpha(C_TEXT_DIM, (int) (180f * fade)), 8.5f);
         }
 
@@ -1015,12 +1020,26 @@ public class NounClickGuiRenderer {
     public boolean mouseClicked(double mx, double my, int button, Window window, ClickGuiState state) {
         float fx = frameX(window), fy = frameY(window);
 
+        float sbW = SEARCH_W;
+        float sbH = SEARCH_H;
+        float sbX = fx + FRAME_W - 12f - sbW;
+        float sbY = fy + (HEADER_H - sbH) / 2f;
+        searchBoxX = sbX; searchBoxY = sbY; searchBoxW = sbW; searchBoxH = sbH;
+
         if (hit(mx, my, searchBoxX, searchBoxY, searchBoxW, searchBoxH)) {
+            if (button == 1) {
+                ClickGuiRenderer.searchBuffer.setLength(0);
+            } else if (hit(mx, my, searchBoxX + searchBoxW - 20f, searchBoxY, 20f, searchBoxH)
+                    && ClickGuiRenderer.searchBuffer.length() > 0) {
+                ClickGuiRenderer.searchBuffer.setLength(0);
+            }
+
+            unfocusAll();
             ClickGuiRenderer.searchInputFocused = true;
             welcomeScreen = false;
-            unfocusAll();
             return true;
         }
+
         ClickGuiRenderer.searchInputFocused = false;
 
         if (hfWindowOpen && hit(mx, my, fx + FRAME_W + 10f, fy, 230f, 290f)) {
@@ -1035,7 +1054,6 @@ public class NounClickGuiRenderer {
             return false;
         }
 
-        // Клик по логотипу в левом верхнем углу возвращает на начальный экран с черепом
         if (hit(mx, my, fx, fy, SIDEBAR_W, HEADER_H)) {
             welcomeScreen = true;
             viewMode = ViewMode.MODULES;
@@ -1060,7 +1078,6 @@ public class NounClickGuiRenderer {
             return true;
         }
 
-        // Сайдбар категорий
         float startY = fy + HEADER_H;
         float step   = SIDEBAR_SLOT_H;
         for (int i = 0; i < SIDEBAR_CATS.length; i++) {
@@ -1085,6 +1102,7 @@ public class NounClickGuiRenderer {
                 return true;
             }
             if (hit(mx, my, cx, inY, cw - 48f - 6f, 24f)) {
+                unfocusAll();
                 darkaInputFocused = true;
                 return true;
             }
@@ -1100,6 +1118,7 @@ public class NounClickGuiRenderer {
                 return true;
             }
             if (hit(mx, my, apiFieldX, apiFieldY, apiFieldW, apiFieldH)) {
+                unfocusAll();
                 darkaKeyFocused = true;
                 return true;
             }
@@ -1362,7 +1381,21 @@ public class NounClickGuiRenderer {
     }
 
     public boolean isKeyOrInputFocused() {
-        return ClickGuiRenderer.searchInputFocused || darkaInputFocused || darkaKeyFocused;
+        return ClickGuiRenderer.searchInputFocused
+                || ClickGuiRenderer.friendInputFocused
+                || ClickGuiRenderer.configInputFocused
+                || ClickGuiRenderer.markerFocusedField != 0
+                || ClickGuiRenderer.editingStringSetting != null
+                || darkaInputFocused
+                || darkaKeyFocused;
+    }
+
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        return handleKeyPressed(keyCode, modifiers);
+    }
+
+    public boolean charTyped(char chr, int modifiers) {
+        return handleCharTyped(chr);
     }
 
     public boolean handleKeyPressed(int keyCode, int modifiers) {
@@ -1375,6 +1408,22 @@ public class NounClickGuiRenderer {
             }
             if (keyCode == GLFW.GLFW_KEY_ESCAPE || keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER) {
                 ClickGuiRenderer.searchInputFocused = false;
+                return true;
+            }
+            // Поддержка Ctrl + V для вставки текста
+            if (keyCode == GLFW.GLFW_KEY_V && (modifiers & GLFW.GLFW_MOD_CONTROL) != 0) {
+                String clip = MinecraftClient.getInstance().keyboard.getClipboard();
+                if (clip != null && !clip.isEmpty()) {
+                    for (char c : clip.toCharArray()) {
+                        if (ClickGuiRenderer.searchBuffer.length() < 32 && !Character.isISOControl(c)) {
+                            ClickGuiRenderer.searchBuffer.append(c);
+                        }
+                    }
+                }
+                return true;
+            }
+            if (keyCode == GLFW.GLFW_KEY_DELETE) {
+                ClickGuiRenderer.searchBuffer.setLength(0);
                 return true;
             }
             return true;
@@ -1404,6 +1453,13 @@ public class NounClickGuiRenderer {
                     ui.setDarkaApiKey(cur.substring(0, cur.length() - 1));
                     return true;
                 }
+                if (keyCode == GLFW.GLFW_KEY_V && (modifiers & GLFW.GLFW_MOD_CONTROL) != 0) {
+                    String clip = MinecraftClient.getInstance().keyboard.getClipboard();
+                    if (clip != null && !clip.isEmpty()) {
+                        ui.setDarkaApiKey(cur + clip.trim());
+                    }
+                    return true;
+                }
                 if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER || keyCode == GLFW.GLFW_KEY_ESCAPE) {
                     darkaKeyFocused = false;
                     return true;
@@ -1419,6 +1475,7 @@ public class NounClickGuiRenderer {
         if (Character.isISOControl(chr)) return isKeyOrInputFocused();
 
         if (ClickGuiRenderer.searchInputFocused) {
+            welcomeScreen = false;
             if (ClickGuiRenderer.searchBuffer.length() < 32) {
                 ClickGuiRenderer.searchBuffer.append(chr);
             }

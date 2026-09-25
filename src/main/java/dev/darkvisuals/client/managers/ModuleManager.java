@@ -165,7 +165,8 @@ public class ModuleManager implements Wrapper {
                 new CustomDeathScreen(),
                 new FriendGlow(),
                 new Portal(),
-                new HitEffect()
+                new HitEffect(),
+                new NoFluid()
         );
 
         for (Module module : modules) {
