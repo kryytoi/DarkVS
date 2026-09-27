@@ -17,7 +17,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 
- 
 public final class NowPlayingBridge {
 
     private NowPlayingBridge() {}
@@ -29,9 +28,9 @@ public final class NowPlayingBridge {
         public final boolean playing;
         public final String thumbPath;
         public final String iconPath;
-          
+
         public final long positionSec;
-          
+
         public final long durationSec;
         public final long updatedAtMs;
 
@@ -52,7 +51,6 @@ public final class NowPlayingBridge {
             return title != null && !title.isEmpty();
         }
 
- 
         public long smoothedPositionSec() {
             if (positionSec < 0) return -1;
             long pos = positionSec;
@@ -64,8 +62,6 @@ public final class NowPlayingBridge {
         }
     }
 
-     
-     
     private static final String SCRIPT = String.join("\n",
             "$ErrorActionPreference = 'SilentlyContinue'",
             "Add-Type -AssemblyName System.Runtime.WindowsRuntime",
@@ -213,11 +209,10 @@ public final class NowPlayingBridge {
     private static long cachedIconMtime = 0L;
     private static AbstractTexture cachedIconTexture = null;
 
-      
     public static void ensureStarted() {
         if (started) return;
         if (!System.getProperty("os.name", "").toLowerCase().contains("win")) {
-            started = true;  
+            started = true;
             return;
         }
         started = true;
@@ -226,7 +221,7 @@ public final class NowPlayingBridge {
             Path dir = FabricLoader.getInstance().getGameDir().resolve("darkvisuals");
             Files.createDirectories(dir);
             Path scriptPath = dir.resolve("nowplaying.ps1");
-             
+
             Files.write(scriptPath, SCRIPT.getBytes(StandardCharsets.UTF_8),
                     StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
 
@@ -240,7 +235,6 @@ public final class NowPlayingBridge {
             pb.redirectErrorStream(true);
             process = pb.start();
 
-             
             Runtime.getRuntime().addShutdownHook(new Thread(NowPlayingBridge::shutdown, "nowplaying-shutdown"));
 
             Thread reader = new Thread(NowPlayingBridge::readLoop, "nowplaying-reader");
@@ -262,7 +256,7 @@ public final class NowPlayingBridge {
                 parseLine(line);
             }
         } catch (Throwable ignored) {
-             
+
         }
     }
 
@@ -279,7 +273,7 @@ public final class NowPlayingBridge {
             long dur = obj.has("dur") ? obj.get("dur").getAsLong() : -1L;
             latest = new Snapshot(title, artist, app, playing, thumb, icon, pos, dur);
         } catch (Throwable ignored) {
-             
+
         }
     }
 
@@ -296,21 +290,18 @@ public final class NowPlayingBridge {
         } catch (Throwable ignored) {}
     }
 
-      
     public static void shutdown() {
         try {
             if (process != null) process.destroy();
         } catch (Throwable ignored) {}
     }
 
-      
     private static Path tempDirPath() {
         String tmp = System.getenv("TEMP");
         if (tmp == null || tmp.isEmpty()) tmp = System.getProperty("java.io.tmpdir");
         return Path.of(tmp, "darkvisuals_nowplaying");
     }
 
- 
     public static void sendCommand(String cmd) {
         if (!started || cmd == null || cmd.isEmpty()) return;
         try {
@@ -321,7 +312,6 @@ public final class NowPlayingBridge {
         } catch (Throwable ignored) {}
     }
 
- 
     public static void optimisticTogglePlaying() {
         Snapshot s = latest;
         if (s == null) return;
@@ -329,7 +319,6 @@ public final class NowPlayingBridge {
                 s.thumbPath, s.iconPath, s.smoothedPositionSec(), s.durationSec);
     }
 
-      
     public static Snapshot getCurrent() {
         Snapshot snap = latest;
         if (snap == null) return null;
@@ -338,7 +327,6 @@ public final class NowPlayingBridge {
         return snap;
     }
 
-      
     public static AbstractTexture getThumbTexture() {
         Snapshot snap = latest;
         if (snap == null || snap.thumbPath == null || snap.thumbPath.isEmpty()) return null;
@@ -355,7 +343,6 @@ public final class NowPlayingBridge {
         return tex != null ? tex : cachedThumbTexture;
     }
 
-      
     public static AbstractTexture getAppIconTexture() {
         Snapshot snap = latest;
         if (snap == null || snap.iconPath == null || snap.iconPath.isEmpty()) return null;

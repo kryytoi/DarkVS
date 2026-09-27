@@ -45,13 +45,11 @@ public class CustomThemeScreen extends Screen {
         drawColorSquare(context, squareX, squareY);
         drawHueBar(context, squareX + squareSize + 8, squareY, hueWidth, squareSize);
 
-         
         int swatchX = squareX + squareSize + hueWidth + 24;
         int swatchY = squareY;
         drawSwatch(context, swatchX, swatchY, "Цвет 1", primary, editingPrimary);
         drawSwatch(context, swatchX, swatchY + 40, "Цвет 2", secondary, !editingPrimary);
 
-         
         int nameX = swatchX;
         int nameY = swatchY + 90;
         int nameW = 150, nameH = 20;
@@ -62,7 +60,6 @@ public class CustomThemeScreen extends Screen {
                 shown, nameX + 6, nameY + 6,
                 nameBuffer.length() == 0 && !nameFocused ? new Color(150, 150, 150) : Color.WHITE);
 
-         
         int btnX = nameX, btnY = nameY + nameH + 10, btnW = nameW, btnH = 22;
         boolean btnHovered = isHovered(mouseX, mouseY, btnX, btnY, btnW, btnH);
         Render2D.drawStyledRect(context.getMatrices(), btnX, btnY, btnW, btnH, 4f,
@@ -70,7 +67,6 @@ public class CustomThemeScreen extends Screen {
         Render2D.drawFont(context.getMatrices(), Fonts.SEMIBOLD.getFont(10f),
                 "Сделать тему", btnX + 14, btnY + 6, Color.WHITE);
 
-         
         int closeX = panelX + panelW - 26, closeY = panelY + 10;
         Render2D.drawFont(context.getMatrices(), Fonts.MEDIUM.getFont(10f), "X", closeX, closeY, Color.WHITE);
 
@@ -80,7 +76,7 @@ public class CustomThemeScreen extends Screen {
     private void drawSwatch(DrawContext context, int x, int y, String label, Color color, boolean selected) {
         Render2D.drawFont(context.getMatrices(), Fonts.MEDIUM.getFont(9f), label, x, y, Color.WHITE);
         Render2D.drawStyledRect(context.getMatrices(), x, y + 12, 40, 20, 3f, color, 255);
-         
+
         if (selected) {
             Render2D.drawStyledRect(context.getMatrices(), x - 2, y + 10, 44, 24, 4f,
                     new Color(150, 100, 200, 15), 0);
@@ -90,22 +86,17 @@ public class CustomThemeScreen extends Screen {
     private void drawColorSquare(DrawContext context, int x, int y) {
         Color hueColor = Color.getHSBColor(hue, 1f, 1f);
 
-         
         Render2D.drawRect(context.getMatrices(), x, y, squareSize, squareSize, hueColor);
 
-         
         Render2D.drawGradientRect(context.getMatrices(), x, y, squareSize, squareSize,
                 new Color(255, 255, 255, 255), new Color(255, 255, 255, 0), true);
 
-         
         Render2D.drawGradientRect(context.getMatrices(), x, y, squareSize, squareSize,
                 new Color(0, 0, 0, 0), new Color(0, 0, 0, 255), false);
 
-         
         int markerX = x + (int) (saturation * squareSize);
         int markerY = y + (int) ((1 - brightness) * squareSize);
 
-         
         int crossSize = 5;
         Render2D.drawRect(context.getMatrices(), markerX - crossSize, markerY - 1, crossSize * 2, 2, Color.BLACK);
         Render2D.drawRect(context.getMatrices(), markerX - 1, markerY - crossSize, 2, crossSize * 2, Color.BLACK);
@@ -118,7 +109,7 @@ public class CustomThemeScreen extends Screen {
             Color c = Color.getHSBColor((float) j / h, 1f, 1f);
             Render2D.drawRect(context.getMatrices(), x, y + j, w, 1, c);
         }
-         
+
         int markerY = y + (int) (hue * h);
         Render2D.drawRect(context.getMatrices(), x - 1, markerY - 1, w + 2, 2, Color.BLACK);
         Render2D.drawRect(context.getMatrices(), x - 1, markerY, w + 2, 1, new Color(220, 220, 220, 200));
@@ -139,7 +130,6 @@ public class CustomThemeScreen extends Screen {
         int swatchX = squareX + squareSize + hueWidth + 24;
         int swatchY = squareY;
 
-         
         if (isHovered(mouseX, mouseY, panelX + panelW - 26, panelY + 10, 12, 12)) {
             close();
             return true;

@@ -19,7 +19,6 @@ public class GpsCommand extends Command {
         super("gps");
     }
 
-     
     private int addUnderAddNameFirst(CommandContext<CommandSource> ctx) {
         String name = StringArgumentType.getString(ctx, "name");
         double x = DoubleArgumentType.getDouble(ctx, "x");
@@ -42,7 +41,7 @@ public class GpsCommand extends Command {
                     ChatUtils.sendMessage(I18n.translate("gps.help"));
                     return SINGLE_SUCCESS;
                 })
-                 
+
                 .then(arg("name", StringArgumentType.word())
                         .then(arg("x", DoubleArgumentType.doubleArg())
                                 .then(arg("z", DoubleArgumentType.doubleArg())
@@ -51,7 +50,7 @@ public class GpsCommand extends Command {
                         )
                 )
                 .then(literal("add")
-                         
+
                         .then(arg("name", StringArgumentType.word())
                                 .then(arg("x", DoubleArgumentType.doubleArg())
                                         .then(arg("z", DoubleArgumentType.doubleArg())
@@ -75,7 +74,7 @@ public class GpsCommand extends Command {
 
     private int add(CommandContext<CommandSource> ctx) {
         double x = DoubleArgumentType.getDouble(ctx, "x");
-         
+
         DoubleArgumentType.getDouble(ctx, "y");
         double z = DoubleArgumentType.getDouble(ctx, "z");
         String name;
@@ -84,7 +83,7 @@ public class GpsCommand extends Command {
         } catch (IllegalArgumentException ignored) {
             name = null;
         }
-         
+
         double yFixed = 60.0;
         if (name == null || name.isBlank()) name = String.format("%.0f %.0f %.0f", x, yFixed, z);
 
@@ -93,7 +92,6 @@ public class GpsCommand extends Command {
         return SINGLE_SUCCESS;
     }
 
-     
     private int addNameFirst(CommandContext<CommandSource> ctx) {
         String name = StringArgumentType.getString(ctx, "name");
         double x = DoubleArgumentType.getDouble(ctx, "x");

@@ -23,9 +23,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-/**
- * BubbleStream — поток пузырей, поднимающийся из-под воды.
- */
 public class BubbleStream extends Module {
 
     private final NumberSetting density = new NumberSetting("Плотность", 18f, 4f, 60f, 2f);

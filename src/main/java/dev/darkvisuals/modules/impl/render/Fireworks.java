@@ -27,14 +27,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
-/**
- * Fireworks — праздничный фейерверк вокруг игрока.
- * Ракета взмывает в небо и на случайной высоте разрывается
-                шарам искр, которые медленно гаснут и падают.
- */
 public class Fireworks extends Module {
 
-    // праздничная палитра красок
     private static final Color[] PALETTE = {
             new Color(255, 80, 80),
             new Color(255, 160, 60),
@@ -88,13 +82,12 @@ public class Fireworks extends Module {
             spawnRocket();
         }
 
-        // ракеты летят вверх и взрываются на нужной высоте
         Iterator<Rocket> rit = rockets.iterator();
         while (rit.hasNext()) {
             Rocket r = rit.next();
             r.age++;
             r.pos = r.pos.add(r.vel);
-            // лёгкое покачивание ракеты в полёте
+
             r.pos = r.pos.add(
                     Math.sin(r.age * 0.3 + r.swayPhase) * 0.008,
                     0,
@@ -106,7 +99,6 @@ public class Fireworks extends Module {
             }
         }
 
-        // искры разлетающиеся и тающие
         Iterator<Spark> sit = sparks.iterator();
         while (sit.hasNext()) {
             Spark s = sit.next();
@@ -140,7 +132,7 @@ public class Fireworks extends Module {
         int count = (int) (30 + size * 8);
 
         for (int i = 0; i < count; i++) {
-            // равномерное распределение точек по сфере
+
             double u = rnd.nextDouble();
             double v = rnd.nextDouble();
             double theta = 2 * Math.PI * u;
@@ -178,10 +170,9 @@ public class Fireworks extends Module {
         RenderSystem.disableCull();
         RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR);
 
-        // искры взрывов
         for (Spark s : sparks) {
             float life = 1f - (float) s.age / s.maxAge;
-            // мерцание угасающих искр
+
             float twinkle = 0.65f + 0.35f * (float) Math.sin(s.age * 0.9 + s.twinklePhase);
             int alpha = (int) (235 * life * twinkle);
             if (alpha <= 4) continue;
@@ -197,7 +188,6 @@ public class Fireworks extends Module {
             matrices.pop();
         }
 
-        // ракеты со светящимся хвостом
         for (Rocket r : rockets) {
             Vec3d trail = r.vel.normalize().multiply(0.22);
             for (int i = 3; i >= 0; i--) {
@@ -225,7 +215,6 @@ public class Fireworks extends Module {
         RenderSystem.disableBlend();
     }
 
-    // billboard-квад в локальной плоскости XY
     private void drawQuad(Matrix4f matrix, float half, Color color) {
         BufferBuilder buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
         buffer.vertex(matrix, -half, -half, 0).color(color.getRGB());

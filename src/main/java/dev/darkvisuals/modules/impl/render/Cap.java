@@ -70,8 +70,6 @@ public class Cap extends Module {
                 mc.world.getLightLevel(LightType.SKY, lightPos)
         );
 
-         
-         
         VertexConsumerProvider.Immediate vcp = mc.getBufferBuilders().getEntityVertexConsumers();
         model.render(ms, vcp, light, propellerRotation);
         vcp.draw();

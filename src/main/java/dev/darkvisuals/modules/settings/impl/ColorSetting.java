@@ -5,12 +5,12 @@ import java.awt.*;
 import java.util.function.Supplier;
 
  public class ColorSetting extends Setting<Integer> {
-    private Integer cachedValue; 
-    private Runnable onAction;  
-    private Runnable onSetVisible;  
+    private Integer cachedValue;
+    private Runnable onAction;
+    private Runnable onSetVisible;
 
     public ColorSetting(String name) {
-        super(name, Color.RED.getRGB());  
+        super(name, Color.RED.getRGB());
         this.cachedValue = Color.RED.getRGB();
     }
 
@@ -20,33 +20,30 @@ import java.util.function.Supplier;
     }
 
     public ColorSetting set(Integer value) {
-        super.setValue(value);  
+        super.setValue(value);
         this.cachedValue = value;
         if (onAction != null) {
-            onAction.run();  
+            onAction.run();
         }
-        return this;  
+        return this;
     }
 
-     
     @Override
     public void setVisible(Supplier<Boolean> visible) {
-        super.setVisible(visible);  
+        super.setVisible(visible);
         if (onSetVisible != null) {
-            onSetVisible.run();  
+            onSetVisible.run();
         }
     }
 
-     
     public ColorSetting onAction(Runnable action) {
-        this.onAction = action;  
-        return this;  
+        this.onAction = action;
+        return this;
     }
 
-     
     public ColorSetting onSetVisible(Runnable action) {
-        this.onSetVisible = action;  
-        return this;  
+        this.onSetVisible = action;
+        return this;
     }
 
     @Override

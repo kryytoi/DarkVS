@@ -25,14 +25,11 @@ import java.util.List;
 import java.util.Map;
 
 public class ClickGuiRenderer {
-     
-     
-     
+
     public static final float PANEL_W = 470f, PANEL_H = 280f, PANEL_R = 20f, BORDER = 3f;
-     
-     
+
     public static final float PANEL_R_TL = 26f, PANEL_R_TR = 10f, PANEL_R_BR = 26f, PANEL_R_BL = 10f;
-     
+
     private static final float PILL_ALPHA = 0.45f;
 
     public static final float SIDE_PAD = 14f, PILL_W = 122f, PILL_H = 28f, PILL_STEP = 37f, PILL_TOP = 22f, PILL_R = 8f;
@@ -57,8 +54,6 @@ public class ClickGuiRenderer {
     public static final Category[] SIDEBAR_CATS = {Category.Render, Category.Utility,
             Category.Friends, Category.Markers, Category.Theme, Category.Config};
 
-     
-     
     private static final int C_PANEL = 0xFF0B0B0B;
     private static final int C_ROW = 0xFF3B3B3B, C_ROW_HOVER = 0xFF474747;
     private static final int C_BLOCK = 0xFF2C2C2C, C_INNER = 0xFF1A1A1A, C_INNER_HOVER = 0xFF262626;
@@ -66,9 +61,6 @@ public class ClickGuiRenderer {
     private static final int C_SEP = 0xFF3A3A3A;
     private static final int C_TEXT_DARK = 0xFF1A1A1A, C_TEXT_DIM = 0xFF9A9A9A, C_WHITE = 0xFFFFFFFF;
 
-     
-     
-     
     public static Category currentCategory = Category.Render;
     public static Module openedSettingsModule = null;
     public static Color themeColor = new Color(140, 60, 255);
@@ -115,7 +107,6 @@ private float globalAlpha = 1f;
     private boolean pillHighlightInit = false;
     private final Map<String, SmoothAnimation> anims = new HashMap<>();
 
-    // анимация смены категории: контент выезжает и проявляется
     private Category lastCategory = null;
     private final SmoothAnimation contentSwitch = new SmoothAnimation(0f, 13f);
 
@@ -136,8 +127,7 @@ private float globalAlpha = 1f;
     }
     public static Color liveThemeColor() {
         Color c = dev.darkvisuals.client.managers.ThemeManager.getInstance().getCurrentTheme().getAccentColor();
-        // переиспользуем кэшированный Color, пока тема не сменилась — иначе каждый
-        // кадр здесь выделяется новый объект
+
         int rgb = (c.getRed() << 16) | (c.getGreen() << 8) | c.getBlue();
         if (CACHED_THEME_RGB != rgb || CACHED_THEME_COLOR == null) {
             CACHED_THEME_RGB = rgb;
@@ -153,9 +143,6 @@ private float globalAlpha = 1f;
         return (alpha << 24) | (themeColor.getRed() << 16) | (themeColor.getGreen() << 8) | themeColor.getBlue();
     }
 
-     
-     
-     
     public static float panelX(Window w) { return (w.getScaledWidth() - PANEL_W) / 2f; }
     public static float panelY(Window w) { return (w.getScaledHeight() - PANEL_H) / 2f + 10f; }
     public static float pillX(float px) { return px + SIDE_PAD; }
@@ -171,7 +158,6 @@ private float globalAlpha = 1f;
 
     public static boolean isSearching() { return searchBuffer.length() > 0; }
 
-    /** Режим UI Mode → Liquid Glass: панель клик-гуя рисуется жидким стеклом. */
     public static boolean isLiquidGlass() {
         var ui = darkvisuals.getInstance().getModuleManager().getModule(UI.class);
         return ui != null && ui.getUiMode() == UI.UIMode.LiquidGlass;
@@ -218,9 +204,6 @@ private float globalAlpha = 1f;
         return c.name();
     }
 
-     
-     
-     
     public List<float[]> listPillLayout(ListSetting ls, float maxW) {
         List<float[]> out = new ArrayList<>();
         float x = 0, y = 0;
@@ -285,7 +268,6 @@ private float globalAlpha = 1f;
         return INPUT_H + 12f + 14f + Math.max(1, n) * (LIST_ROW_H + LIST_ROW_GAP);
     }
 
-      
     public static float[] markersLayout(float cx, float cw) {
         float addW = 40, hereW = 44, coordW = 44, gap = 5;
         float nameW = cw - coordW * 2 - addW - hereW - gap * 4;
@@ -323,9 +305,6 @@ private float globalAlpha = 1f;
         return false;
     }
 
-     
-     
-     
     public void render(DrawContext context, int mouseX, int mouseY, float delta, Window window, ClickGuiState state) {
         render(context, mouseX, mouseY, delta, window, state, 1f);
     }
@@ -347,12 +326,10 @@ themeColor = liveThemeColor();
         float sw = window.getScaledWidth(), sh = window.getScaledHeight();
         float scale = panelScale.update();
 
-        // мягкое затемнение фона за панелью — интерфейс «отделяется» от игры
         float dimT = Math.max(0f, Math.min(1f, openProgress));
         int dimAlpha = (int) (140f * dimT);
         if (dimAlpha > 2) rect(context, 0, 0, sw, sh, 0f, withAlpha(0xFF07070C, dimAlpha));
 
-        // отслеживаем смену категории для анимации контента
         if (lastCategory != currentCategory) {
             lastCategory = currentCategory;
             contentSwitch.snapTo(0f);
@@ -379,7 +356,7 @@ if (desc != null && !desc.isEmpty()) {
             float descriptionT = descriptionOpacity.update();
             float w = width(Fonts.BOLD, d, 14f);
             float descriptionY = sh - 30f + (1f - descriptionT) * 8f;
-            // плашка-подложка под описанием модуля
+
             float padX = 12f, padY = 5f;
             rect(context, sw / 2f - w / 2f - padX, descriptionY - padY, w + padX * 2f, 14f + padY * 2f, 9f,
                     withAlpha(C_PANEL, (int) (210f * descriptionT)));
@@ -398,7 +375,7 @@ if (desc != null && !desc.isEmpty()) {
         float x = SEARCH_X, y = SEARCH_Y;
         float focusT = animatedValue("search:focus", searchInputFocused ? 1f : 0f, 12f);
         if (focusT > 0.01f) {
-             
+
             float breathe = (float) (0.75f + 0.25f * Math.sin(System.currentTimeMillis() / 260.0));
             int borderColor = withAlpha(theme(), (int) (255f * focusT * breathe));
             rect(ctx, x - 1.5f, y - 1.5f, SEARCH_W + 3, SEARCH_H + 3, INPUT_R + 1.5f, borderColor);
@@ -429,9 +406,6 @@ if (desc != null && !desc.isEmpty()) {
     private void renderPanel(DrawContext ctx, float px, float py) {
         int t = theme();
 
-        // режим Liquid Glass: панель клик-гуя — настоящее жидкое стекло.
-        // Шейдер преломляет и размывает игру за панелью; панель не заливается
-        // непрозрачным цветом — фон остаётся видимым сквозь стекло.
         if (isLiquidGlass()) {
             Render2D.drawGlass(ctx.getMatrices(), px, py, PANEL_W, PANEL_H,
                     1f, PANEL_R_TL, PANEL_R_TR, PANEL_R_BR, PANEL_R_BL,
@@ -443,18 +417,15 @@ if (desc != null && !desc.isEmpty()) {
         float ix = px + BORDER, iy = py + BORDER, iw = PANEL_W - BORDER * 2, ih = PANEL_H - BORDER * 2;
         rect(ctx, ix, iy, iw, ih, PANEL_R_TL - BORDER, PANEL_R_TR - BORDER, PANEL_R_BR - BORDER, PANEL_R_BL - BORDER, C_PANEL);
 
-        // бегущий блик по верхней акцентной кромке панели
         float sheenT = (System.currentTimeMillis() % 4600L) / 4600f;
         float sheenX = px + sheenT * (PANEL_W + 180f) - 90f;
         ctx.enableScissor((int) (px + BORDER), (int) (py - 1), (int) (px + PANEL_W - BORDER), (int) (py + BORDER + 1));
         rect(ctx, sheenX, py, 90f, BORDER, BORDER / 2f, withAlpha(C_WHITE, 235));
         ctx.disableScissor();
 
-        // мягкое внутреннее свечение сверху — «стекло»
         Render2D.drawGradientRect(ctx.getMatrices(), ix + 2, iy + 2, iw - 4, ih * 0.28f,
                 new Color(255, 255, 255, 14), new Color(255, 255, 255, 0), false);
 
-        // акцентные пятна-блобы медленно дышат и плывут
         final float BLOB_INSET = 8f;
         ctx.enableScissor((int) (ix + BLOB_INSET), (int) (iy + BLOB_INSET),
                 (int) (ix + iw - BLOB_INSET), (int) (iy + ih - BLOB_INSET));
@@ -471,7 +442,6 @@ if (desc != null && !desc.isEmpty()) {
         circle(ctx, px + PANEL_W + 30 + w3, py + PANEL_H - 80 + w2, 75 * breathe, t);
         ctx.disableScissor();
 
-        // разделитель сайдбара
         rect(ctx, px + SEP_X, py + 16, 1, PANEL_H - 32, 0, C_SEP);
     }
 
@@ -500,7 +470,6 @@ if (desc != null && !desc.isEmpty()) {
             rect(ctx, x, y - lift, PILL_W, PILL_H, PILL_R * 1.4f, PILL_R * 0.6f, PILL_R * 0.6f, PILL_R * 1.4f, bg);
         }
 
-        // мягкое свечение под выделенной пилюлей
         rect(ctx, x - 2, hlY - 2, PILL_W + 4, PILL_H + 4, PILL_R * 1.5f, withAlpha(theme(), 45));
 
         rect(ctx, x, hlY, PILL_W, PILL_H, PILL_R * 1.4f, PILL_R * 0.6f, PILL_R * 0.6f, PILL_R * 1.4f,
@@ -512,7 +481,6 @@ if (desc != null && !desc.isEmpty()) {
             float selT = anim("pillsel:" + c.name(), 0f, 14f).getValue();
             float lift = anim("pilllift:" + c.name(), 0f, 16f).getValue();
             y -= lift;
-
 
             float pop = animatedValue("pillpop:" + c.name(), selT, 9f);
             float overshoot = 1f + 0.12f * (float) Math.sin(Math.min(1f, pop) * Math.PI) * selT;
@@ -528,7 +496,6 @@ if (desc != null && !desc.isEmpty()) {
             }
             text(ctx, Fonts.BOLD, labelFor(c), x + 32, y + (PILL_H - 10) / 2f, lerpColor(C_TEXT_DARK, C_WHITE, selT), 10f);
 
-            // бейдж с количеством модулей в категории
             if (isModuleTab(c)) {
                 int count = state.getModules(c).size();
                 if (count > 0) {
@@ -544,7 +511,6 @@ if (desc != null && !desc.isEmpty()) {
         }
     }
 
-      
     private String renderContent(DrawContext ctx, float px, float py, int mouseX, int mouseY, ClickGuiState state, float contentT) {
         float cx = contentX(px), cw = CONTENT_W;
         float top = contentTop(py), bottom = contentBottom(py);
@@ -554,7 +520,6 @@ if (desc != null && !desc.isEmpty()) {
         ctx.enableScissor((int) (px + SEP_X + 2), (int) top, (int) (px + PANEL_W - BORDER), (int) bottom);
         boolean inContent = hit(mouseX, mouseY, cx, top, cw, bottom - top);
 
-        // анимация смены категории: контент выезжает справа и проявляется
         float ct = Math.max(0f, Math.min(1f, contentT));
         float slide = (1f - ct) * 18f;
         var contentMatrices = ctx.getMatrices();
@@ -581,9 +546,6 @@ if (desc != null && !desc.isEmpty()) {
         return desc;
     }
 
-     
-     
-     
     private String renderModules(DrawContext ctx, float cx, float cw, float mY, int mouseX, int mouseY, ClickGuiState state, boolean inContent, float contentT) {
         List<Module> mods = visibleModules(state);
         String desc = null;
@@ -600,7 +562,6 @@ if (desc != null && !desc.isEmpty()) {
             float hovT = animatedValue("modhov:" + m.getName(), hov ? 1f : 0f, 12f);
             float togT = animatedValue("modtog:" + m.getName(), m.isToggled() ? 1f : 0f, 12f);
 
-            // каскадное появление строк при смене категории
             float entrance = (contentT * (mods.size() + 3f) - rowIdx) / 2.5f;
             if (entrance < 0f) entrance = 0f;
             if (entrance > 1f) entrance = 1f;
@@ -611,14 +572,13 @@ if (desc != null && !desc.isEmpty()) {
             float drawY = rowY + rowOffset;
 
             rect(ctx, cx, drawY, cw, ROW_H, ROW_R, lerpColor(elementFill(C_ROW, 0.62f), elementFill(C_ROW_HOVER, 0.72f), hovT));
-            // тонкая акцентная полоска слева у включённых модулей
+
             if (togT > 0.02f) {
                 rect(ctx, cx, drawY + 3f, 2.5f, ROW_H - 6f, 1.25f, withAlpha(theme(), (int) (200f * togT)));
             }
             text(ctx, Fonts.BOLD, I18n.translate(m.getName()), cx + 10, drawY + (ROW_H - 9) / 2f,
                     lerpColor(0xFFCFCFCF, C_WHITE, Math.max(togT, hovT * 0.6f)), 9f);
 
-            // тумблер с пружинящим кружком
             float tx = cx + cw - 8 - TOGGLE_W, ty = drawY + (ROW_H - TOGGLE_H) / 2f;
             rect(ctx, tx, ty, TOGGLE_W, TOGGLE_H, TOGGLE_H / 2f, lerpColor(C_INNER, theme(), togT));
             float knobPop = animatedValue("knobpop:" + m.getName(), togT, 8f);
@@ -628,7 +588,6 @@ if (desc != null && !desc.isEmpty()) {
             float knobCY = ty + 1f + 5f;
             rect(ctx, knobCX - knobSize / 2f, knobCY - knobSize / 2f, knobSize, knobSize, knobSize / 2f, C_WHITE);
 
-            // шестерёнка настроек
             text(ctx, Fonts.MEDIUM, "/", tx - 10, drawY + (ROW_H - 9) / 2f, C_TEXT_DIM, 9f);
             float gx = tx - 10 - 6 - GEAR, gy = drawY + (ROW_H - GEAR) / 2f;
             boolean gearHov = inContent && hit(mouseX, mouseY, gx - 2, gy - 2, GEAR + 4, GEAR + 4);
@@ -647,7 +606,6 @@ if (desc != null && !desc.isEmpty()) {
             rowY += ROW_H;
             rowIdx++;
 
-            // раскрывающийся блок настроек
             float expandT = animatedValue("expand:" + m.getName(), expanded ? 1f : 0f, 13f);
             if (expanded && expandT > 0.01f) {
                 rowY += SETTINGS_GAP;
@@ -656,7 +614,7 @@ if (desc != null && !desc.isEmpty()) {
                 prevAlpha = globalAlpha;
                 globalAlpha *= expandT;
                 rect(ctx, cx, rowY + slide, cw, bh, SETTINGS_R, elementFill(C_BLOCK, 0.55f));
-                // акцентная кромка у блока настроек
+
                 rect(ctx, cx, rowY + slide, 2.5f, bh, 1.25f, withAlpha(theme(), (int) (140f * expandT)));
                 renderSettings(ctx, m, cx + SETTINGS_PAD, rowY + slide + SETTINGS_PAD, cw - SETTINGS_PAD * 2, mouseX, mouseY, inContent);
                 globalAlpha = prevAlpha;
@@ -768,9 +726,6 @@ if (desc != null && !desc.isEmpty()) {
         return "KEY_" + key;
     }
 
-     
-     
-     
     private void renderThemesTab(DrawContext ctx, float cx, float cw, float mY, int mouseX, int mouseY) {
         var themes = getThemes();
         String currentName = dev.darkvisuals.client.managers.ThemeManager.getInstance().getCurrentTheme().getName();
@@ -797,9 +752,6 @@ if (desc != null && !desc.isEmpty()) {
         }
     }
 
-     
-     
-     
     private void renderFriendsTab(DrawContext ctx, float cx, float cw, float mY, int mouseX, int mouseY) {
         float inputW = cw - BTN_W - 6, addX = cx + inputW + 6;
 
@@ -843,9 +795,6 @@ if (desc != null && !desc.isEmpty()) {
         if (friends.isEmpty()) text(ctx, Fonts.MEDIUM, I18n.translate("friends.empty"), cx, rowY + 6, C_TEXT_DIM, 9f);
     }
 
-     
-     
-     
     private void renderMarkersTab(DrawContext ctx, float cx, float cw, float mY, int mouseX, int mouseY) {
         float[] L = markersLayout(cx, cw);
         drawInput(ctx, L[0], mY, L[1], markerFocusedField == 1, markerNameBuffer.toString(), "Имя...");
@@ -880,9 +829,6 @@ if (desc != null && !desc.isEmpty()) {
         if (markers.isEmpty()) text(ctx, Fonts.MEDIUM, "Нет меток", cx, rowY + 6, C_TEXT_DIM, 9f);
     }
 
-     
-     
-     
     private void renderConfigTab(DrawContext ctx, float cx, float cw, float mY, int mouseX, int mouseY) {
         float inputW = cw - BTN_W - 6, saveX = cx + inputW + 6;
         drawInput(ctx, cx, mY, inputW, configInputFocused, configNameBuffer.toString(), "Имя конфига...");
@@ -909,9 +855,6 @@ if (desc != null && !desc.isEmpty()) {
         if (configs.length == 0) text(ctx, Fonts.MEDIUM, "Нет сохранённых конфигов", cx, rowY + 6, C_TEXT_DIM, 9f);
     }
 
-     
-     
-     
     private void drawInput(DrawContext ctx, float x, float y, float w, boolean focused, String value, String placeholder) {
         if (focused) rect(ctx, x - 1, y - 1, w + 2, INPUT_H + 2, ROW_R + 1, theme());
         rect(ctx, x, y, w, INPUT_H, INPUT_R, focused ? C_INNER_HOVER : C_INNER);
@@ -931,7 +874,6 @@ if (desc != null && !desc.isEmpty()) {
         text(ctx, Fonts.BOLD, label, x + w / 2f - width(Fonts.BOLD, label, 9f) / 2f, y + (h - 9) / 2f, C_WHITE, 9f);
     }
 
-      
     private void drawSearchIcon(DrawContext ctx, float x, float y, float size, int color, int bg) {
         float ring = size * 0.68f;
         float thick = Math.max(1.4f, size * 0.17f);
@@ -948,7 +890,6 @@ if (desc != null && !desc.isEmpty()) {
         return (al << 24) | (color & 0x00FFFFFF);
     }
 
-    /** Получить Color для ARGB-int без аллокации, если он уже в кеше. */
     private static java.awt.Color cachedColor(int argb) {
         return Render2D.cachedColor(argb);
     }
@@ -959,7 +900,6 @@ if (desc != null && !desc.isEmpty()) {
         Render2D.drawRoundedRect(ctx.getMatrices(), x, y, w, h, Math.min(r, Math.min(w, h) / 2f), cachedColor(c));
     }
 
- 
     public void rect(DrawContext ctx, float x, float y, float w, float h,
                       float rTL, float rTR, float rBR, float rBL, int color) {
         int c = a(color);
@@ -991,7 +931,7 @@ if (desc != null && !desc.isEmpty()) {
         try {
             Render2D.drawFont(ms, font.getFont(size), s, x, y, cachedColor(a(color)));
         } catch (IllegalStateException ignored) {
-             
+
         }
         ms.pop();
     }
@@ -1010,15 +950,10 @@ if (desc != null && !desc.isEmpty()) {
         return (alpha << 24) | (color & 0x00FFFFFF);
     }
 
-    /** ARGB тинта жидкого стекла: светлый прозрачный цвет + альфа 0..1.
-     *  Цвет темы намеренно не используется — стекло должно показывать фон
-     *  (преломление/блюр), а не заливать панель. */
     private static int glassTint(float alpha01) {
         return withAlpha(0xFFC8D7E6, (int) (Math.max(0f, Math.min(1f, alpha01)) * 255f));
     }
 
-    /** В режиме Liquid Glass внутренние элементы делаются прозрачными, чтобы
-     *  не перекрывать стекло панели — стекло должно оставаться видимым. */
     private static int elementFill(int fallback, float alpha) {
         if (!isLiquidGlass()) return fallback;
         return withAlpha(fallback, (int) (Math.max(0f, Math.min(1f, alpha)) * 255f));

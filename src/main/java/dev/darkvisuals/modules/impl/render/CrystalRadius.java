@@ -13,10 +13,6 @@ import net.minecraft.util.math.Vec3d;
 
 import java.awt.Color;
 
-/**
- * CrystalRadius — круг радиуса взрыва эндер-кристаллов на земле.
- * Полезно в кристальном PvP: сразу видно опасную зону.
- */
 public class CrystalRadius extends Module {
 
     private final NumberSetting range =
@@ -46,7 +42,6 @@ public class CrystalRadius extends Module {
         Vec3d playerPos = mc.player.getPos();
         long now = System.currentTimeMillis();
 
-        // лёгкая пульсация, чтобы круг был заметен
         float pulse = 0.8f + 0.2f * (float) Math.sin(now / 300.0);
         Render3D.DEBUG_LINE_WIDTH = lineWidth.getValue();
 

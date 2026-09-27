@@ -22,8 +22,6 @@ import java.util.concurrent.TimeUnit;
 
  public class UserTabManager {
 
-     
-     
     private static final String API_BASE = "http://159.194.201.201:8080/";
     private static final String REPORT_URL = API_BASE + "usertab/report";
     private static final String LIST_URL = API_BASE + "usertab/list";
@@ -50,13 +48,8 @@ import java.util.concurrent.TimeUnit;
         if (started) return;
         started = true;
 
-         
-         
-         
         scheduler.scheduleWithFixedDelay(UserTabManager::syncPresence, 0, POLL_INTERVAL_SECONDS, TimeUnit.SECONDS);
 
-         
-         
         ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
             scheduler.schedule(UserTabManager::syncPresence, 1, TimeUnit.SECONDS);
             scheduler.schedule(UserTabManager::syncPresence, 5, TimeUnit.SECONDS);

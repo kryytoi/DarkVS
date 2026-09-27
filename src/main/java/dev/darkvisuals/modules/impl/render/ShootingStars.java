@@ -29,7 +29,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
-
 public class ShootingStars extends Module {
 
     private final NumberSetting frequency =
@@ -85,9 +84,9 @@ public class ShootingStars extends Module {
     }
 
     private void spawnStar() {
-        // стартовая точка на куполе неба над игроком
+
         double theta = rnd.nextDouble() * Math.PI * 2;
-        double phi = 0.35 + rnd.nextDouble() * 0.45; // высота над горизонтом
+        double phi = 0.35 + rnd.nextDouble() * 0.45;
         double radius = 140;
 
         Vec3d center = mc.player.getPos();
@@ -96,7 +95,6 @@ public class ShootingStars extends Module {
                 Math.sin(phi) * radius,
                 Math.sin(theta) * Math.cos(phi) * radius);
 
-        // направление вдоль купола
         double dirAngle = theta + (rnd.nextBoolean() ? 1 : -1) * (0.6 + rnd.nextDouble() * 0.8);
         Vec3d dir = new Vec3d(
                 -Math.sin(dirAngle),
@@ -125,10 +123,9 @@ public class ShootingStars extends Module {
             float eased = (float) Easing.LINEAR.apply(star.progress);
             Vec3d head = star.start.add(star.dir.multiply(eased * 60f));
 
-            // хвост из сегментов, тающих к началу
             int segments = (int) (float) length.getValue();
             for (int i = 0; i < segments; i++) {
-                float f = 1f - i / (float) segments; // 1 у головы
+                float f = 1f - i / (float) segments;
                 float segFade = f * f * (1f - MathHelper.clamp(star.progress * 1.15f, 0f, 1f) * 0.3f);
                 int alpha = (int) (235 * segFade);
                 if (alpha <= 3) continue;

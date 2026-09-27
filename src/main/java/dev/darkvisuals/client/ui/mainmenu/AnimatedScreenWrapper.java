@@ -23,16 +23,15 @@ public class AnimatedScreenWrapper extends Screen {
     protected void init() {
         super.init();
         if (wrappedScreen != null) wrappedScreen.init(client, width, height);
-        alphaAnimation = new Animation(500, 1.0, true, Easing.OUT_EXPO);  
+        alphaAnimation = new Animation(500, 1.0, true, Easing.OUT_EXPO);
         isEntering = true;
     }
 
     @Override
     public void render(DrawContext drawContext, int mouseX, int mouseY, float delta) {
-         
+
         if (wrappedScreen != null) wrappedScreen.render(drawContext, mouseX, mouseY, delta);
 
-         
         float alpha = alphaAnimation.getValue();
         if (isEntering) {
             drawContext.fill(0, 0, width, height, (int)(255 * (1.0f - alpha)) << 24);
@@ -80,14 +79,14 @@ public class AnimatedScreenWrapper extends Screen {
     @Override
     public void tick() {
         if (wrappedScreen != null) wrappedScreen.tick();
-        if (isEntering && alphaAnimation.finished()) {  
+        if (isEntering && alphaAnimation.finished()) {
             isEntering = false;
         }
     }
 
     @Override
     public void close() {
-         
+
         if (client != null) {
             if (parentScreen != null) {
                 client.setScreen(parentScreen);

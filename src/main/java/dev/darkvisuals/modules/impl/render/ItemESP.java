@@ -14,9 +14,6 @@ import net.minecraft.util.math.Vec3d;
 
 import java.awt.Color;
 
-/**
- * ItemESP — подсветка выпавших предметов на земле.
- */
 public class ItemESP extends Module {
 
     private final NumberSetting range =

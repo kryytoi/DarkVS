@@ -23,9 +23,6 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Random;
 
-/**
- * FrostTrail — ледяной след за игроком с морозными кристаллами.
- */
 public class FrostTrail extends Module {
 
     private final NumberSetting density = new NumberSetting("Плотность", 20f, 4f, 60f, 4f);
@@ -114,7 +111,7 @@ public class FrostTrail extends Module {
             Matrix4f m = matrices.peek().getPositionMatrix();
             BufferBuilder buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
             int alpha = (int) (230 * fade);
-            // кристалл: два скрещённых квадрата
+
             buffer.vertex(m, 0, -sz, 0).color(140, 220, 255, alpha);
             buffer.vertex(m, -sz, 0, 0).color(140, 220, 255, alpha);
             buffer.vertex(m, 0, sz, 0).color(140, 220, 255, alpha);

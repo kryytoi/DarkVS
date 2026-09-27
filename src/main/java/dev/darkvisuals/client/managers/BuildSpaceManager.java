@@ -29,14 +29,6 @@ import org.lwjgl.glfw.GLFW;
 
 import java.awt.Color;
 
-/**
- * BuildSpaceManager — «пространство стройки» для Structure Visualer.
- *
- * Игрока переносит в небо над его текущей позицией (только на клиенте!) и
- * даёт креативный полёт. Все пакеты на сервер, кроме keep-alive, замораживаются —
- * на сервере игрок стоит на месте и вообще не двигается. Ставить блоки можно
- * ЛКМ/ПКМ (блоки виртуальные, на сервер не уходят), ESC — сохранить дом и выйти.
- */
 public class BuildSpaceManager implements Wrapper {
 
     private static BuildSpaceManager instance;
@@ -46,19 +38,18 @@ public class BuildSpaceManager implements Wrapper {
         return instance;
     }
 
-    private static final int PLATFORM_SIZE = 32;                  // площадка 32x32
-    private static final double BUILD_Y = 260.0;                  // высота площадки
-    private static final double REACH = 7.0;                      // дальность установки блоков
-    private static final double STEP = 0.05;                      // шаг луча
+    private static final int PLATFORM_SIZE = 32;
+    private static final double BUILD_Y = 260.0;
+    private static final double REACH = 7.0;
+    private static final double STEP = 0.05;
 
     private boolean active;
     private boolean subscribed;
 
     private final StructureData data = new StructureData();
-    private BlockPos origin = BlockPos.ORIGIN;                    // мировой угол площадки (блок [0,0,0] стоит на origin)
+    private BlockPos origin = BlockPos.ORIGIN;
     private StructureVisualer module;
 
-    // сохранённое состояние игрока — восстанавливается при выходе
     private double savedX, savedY, savedZ;
     private boolean savedAllowFlying, savedFlying, savedInvulnerable, savedCreative, savedNoClip;
     private int savedSlot;
@@ -67,7 +58,6 @@ public class BuildSpaceManager implements Wrapper {
         return active;
     }
 
-    /** Войти в пространство стройки. Вызывается кнопкой «Сделай дом». */
     public void enter() {
         if (active) return;
         if (mc.player == null || mc.world == null) {
@@ -84,10 +74,8 @@ public class BuildSpaceManager implements Wrapper {
             subscribed = true;
         }
 
-        // рабочая копия: прошлый дом можно продолжать достраивать
         module.getStructure().copyInto(data);
 
-        // сохранить состояние игрока
         ClientPlayerEntity p = mc.player;
         savedX = p.getX();
         savedY = p.getY();
@@ -100,9 +88,8 @@ public class BuildSpaceManager implements Wrapper {
         savedNoClip = p.noClip;
         savedSlot = p.getInventory().selectedSlot;
 
-        active = true; // пакеты замораживаются с этого момента
+        active = true;
 
-        // креатив + полёт + проход сквозь блоки
         ab.allowFlying = true;
         ab.flying = true;
         ab.invulnerable = true;
@@ -110,10 +97,8 @@ public class BuildSpaceManager implements Wrapper {
         p.noClip = true;
         p.fallDistance = 0f;
 
-        // Дать игроку возможность открывать инвентарь творческого режима
         mc.setScreen(new CreativeInventoryScreen(p, mc.world.getEnabledFeatures(), true));
 
-        // площадка по центру над игроком (та же колонка чанков — они уже загружены)
         origin = BlockPos.ofFloored(p.getX() - PLATFORM_SIZE / 2.0, BUILD_Y, p.getZ() - PLATFORM_SIZE / 2.0);
         teleportClient(p, origin.getX() + PLATFORM_SIZE / 2.0 + 0.5, BUILD_Y + 2.0,
                 origin.getZ() + PLATFORM_SIZE / 2.0 + 0.5);
@@ -122,11 +107,6 @@ public class BuildSpaceManager implements Wrapper {
                 "Режим стройки: возьмите блок в руку — ПКМ поставить, ЛКМ убрать, ESC — сохранить и выйти.", 5000));
     }
 
-    /**
-     * Выйти из пространства стройки.
-     * Сначала (пока пакеты ещё заморожены) возвращаем игрока на место,
-     * потом размораживаем пакеты — сервер не замечает телепорт.
-     */
     public void exit(boolean save) {
         if (!active) return;
         ClientPlayerEntity p = mc.player;
@@ -136,7 +116,7 @@ public class BuildSpaceManager implements Wrapper {
             teleportClient(p, savedX, savedY, savedZ);
         }
 
-        active = false; // пакеты разморожены
+        active = false;
 
         if (save && module != null) {
             saveData();
@@ -148,7 +128,6 @@ public class BuildSpaceManager implements Wrapper {
         }
     }
 
-    /** Сохранить построенное в структуру модуля и на диск (якорь сбрасывается — дом ещё не поставлен). */
     private void saveData() {
         if (module == null) return;
         module.getStructure().copyFrom(data);
@@ -156,7 +135,6 @@ public class BuildSpaceManager implements Wrapper {
         module.saveStructure();
     }
 
-    /** Вернуть игроку сохранённые способности, слот и коллизию. */
     private void restoreAbilities(ClientPlayerEntity p) {
         PlayerAbilities ab = p.getAbilities();
         ab.allowFlying = savedAllowFlying;
@@ -167,7 +145,6 @@ public class BuildSpaceManager implements Wrapper {
         p.getInventory().selectedSlot = savedSlot;
     }
 
-    /** Телепорт только на клиенте (сервер о нём не узнает — пакеты заморожены). */
     private void teleportClient(ClientPlayerEntity p, double x, double y, double z) {
         p.prevX = x;
         p.prevY = y;
@@ -179,11 +156,6 @@ public class BuildSpaceManager implements Wrapper {
         p.fallDistance = 0f;
     }
 
-    // ------------------------------------------------------------------
-    // ввод (вызывается из BuildSpaceMouseMixin)
-    // ------------------------------------------------------------------
-
-    /** ЛКМ/ПКМ в режиме стройки: 0 — убрать блок, 1 — поставить блок из руки. */
     public void onMouseButton(int button, int action) {
         if (!active || mc.player == null || mc.world == null) return;
         if (action != GLFW.GLFW_PRESS) return;
@@ -192,7 +164,7 @@ public class BuildSpaceManager implements Wrapper {
         if (hit == null) return;
 
         if (button == 0) {
-            // ЛКМ — убрать блок
+
             if (hit.breakPos() != null) {
                 int rx = hit.breakPos().getX() - origin.getX();
                 int ry = hit.breakPos().getY() - origin.getY();
@@ -202,7 +174,7 @@ public class BuildSpaceManager implements Wrapper {
                 }
             }
         } else if (button == 1) {
-            // ПКМ — поставить блок из руки
+
             if (hit.placePos() == null) return;
             String blockId = heldBlockId();
             if (blockId == null) {
@@ -219,7 +191,6 @@ public class BuildSpaceManager implements Wrapper {
         }
     }
 
-    /** id блока в основной руке (null, если в руке не блок). */
     private String heldBlockId() {
         ItemStack stack = mc.player.getMainHandStack();
         if (stack.getItem() instanceof BlockItem blockItem) {
@@ -235,11 +206,6 @@ public class BuildSpaceManager implements Wrapper {
                 && relY >= 0 && relY < StructureData.MAX_HEIGHT;
     }
 
-    // ------------------------------------------------------------------
-    // луч до виртуальных блоков / площадки
-    // ------------------------------------------------------------------
-
-    /** breakPos — виртуальный блок под прицелом (или null), placePos — клетка, куда встанет новый блок. */
     public record RayHit(BlockPos breakPos, BlockPos placePos) {}
 
     public RayHit raycast() {
@@ -260,13 +226,11 @@ public class BuildSpaceManager implements Wrapper {
 
             Direction side = sideFromDir(dir);
 
-            // виртуальный блок?
             if (data.contains(cx - ox, cy - oy, cz - oz)) {
                 BlockPos abs = new BlockPos(cx, cy, cz);
                 return new RayHit(abs, abs.offset(side));
             }
 
-            // площадка: её клетки пустые, ставим прямо на пол
             if (cy == oy && inBounds(cx - ox, 0, cz - oz) && !data.contains(cx - ox, 0, cz - oz)) {
                 return new RayHit(null, new BlockPos(cx, cy, cz));
             }
@@ -278,17 +242,12 @@ public class BuildSpaceManager implements Wrapper {
         return null;
     }
 
-    /** Грань, через которую луч входит в новую клетку (по доминирующей оси взгляда). */
     private Direction sideFromDir(Vec3d dir) {
         double ax = Math.abs(dir.x), ay = Math.abs(dir.y), az = Math.abs(dir.z);
         if (ax >= ay && ax >= az) return dir.x > 0 ? Direction.WEST : Direction.EAST;
         if (ay >= ax && ay >= az) return dir.y > 0 ? Direction.DOWN : Direction.UP;
         return dir.z > 0 ? Direction.NORTH : Direction.SOUTH;
     }
-
-    // ------------------------------------------------------------------
-    // события
-    // ------------------------------------------------------------------
 
     @EventHandler
     public void onTick(EventTick event) {
@@ -300,7 +259,6 @@ public class BuildSpaceManager implements Wrapper {
             return;
         }
 
-        // Принудительно включаем режим полноценного креатива в пространстве стройки
         PlayerAbilities ab = mc.player.getAbilities();
         ab.creativeMode = true;
         ab.allowFlying = true;
@@ -322,7 +280,6 @@ public class BuildSpaceManager implements Wrapper {
 
         int ox = origin.getX(), oy = origin.getY(), oz = origin.getZ();
 
-        // --- площадка: полупрозрачный пол + рамка + сетка ---
         Box floor = new Box(ox, oy, oz,
                 ox + PLATFORM_SIZE, oy + 0.08, oz + PLATFORM_SIZE);
         Render3D.renderBox(e.getMatrices(), floor, new Color(120, 170, 255, 55));
@@ -338,10 +295,8 @@ public class BuildSpaceManager implements Wrapper {
                     new Color(255, 255, 255, 45).getRGB(), 1f);
         }
 
-        // --- блоки: реальные, плотные ---
         StructureRenderer.renderBlocks(e.getMatrices(), data.getBlocks(), origin, 1.0f);
 
-        // --- прицел ---
         RayHit hit = raycast();
         if (hit != null) {
             if (hit.breakPos() != null) {

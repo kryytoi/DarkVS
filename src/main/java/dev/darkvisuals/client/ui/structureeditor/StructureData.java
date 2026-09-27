@@ -17,16 +17,13 @@ import java.util.Map;
 
  public class StructureData {
 
-      
     public static final int MAX_HEIGHT = 32;
 
     private final Map<String, String> blocks = new LinkedHashMap<>();
 
-    // закреплённая позиция дома в мире (сохраняется вместе с блоками)
     private boolean hasAnchor = false;
     private int anchorX, anchorY, anchorZ;
 
-      
     public record PlacedBlock(int x, int y, int z, String blockId) {}
 
     private static String key(int x, int y, int z) {
@@ -73,7 +70,7 @@ import java.util.Map;
             try {
                 list.add(new PlacedBlock(Integer.parseInt(p[0]), Integer.parseInt(p[1]), Integer.parseInt(p[2]), e.getValue()));
             } catch (NumberFormatException ignored) {
-                 
+
             }
         }
         return list;
@@ -92,7 +89,6 @@ import java.util.Map;
         anchorZ = other.anchorZ;
     }
 
-
     public void copyInto(StructureData other) {
         other.blocks.clear();
         other.blocks.putAll(blocks);
@@ -102,7 +98,6 @@ import java.util.Map;
         other.anchorZ = anchorZ;
     }
 
-    /** Закрепить позицию дома в мире. */
     public void setAnchor(int x, int y, int z) {
         anchorX = x;
         anchorY = y;
@@ -110,7 +105,6 @@ import java.util.Map;
         hasAnchor = true;
     }
 
-    /** Убрать закреплённую позицию (дом ещё не поставлен). */
     public void clearAnchor() {
         hasAnchor = false;
     }
@@ -119,21 +113,15 @@ import java.util.Map;
         return hasAnchor;
     }
 
-    /** Закреплённая позиция или null, если дом ещё не поставлен. */
     public BlockPos getAnchor() {
         return hasAnchor ? new BlockPos(anchorX, anchorY, anchorZ) : null;
     }
 
-      
     public int miny() {
         int m = MAX_HEIGHT;
         for (PlacedBlock b : getBlocks()) m = Math.min(m, b.y());
         return m == MAX_HEIGHT ? 0 : m;
     }
-
-     
-     
-     
 
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
@@ -172,7 +160,7 @@ import java.util.Map;
                 if (y < 0 || y >= MAX_HEIGHT) continue;
                 blocks.put(key(x, y, z), e.getValue().getAsString());
             } catch (RuntimeException ignored) {
-                 
+
             }
         }
         return true;

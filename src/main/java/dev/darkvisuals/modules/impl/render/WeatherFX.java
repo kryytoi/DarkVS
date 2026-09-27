@@ -32,7 +32,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
-
 public class WeatherFX extends Module {
 
     public enum Mode implements Nameable {
@@ -104,7 +103,6 @@ public class WeatherFX extends Module {
         double speed = snow ? 0.12 : 0.9;
         speed *= fallSpeed.getValue();
 
-        // поддерживаем количество капель/снежинок
         int target = (int) (density.getValue() * (onlyRaining.getValue() ? Math.max(0.4f, mc.world.getRainGradient(1.0f)) : 1f));
         while (drops.size() < target) {
             double ang = rnd.nextDouble() * Math.PI * 2;
@@ -124,14 +122,14 @@ public class WeatherFX extends Module {
             drop.prevPos = drop.pos;
 
             if (snow) {
-                // снежинка медленно порхает вниз
+
                 drop.pos = drop.pos.add(
                         Math.sin(drop.swayPhase + drop.age * 0.07) * 0.02,
                         -speed,
                         Math.cos(drop.swayPhase + drop.age * 0.05) * 0.02);
                 drop.age++;
             } else {
-                // капля летит быстро и строго вниз
+
                 drop.pos = drop.pos.add(0, -speed, 0);
             }
 
@@ -142,7 +140,7 @@ public class WeatherFX extends Module {
                 if (landed && !snow && splashes.getValue() && splashRings.size() < MAX_SPLASHES) {
                     splashRings.add(new Splash(new Vec3d(drop.pos.x, below.up().getY(), drop.pos.z)));
                 }
-                // пересоздаём каплю сверху
+
                 double ang = rnd.nextDouble() * Math.PI * 2;
                 double dist = radius.getValue() * Math.sqrt(rnd.nextDouble());
                 drop.pos = mc.player.getPos().add(Math.cos(ang) * dist, 8 + rnd.nextDouble() * 6, Math.sin(ang) * dist);
@@ -188,7 +186,7 @@ public class WeatherFX extends Module {
                 buffer.vertex(matrix, half, half, 0).color(c.getRed(), c.getGreen(), c.getBlue(), alpha);
                 buffer.vertex(matrix, half, -half, 0).color(c.getRed(), c.getGreen(), c.getBlue(), alpha);
             } else {
-                // вытянутая капля-струя
+
                 float w = 0.012f;
                 float len = 0.32f * fallSpeed.getValue();
                 int alpha = 150;
@@ -201,7 +199,6 @@ public class WeatherFX extends Module {
             matrices.pop();
         }
 
-        // расходящиеся кольца брызг
         for (Splash splash : splashRings) {
             float t = (now - splash.birth) / (float) SPLASH_TTL_MS;
             float radius = (float) Easing.OUT_QUAD.apply(t) * 0.35f;

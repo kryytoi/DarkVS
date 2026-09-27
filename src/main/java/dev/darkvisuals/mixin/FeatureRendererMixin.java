@@ -15,7 +15,6 @@ public abstract class FeatureRendererMixin {
 
     private static final Identifier SV_WHITE = Identifier.of("minecraft", "textures/misc/white.png");
 
-     
     @Redirect(method = "*",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/RenderLayer;getArmorCutoutNoCull(Lnet/minecraft/util/Identifier;)Lnet/minecraft/client/render/RenderLayer;"))
     private RenderLayer darkvisuals$armorLayer(Identifier texture) {
@@ -26,5 +25,4 @@ public abstract class FeatureRendererMixin {
         return RenderLayer.getArmorCutoutNoCull(texture);
     }
 }
-
 

@@ -15,10 +15,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-/**
- * DARKA-0.1 — встроенный ИИ-ассистент клиента DarkVS.
- * Поддерживает Hugging Face Serverless, OpenRouter и автоматический бесплатный Fallback.
- */
 public class DarkaManager {
 
     private static final HttpClient HTTP = HttpClient.newBuilder()
@@ -26,18 +22,14 @@ public class DarkaManager {
             .followRedirects(HttpClient.Redirect.NORMAL)
             .build();
 
-    // Заголовок браузера для обхода WAF/Cloudflare блокировок (403)
     private static final String USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36";
 
-    // Бесплатный Serverless роутер Hugging Face (с обязательным префиксом /hf-inference/)
     private static final String HF_CHAT_URL = "https://router.huggingface.co/hf-inference/v1/chat/completions";
     private static final String HF_DEFAULT_MODEL = "deepseek-ai/DeepSeek-V4.1-Flash";
 
-    // OpenRouter (на случай ключей sk-or-... / sk-...)
     private static final String OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
     private static final String OPENROUTER_DEFAULT_MODEL = "qwen/qwen-2.5-7b-instruct";
 
-    // Открытый бесплатный резервный шлюз без необходимости API-ключа
     private static final String FREE_FALLBACK_URL = "https://text.pollinations.ai/openai/chat/completions";
     private static final String FREE_DEFAULT_MODEL = "qwen";
 
@@ -76,7 +68,6 @@ public class DarkaManager {
         return k != null && !k.isBlank();
     }
 
-    /** Добавить сообщение игрока и отправить запрос модели. */
     public static CompletableFuture<Void> ask(String userText) {
         if (userText == null || userText.isBlank()) return CompletableFuture.completedFuture(null);
         history.add(new Message(true, userText));
@@ -86,17 +77,14 @@ public class DarkaManager {
         String rawKey = apiKey();
         String key = rawKey != null ? rawKey.trim() : "";
 
-        // Если ключ не задан, сразу используем бесплатный шлюз
         if (key.isEmpty()) {
             return executeChatRequest(FREE_FALLBACK_URL, null, FREE_DEFAULT_MODEL, false);
         }
 
-        // Если ключ от OpenRouter
         if (key.startsWith("sk-or-") || key.startsWith("sk-")) {
             return executeChatRequest(OPENROUTER_URL, key, OPENROUTER_DEFAULT_MODEL, true);
         }
 
-        // По умолчанию для Hugging Face
         return executeChatRequest(HF_CHAT_URL, key, HF_DEFAULT_MODEL, true);
     }
 
@@ -133,7 +121,6 @@ public class DarkaManager {
                         }
                     }
 
-                    // Если провайдер вернул 401, 403 (запрет доступа) или ошибку — переключаемся на Fallback
                     if (allowFallback) {
                         return executeChatRequest(FREE_FALLBACK_URL, null, FREE_DEFAULT_MODEL, false);
                     }

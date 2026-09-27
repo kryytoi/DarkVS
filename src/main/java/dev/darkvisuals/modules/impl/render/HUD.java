@@ -26,7 +26,6 @@ public class HUD extends Module {
     private final BooleanSetting keybinds = new BooleanSetting("KeybindsHUD", true);
     private final BooleanSetting inventory = new BooleanSetting("Inventory", true);
 
-    // ==== Кастомизация ватермарки ====
     private final StringSetting watermarkName = new StringSetting("Название", "Dark Visuals", false);
     private final BooleanSetting customLogo = new BooleanSetting("Свой логотип", false);
     private final StringSetting logoFile = new StringSetting("Файл логотипа", "logo.png", () -> customLogo.getValue(), false);
@@ -66,8 +65,6 @@ public class HUD extends Module {
         }
         return null;
     }
-
-    // ==== геттеры/сеттеры ватермарки ====
 
     public String getWatermarkName() {
         String v = watermarkName.getValue();

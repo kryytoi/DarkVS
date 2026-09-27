@@ -37,10 +37,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
-/**
- * ShieldBreakFX — эффектный визуальный оверхол при пробитии щита:
- * ударная 3D-волна, разлёт металлических искр и осколков щита с физикой.
- */
 public class ShieldBreakFX extends Module {
 
     public enum ColorMode implements Nameable {
@@ -93,7 +89,7 @@ public class ShieldBreakFX extends Module {
         if (fullNullCheck()) return;
 
         if (event.getPacket() instanceof EntityStatusS2CPacket packet) {
-            // Статус 30 — отключение щита топором (BREAK_SHIELD)
+
             if (packet.getStatus() == 30) {
                 mc.execute(() -> {
                     if (mc.world == null || mc.player == null) return;
@@ -208,7 +204,6 @@ public class ShieldBreakFX extends Module {
         RenderSystem.disableCull();
         RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR);
 
-        // 1. Ударные волны (кольца)
         if (!rings.isEmpty()) {
             BufferBuilder buf = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
             for (ShockRing r : rings) {
@@ -246,7 +241,6 @@ public class ShieldBreakFX extends Module {
             BufferRenderer.drawWithGlobalProgram(buf.end());
         }
 
-        // 2. Искры
         if (!sparkList.isEmpty()) {
             BufferBuilder buf = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
             for (Spark sp : sparkList) {
@@ -273,7 +267,6 @@ public class ShieldBreakFX extends Module {
             BufferRenderer.drawWithGlobalProgram(buf.end());
         }
 
-        // 3. Осколки щита
         if (!shardList.isEmpty()) {
             BufferBuilder buf = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
             for (Shard sh : shardList) {
@@ -291,7 +284,6 @@ public class ShieldBreakFX extends Module {
                 float s = sh.size;
                 float cr = sh.color.getRed() / 255f, cg = sh.color.getGreen() / 255f, cb = sh.color.getBlue() / 255f;
 
-                // Рисуем трёхмерный осколок в форме треугольной пластинки
                 buf.vertex(m, -s, -s * 0.5f, 0f).color(cr, cg, cb, a);
                 buf.vertex(m, s * 1.2f, 0f, 0f).color(cr, cg, cb, a);
                 buf.vertex(m, 0f, s * 1.4f, 0f).color(cr * 1.2f, cg * 1.2f, cb * 1.2f, a);

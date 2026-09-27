@@ -16,7 +16,6 @@ public class CapModel {
 
     private static final Identifier BLANK_TEXTURE = Identifier.of("minecraft", "textures/misc/white.png");
 
-     
     private static final int COLOR_YELLOW = 0xFDD835;
     private static final int COLOR_RED    = 0xE53935;
     private static final int COLOR_BLUE   = 0x1E88E5;
@@ -24,14 +23,12 @@ public class CapModel {
     private static final int COLOR_AXIS   = 0x1565C0;
 
     public void render(MatrixStack ms, VertexConsumerProvider vcp, int light, float propellerRotation) {
-         
-         
+
         VertexConsumer vc = vcp.getBuffer(RenderLayer.getEntityCutoutNoCull(BLANK_TEXTURE));
         int overlay = OverlayTexture.DEFAULT_UV;
 
         ms.push();
 
-         
         float crownY0 = 3.0F, crownH = 3.2F;
         float crownZ0 = -4.2F, crownD = 8.4F;
 
@@ -39,16 +36,13 @@ public class CapModel {
         colorCube(ms, vc, light, overlay, -1.6F, crownY0, crownZ0, 3.2F, crownH, crownD, COLOR_RED);
         colorCube(ms, vc, light, overlay,  1.6F, crownY0, crownZ0, 3.0F, crownH, crownD, COLOR_BLUE);
 
-         
         colorCube(ms, vc, light, overlay, -4.6F, crownY0 - 0.4F, crownZ0 - 2.4F, 9.2F, 0.6F, 2.6F, COLOR_GREEN);
 
-         
         float beadY = crownY0 + crownH;
         colorCube(ms, vc, light, overlay, -0.4F, beadY,        -0.4F, 0.8F, 0.6F, 0.8F, COLOR_YELLOW);
         colorCube(ms, vc, light, overlay, -0.4F, beadY + 0.6F, -0.4F, 0.8F, 0.6F, 0.8F, COLOR_RED);
         colorCube(ms, vc, light, overlay, -0.4F, beadY + 1.2F, -0.4F, 0.8F, 0.6F, 0.8F, COLOR_BLUE);
 
-         
         float axisY = beadY + 1.8F;
         colorCube(ms, vc, light, overlay, -0.15F, axisY, -0.15F, 0.3F, 1.0F, 0.3F, COLOR_AXIS);
 
@@ -56,7 +50,6 @@ public class CapModel {
         ms.translate(0.0F, (axisY + 1.0F) * 0.0625F, 0.0F);
         ms.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(propellerRotation));
 
-         
         colorCube(ms, vc, light, overlay, -5.0F, 0.0F, -0.5F, 10.0F, 0.2F, 1.0F, COLOR_BLUE);
 
         ms.pop();

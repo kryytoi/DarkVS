@@ -29,7 +29,6 @@ import net.minecraft.entity.player.PlayerEntity;
 		MinecraftClient client = MinecraftClient.getInstance();
 		if (self == null || client.player != self) return;
 
-		 
 		if (canCrit(self)) {
 			this.sneakTicksLeft = holdTicks.getValue().intValue();
 		}
@@ -59,4 +58,4 @@ import net.minecraft.entity.player.PlayerEntity;
 		if (player.isSprinting()) return false;
 		return true;
 	}
-} 
+}

@@ -40,19 +40,16 @@ public abstract class InGameHudMixin {
         } catch (Throwable ignored) {}
     }
 
-     
     @Inject(method = "renderStatusBars", at = @At("HEAD"), cancellable = true)
     public void cancelStatusBars(DrawContext context, CallbackInfo ci) {
         if (isHudHotbarEnabled()) ci.cancel();
     }
 
-     
     @Inject(method = "renderExperienceBar", at = @At("HEAD"), cancellable = true)
     public void cancelXpBar(DrawContext context, int i, CallbackInfo ci) {
         if (isHudHotbarEnabled()) ci.cancel();
     }
 
-     
     @Inject(method = "renderExperienceLevel", at = @At("HEAD"), cancellable = true)
     public void cancelXpLevel(DrawContext context, RenderTickCounter tickCounter, CallbackInfo ci) {
         if (isHudHotbarEnabled()) ci.cancel();
@@ -63,8 +60,6 @@ public abstract class InGameHudMixin {
         var setting = darkvisuals.getInstance().getHudManager().getElements().getName("Hotbar");
         return setting instanceof BooleanSetting bs && bs.getValue();
     }
-
-     
 
     @Inject(method = "renderStatusEffectOverlay", at = @At("HEAD"), cancellable = true)
     public void renderStatusEffectOverlay(DrawContext context, RenderTickCounter tickCounter, CallbackInfo ci) {
@@ -83,7 +78,7 @@ public abstract class InGameHudMixin {
     @Inject(method = "renderCrosshair", at = @At("HEAD"), cancellable = true)
     public void renderCrosshair(DrawContext context, RenderTickCounter tickCounter, CallbackInfo ci) {
         if (darkvisuals.getInstance().getModuleManager().getModule(Crosshair.class).isToggled()) {
-            ci.cancel();  
+            ci.cancel();
         }
     }
 

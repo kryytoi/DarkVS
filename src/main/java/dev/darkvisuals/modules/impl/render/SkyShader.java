@@ -24,7 +24,6 @@ import org.lwjgl.opengl.GL11;
 
 import java.awt.Color;
 
- 
 public class SkyShader extends Module {
 
     private final EnumSetting<SkyShaderMode> mode =
@@ -125,7 +124,6 @@ public class SkyShader extends Module {
         ShaderProgram shader = RenderSystem.setShader(key);
         if (shader == null) return;
 
-         
         shader.getUniform("uTime").set(time);
         shader.getUniform("uResolution").set(fw, fh);
         shader.getUniform("uColor").set(cr, cg, cb);
@@ -140,7 +138,6 @@ public class SkyShader extends Module {
         shader.getUniform("uCameraDir").set(yawRad, pitchRad);
         shader.getUniform("uFov").set((float) mc.options.getFov().getValue().intValue());
 
-         
         Matrix4f savedProj = new Matrix4f(RenderSystem.getProjectionMatrix());
         RenderSystem.setProjectionMatrix(new Matrix4f(), ProjectionType.ORTHOGRAPHIC);
 
@@ -151,8 +148,6 @@ public class SkyShader extends Module {
         RenderSystem.depthMask(false);
         RenderSystem.disableCull();
 
-         
-         
         Matrix4f identity = new Matrix4f();
         BufferBuilder buf = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION);
         buf.vertex(identity, -1f, -1f, 1f);
@@ -161,7 +156,6 @@ public class SkyShader extends Module {
         buf.vertex(identity, -1f, 1f, 1f);
         BufferRenderer.drawWithGlobalProgram(buf.end());
 
-         
         RenderSystem.depthMask(true);
         RenderSystem.enableCull();
         RenderSystem.disableBlend();

@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(PlayerListHud.class)
 public class PlayerListHudNameProtectMixin {
-    
+
     @Inject(method = "getPlayerName", at = @At("RETURN"), cancellable = true)
     private void modifyPlayerName(PlayerListEntry entry, CallbackInfoReturnable<Text> cir) {
         NameProtect nameProtect = NameProtect.getInstance();

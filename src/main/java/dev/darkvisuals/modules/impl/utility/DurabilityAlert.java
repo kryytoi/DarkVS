@@ -14,10 +14,6 @@ import net.minecraft.item.ItemStack;
 import java.util.HashSet;
 import java.util.Set;
 
-/**
- * DurabilityAlert — предупреждение о низком запасе прочности.
- * Одно предупреждение на предмет, пока он не починен выше порога.
- */
 public class DurabilityAlert extends Module {
 
     private final NumberSetting threshold = new NumberSetting("Порог %", 15f, 1f, 80f, 1f);

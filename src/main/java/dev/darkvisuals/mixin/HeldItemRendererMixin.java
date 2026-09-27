@@ -76,7 +76,7 @@ public abstract class HeldItemRendererMixin implements Wrapper {
             }
 
             if (arm == Arm.LEFT) {
-                x = -x;  
+                x = -x;
             }
 
             matrices.translate(x, y, z);
@@ -93,7 +93,7 @@ public abstract class HeldItemRendererMixin implements Wrapper {
     public void redirectRenderItemWithOutline(HeldItemRenderer instance,
                                               LivingEntity entity, ItemStack stack, ModelTransformationMode renderMode,
                                               boolean leftHanded, MatrixStack itemMatrices, VertexConsumerProvider itemVertexConsumers, int itemLight,
-                                               
+
                                               AbstractClientPlayerEntity player, float tickDelta, float pitch, Hand hand,
                                               float swingProgress, ItemStack item, float equipProgress,
                                               MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light) {
@@ -110,12 +110,11 @@ public abstract class HeldItemRendererMixin implements Wrapper {
             return;
         }
 
-         
         BoundsCapturingProvider capture = new BoundsCapturingProvider(itemVertexConsumers);
         this.renderItem(entity, stack, renderMode, leftHanded, itemMatrices, capture, itemLight);
 
         if (capture.hasBounds()) {
-             
+
             float pad = 0.006f;
             MatrixStack identity = new MatrixStack();
             VertexConsumer lines = itemVertexConsumers.getBuffer(RenderLayer.getLines());

@@ -25,14 +25,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
-/**
- * CherryBlossom — лепестки сакуры, кружящиеся вокруг игрока.
- * Маленькие розово-белые квады медленно падают, качаются
-                и имитируют вращение через осцилляцию ширины билборда.
- */
 public class CherryBlossom extends Module {
 
-    // оттенки лепестков: от белого до насыщенно-розового
     private static final Color[] PETAL_COLORS = {
             new Color(255, 240, 245),
             new Color(255, 214, 224),
@@ -97,7 +91,7 @@ public class CherryBlossom extends Module {
         while (it.hasNext()) {
             Petal p = it.next();
             p.age++;
-            // падение и зигзугообразное скольжение по ветру
+
             p.pos = p.pos.add(
                     Math.sin(p.age * p.swaySpeed + p.swayPhase) * 0.012 * swayAmount,
                     -0.028 * speed,
@@ -131,9 +125,9 @@ public class CherryBlossom extends Module {
         float base = size.getValue();
 
         for (Petal p : petals) {
-            // плавное появление лепестка
+
             float fade = Math.min(p.age / 12f, 1f);
-            // имитация вращения: ширина лепестка колеблется
+
             float spin = (float) Math.sin(p.age * p.rotSpeed + p.rotPhase);
             float halfW = base * p.sizeScale * (0.35f + 0.65f * Math.abs(spin));
             float halfH = base * p.sizeScale * (0.85f + 0.15f * spin);

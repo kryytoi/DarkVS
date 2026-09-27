@@ -27,7 +27,6 @@ public abstract class Module implements Wrapper {
         this.description = description;
     }
 
-     
     public Module(String name, Category category) {
         this(name, category, name);
     }
@@ -61,7 +60,7 @@ public abstract class Module implements Wrapper {
     }
     if (toggled) onEnable();
     else onDisable();
-         
+
         try {
             dev.darkvisuals.client.managers.AutoSaveManager asm = darkvisuals.getInstance().getAutoSaveManager();
             if (asm != null) asm.scheduleAutoSave();

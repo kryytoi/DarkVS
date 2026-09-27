@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;
 
 @Mixin(EntityRenderer.class)
 public class EntityRendererNameProtectMixin<T extends Entity> {
-    
+
     @ModifyVariable(
         method = "renderLabelIfPresent",
         at = @At("HEAD"),

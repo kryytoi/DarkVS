@@ -28,7 +28,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
-
 public class AmbientMotes extends Module {
 
     private static final long MOTE_TTL_MS = 6000L;
@@ -70,7 +69,6 @@ public class AmbientMotes extends Module {
             return;
         }
 
-        // поддерживаем популяцию пылинок
         while (motes.size() < density.getValue()) {
             motes.add(new Mote(mc.player.getPos().add(
                     (rnd.nextDouble() - 0.5) * 2 * radius.getValue(),
@@ -87,7 +85,6 @@ public class AmbientMotes extends Module {
             mote.prevPos = mote.pos;
             mote.age++;
 
-            // медленный дрейф по синусоидальным орбитам
             double t = mote.age / 40.0;
             mote.pos = mote.pos.add(
                     Math.sin(t * 0.35 + mote.phase) * 0.012,
@@ -97,7 +94,7 @@ public class AmbientMotes extends Module {
             long age = System.currentTimeMillis() - mote.birth;
             if (age >= MOTE_TTL_MS
                     || mote.pos.distanceTo(mc.player.getPos()) > radius.getValue() * 1.6) {
-                // переспавн вокруг игрока
+
                 mote.pos = mc.player.getPos().add(
                         (rnd.nextDouble() - 0.5) * 2 * radius.getValue(),
                         (rnd.nextDouble() - 0.5) * 4,
@@ -127,10 +124,10 @@ public class AmbientMotes extends Module {
 
         for (Mote mote : motes) {
             float lifeT = (now - mote.birth) / (float) MOTE_TTL_MS;
-            // плавное появление и исчезновение
+
             float fadeIn = MathHelper.clamp(lifeT / 0.15f, 0f, 1f);
             float fadeOut = MathHelper.clamp((1f - lifeT) / 0.15f, 0f, 1f);
-            // мерцание пылинки
+
             float twinkle = 0.6f + 0.4f * MathHelper.sin(now / 400f + mote.phase * 5f);
             int alpha = (int) (160 * fadeIn * fadeOut * twinkle);
             if (alpha <= 3) continue;

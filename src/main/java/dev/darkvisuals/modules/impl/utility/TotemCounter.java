@@ -15,8 +15,8 @@ import java.awt.*;
 
 public class TotemCounter extends Module {
 
-    private static final float ICON_SIZE = 16.0f;  
-    private static final float TEXT_SCALE = 1.0f;  
+    private static final float ICON_SIZE = 16.0f;
+    private static final float TEXT_SCALE = 1.0f;
     private static final Identifier TOTEM_TEXTURE = Identifier.of("minecraft", "textures/item/totem_of_undying.png");
 
     public TotemCounter() {
@@ -30,20 +30,16 @@ public class TotemCounter extends Module {
         MinecraftClient mc = MinecraftClient.getInstance();
         if (mc.player == null) return;
 
-         
         int totemCount = countTotems();
 
-         
         float centerX = mc.getWindow().getScaledWidth() / 2.0f;
         float centerY = mc.getWindow().getScaledHeight() / 2.0f;
 
-         
-        float iconX = centerX + 10.0f;  
-        float iconY = centerY - (ICON_SIZE / 2.0f);  
-        float textX = iconX + ICON_SIZE + 4.0f;  
-        float textY = iconY + (ICON_SIZE / 2.0f) - (mc.textRenderer.fontHeight * TEXT_SCALE / 2.0f);  
+        float iconX = centerX + 10.0f;
+        float iconY = centerY - (ICON_SIZE / 2.0f);
+        float textX = iconX + ICON_SIZE + 4.0f;
+        float textY = iconY + (ICON_SIZE / 2.0f) - (mc.textRenderer.fontHeight * TEXT_SCALE / 2.0f);
 
-         
         e.getContext().getMatrices().push();
         e.getContext().getMatrices().translate(iconX, iconY, 0);
         Render2D.drawTexture(
@@ -51,11 +47,10 @@ public class TotemCounter extends Module {
                 0, 0, ICON_SIZE, ICON_SIZE,
                 0f,
                 TOTEM_TEXTURE,
-                new Color(255, 255, 255, 255)  
+                new Color(255, 255, 255, 255)
         );
         e.getContext().getMatrices().pop();
 
-         
         String countText = String.valueOf(totemCount);
         e.getContext().getMatrices().push();
         e.getContext().getMatrices().translate(textX, textY, 0);
@@ -65,8 +60,8 @@ public class TotemCounter extends Module {
                 Text.of(countText),
                 0,
                 0,
-                new Color(255, 255, 255, 255).getRGB(),  
-                true  
+                new Color(255, 255, 255, 255).getRGB(),
+                true
         );
         e.getContext().getMatrices().pop();
     }

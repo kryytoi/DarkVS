@@ -126,27 +126,18 @@ public final class MsdfFont {
 						+ "; Are you sure this is a json file? Check its syntax.");
 			}
 
-			 
-			 
-			 
-			 
-			 
-			 
-			 
 			if (data.atlas() == null || data.metrics() == null
 					|| data.glyphs() == null || data.kernings() == null) {
 				throw new RuntimeException("Font data not fully loaded yet: " + this.dataIdentifer
 						+ " (atlas/metrics/glyphs/kernings is null). Resources are probably still reloading — will retry.");
 			}
 
-			 
-			 
 			net.minecraft.client.texture.TextureManager tm =
 					MinecraftClient.getInstance().getTextureManager();
 
 			AbstractTexture texture = tm.getTexture(this.atlasIdentifier);
 			if (texture == null) {
-				 
+
 				tm.registerTexture(this.atlasIdentifier,
 						new net.minecraft.client.texture.ResourceTexture(this.atlasIdentifier));
 				texture = tm.getTexture(this.atlasIdentifier);
@@ -164,7 +155,7 @@ public final class MsdfFont {
 					.collect(Collectors.toMap(
 							GlyphData::unicode,
 							(glyphData) -> new MsdfGlyph(glyphData, aWidth, aHeight),
-							(a, b) -> a));  
+							(a, b) -> a));
 
 			Map<Integer, Map<Integer, Float>> kernings = new HashMap<>();
 			data.kernings().forEach((kerning) -> {

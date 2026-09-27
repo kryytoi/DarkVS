@@ -14,9 +14,6 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.Vec3d;
 import org.joml.Matrix4f;
 
-/**
- * StaticField — мерцающее статическое поле под ногами игрока.
- */
 public class StaticField extends Module {
 
     private final NumberSetting size = new NumberSetting("Размер", 3f, 1f, 10f, 0.5f);

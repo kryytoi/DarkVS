@@ -13,7 +13,6 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;
 
 import java.util.Optional;
 
- 
 @Mixin(DisplayEntityRenderer.TextDisplayEntityRenderer.class)
 public class UserTabTextDisplayMixin {
 
@@ -29,7 +28,6 @@ public class UserTabTextDisplayMixin {
                 return text;
             }
 
-             
             if (userTab.hasBadge(text)) return text;
 
             String name = userTab.findDarkVisualsUserName(text.getString());
@@ -41,7 +39,6 @@ public class UserTabTextDisplayMixin {
         }
     }
 
- 
     @Unique
     private static Text darkvisuals$insertBadgeBeforeName(Text text, String name) {
         MutableText rebuilt = Text.empty();
@@ -52,13 +49,13 @@ public class UserTabTextDisplayMixin {
             if (!inserted[0]) {
                 int idx = str.toLowerCase().indexOf(lowerName);
                 if (idx != -1) {
-                     
+
                     if (idx > 0) {
                         rebuilt.append(Text.literal(str.substring(0, idx)).setStyle(style));
                     }
-                     
+
                     rebuilt.append(UserTabBadge.apply(Text.empty()));
-                     
+
                     rebuilt.append(Text.literal(str.substring(idx)).setStyle(style));
                     inserted[0] = true;
                     return Optional.empty();
@@ -68,7 +65,6 @@ public class UserTabTextDisplayMixin {
             return Optional.empty();
         }, Style.EMPTY);
 
-         
         if (!inserted[0]) {
             return UserTabBadge.apply(text);
         }

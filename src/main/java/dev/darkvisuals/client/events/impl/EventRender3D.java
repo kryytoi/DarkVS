@@ -16,17 +16,14 @@ public class EventRender3D extends Event {
         private final RenderTickCounter tickCounter;
         private final MatrixStack matrixStack;
 
-          
         public float getTickDelta() {
             return tickCounter.getTickDelta(true);
         }
 
-          
         public RenderTickCounter getTickCounter() {
             return tickCounter;
         }
 
-          
         public MatrixStack getMatrices() {
             return matrixStack;
         }
@@ -39,12 +36,10 @@ public class EventRender3D extends Event {
         private final Matrix4f positionMatrix;
         private final RenderTickCounter tickCounter;
 
-          
         public float getTickDelta() {
             return tickCounter.getTickDelta(true);
         }
 
-          
         public RenderTickCounter getTickCounter() {
             return tickCounter;
         }

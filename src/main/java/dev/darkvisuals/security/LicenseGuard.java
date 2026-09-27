@@ -16,7 +16,6 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.concurrent.atomic.AtomicBoolean;
 
- 
 public final class LicenseGuard {
 
     private static final String SERVER_BASE_URL = "https://darkvisuals.vercel.app";
@@ -31,13 +30,11 @@ public final class LicenseGuard {
         return VALID.get();
     }
 
-
     public static boolean verifyOnStartup() {
         boolean ok = checkNow();
         VALID.set(ok);
         return ok;
     }
-
 
     public static void tick() {
 
@@ -48,7 +45,6 @@ public final class LicenseGuard {
 
     private static boolean checkNow() {
         lastCheck = Instant.now();
-
 
         if (FabricLoader.getInstance().isDevelopmentEnvironment()) {
             return true;

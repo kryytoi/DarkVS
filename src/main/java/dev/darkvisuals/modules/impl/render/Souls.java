@@ -33,21 +33,12 @@ import java.util.Random;
 
 import static dev.darkvisuals.client.util.Wrapper.mc;
 
-/**
- * Души — полупрозрачные призрачные огоньки, медленно дрейфующие вокруг
- * игрока. Каждая душа — объёмная дрожащая икосфера (настоящая 3D-геометрия,
- * а не плоский спрайт), медленно вращающаяся и перекатывающаяся волнами.
- * Рисуется с аддитивным блендингом (как души в TargetEsp), цвет берётся из
- * активной темы и обновляется каждый кадр, поэтому плавно переливается на
- * градиентных темах.
- */
 public class Souls extends Module {
 
     private static final long SOUL_TTL_MS = 9000L;
 
-    // ── Единичная икосфера: общая база для всех душ, строится один раз ─────────
-    private static final float[] ICO_V;   // координаты вершин на единичной сфере
-    private static final int[] ICO_I;      // индексы треугольников
+    private static final float[] ICO_V;
+    private static final int[] ICO_I;
 
     static {
         List<float[]> verts = new ArrayList<>();
@@ -65,7 +56,7 @@ public class Souls extends Module {
                 {3,9,4},{3,4,2},{3,2,6},{3,6,8},{3,8,9},
                 {4,9,5},{2,4,11},{6,2,10},{8,6,7},{9,8,1}
         };
-        // два деления: 20 → 80 треугольников, 42 вершины
+
         Map<Long, Integer> midCache = new HashMap<>();
         for (int level = 0; level < 2; level++) {
             int[][] nf = new int[faces.length * 4][];
@@ -101,7 +92,6 @@ public class Souls extends Module {
         return new float[]{(float) (x / len), (float) (y / len), (float) (z / len)};
     }
 
-    /** Середина ребра, спроецированная на единичную сферу (с кэшем по ребру). */
     private static int midpoint(List<float[]> verts, Map<Long, Integer> cache, int i, int j) {
         long key = ((long) Math.min(i, j) << 32) | Math.max(i, j);
         Integer cached = cache.get(key);
@@ -154,7 +144,6 @@ public class Souls extends Module {
 
         float r = radius.getValue().floatValue();
 
-        // поддерживаем популяцию душ
         while (souls.size() < count.getValue().intValue()) {
             souls.add(new Soul(mc.player.getPos().add(
                     (rnd.nextDouble() - 0.5) * 2 * r,
@@ -172,7 +161,6 @@ public class Souls extends Module {
             Soul soul = it.next();
             soul.age++;
 
-            // медленный дрейф по мягким синусоидальным орбитам — «парение»
             double t = soul.age / 60.0;
             soul.pos = soul.pos.add(
                     Math.sin(t * 0.30 + soul.phase) * 0.016 * spd,
@@ -181,7 +169,7 @@ public class Souls extends Module {
 
             long age = System.currentTimeMillis() - soul.birth;
             if (age >= SOUL_TTL_MS || soul.pos.distanceTo(mc.player.getPos()) > r * 1.8) {
-                // переспавн поблизости от игрока
+
                 soul.pos = mc.player.getPos().add(
                         (rnd.nextDouble() - 0.5) * 2 * r,
                         (rnd.nextDouble() - 0.5) * 4,
@@ -201,7 +189,6 @@ public class Souls extends Module {
         long now = System.currentTimeMillis();
         float time = now / 1000f;
 
-        // цвет темы обновляется каждый кадр — поддерживает градиентные темы
         Color theme = themeManager.getThemeColor();
         Color c = themeColor.getValue() ? theme : customColor.getColor();
         int cr = c.getRed(), cg = c.getGreen(), cb = c.getBlue();
@@ -211,13 +198,12 @@ public class Souls extends Module {
         boolean renderGlow = glow.getValue();
 
         RenderSystem.enableBlend();
-        // аддитивный бленд — призрачное свечение, как в SoulRenderer (TargetEsp)
+
         RenderSystem.blendFunc(GlStateManager.SrcFactor.SRC_ALPHA, GlStateManager.DstFactor.ONE);
         RenderSystem.disableDepthTest();
         RenderSystem.depthMask(false);
         RenderSystem.disableCull();
 
-        // ── Мягкое свечение-биллборд вокруг каждой души ──────────────────────
         if (renderGlow) {
             RenderSystem.setShaderTexture(0, darkvisuals.id("hud/bloom.png"));
             RenderSystem.setShader(ShaderProgramKeys.POSITION_TEX_COLOR);
@@ -249,11 +235,10 @@ public class Souls extends Module {
                 matrices.pop();
                 anyGlow = true;
             }
-            // все души могут быть в стадии появления/растворения — буфер пуст, end() бросил бы исключение
+
             if (anyGlow) BufferRenderer.drawWithGlobalProgram(glowBuffer.end());
         }
 
-        // ── 3D-тело души: дрожащая, вращающаяся икосфера ──────────────────────
         RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR);
         BufferBuilder buffer = Tessellator.getInstance().begin(
                 VertexFormat.DrawMode.TRIANGLES, VertexFormats.POSITION_COLOR);
@@ -269,7 +254,7 @@ public class Souls extends Module {
             float ox = (float) (soul.pos.x - cam.x);
             float oy = (float) (soul.pos.y - cam.y);
             float oz = (float) (soul.pos.z - cam.z);
-            // амплитуда «дрожи» поверхности тоже плавно меняется
+
             float wobbleAmp = 0.15f * (0.8f + 0.2f * (float) Math.sin(time * 1.7f + soul.phase * 2f));
 
             for (int i = 0; i < ICO_I.length; i += 3) {
@@ -279,20 +264,17 @@ public class Souls extends Module {
                     float py = ICO_V[vi * 3 + 1];
                     float pz = ICO_V[vi * 3 + 2];
 
-                    // поверхность перекатывается волнами — сумма синусоид
                     float d = 1f + wobbleAmp * (
                             (float) Math.sin(time * 1.3f + soul.phase + px * 2.5f + py * 1.7f)
                                     + (float) Math.sin(time * 0.9f + soul.phase * 1.7f + pz * 2.2f));
 
                     float vx = px * d * s;
-                    float vy = py * d * s * 1.4f;   // вытянута вверх — силуэт духа
+                    float vy = py * d * s * 1.4f;
                     float vz = pz * d * s;
 
-                    // вращение вокруг оси Y
                     float rx = vx * cos - vz * sin;
                     float rz = vx * sin + vz * cos;
 
-                    // выше к верхушке — ярче; аддитивный бленд соберёт светящееся ядро
                     int va = clamp255((50 + 125 * (py * 0.5f + 0.5f)) * a);
                     buffer.vertex(rx + ox, vy + oy, rz + oz).color(cr, cg, cb, va);
                 }
@@ -309,7 +291,6 @@ public class Souls extends Module {
         RenderSystem.disableBlend();
     }
 
-    /** Плавное появление, растворение и мерцание души. */
     private float soulAlpha(Soul soul, long now, float alphaMul) {
         float lifeT = (now - soul.birth) / (float) SOUL_TTL_MS;
         float fadeIn = clamp01(lifeT / 0.12f);
@@ -332,7 +313,7 @@ public class Souls extends Module {
         Vec3d pos;
         final float phase;
         final float sizeJitter;
-        final float spinSpeed;   // рад/с — медленное собственное вращение
+        final float spinSpeed;
         long birth = System.currentTimeMillis();
         int age;
 

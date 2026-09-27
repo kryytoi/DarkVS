@@ -21,22 +21,15 @@ import net.minecraft.util.math.random.Random;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * Общий рендер структур из StructureData реальными моделями блоков.
- * Используется голограммой Structure Visualer и режимом стройки BuildSpaceManager.
- */
 public final class StructureRenderer {
 
-    // атлас текстур блоков (путь vanilla)
     private static final Identifier BLOCK_ATLAS = Identifier.ofVanilla("textures/atlas/blocks.png");
 
-    // кэш BlockState по id блока, чтобы не дёргать реестр каждый кадр
     private static final Map<String, BlockState> STATE_CACHE = new ConcurrentHashMap<>();
     private static final Random RANDOM = Random.create();
 
     private StructureRenderer() {}
 
-    /** BlockState по id блока (null, если блок неизвестен или это воздух). */
     public static BlockState resolveState(String blockId) {
         if (blockId == null || blockId.isEmpty()) return null;
         BlockState cached = STATE_CACHE.get(blockId);
@@ -62,11 +55,6 @@ public final class StructureRenderer {
         return result;
     }
 
-    /**
-     * Нарисовать все блоки структуры реальными моделями с заданной прозрачностью.
-     * origin — мировая позиция, к которой привязаны относительные координаты блоков.
-     * Вызывать только внутри EventRender3D.Game.
-     */
     public static void renderBlocks(MatrixStack ms, Iterable<StructureData.PlacedBlock> blocks,
                                     BlockPos origin, float alpha) {
         MinecraftClient mc = MinecraftClient.getInstance();

@@ -30,7 +30,6 @@ public class EmoteWheelScreen extends Screen {
     private final SmoothAnimation openAnimation = new SmoothAnimation(0f, 16f);
     private boolean closing = false;
 
-      
     private boolean bindHeldSinceOpen = true;
 
     public EmoteWheelScreen(Emotes module) {
@@ -68,12 +67,10 @@ public class EmoteWheelScreen extends Screen {
         float cy = this.height / 2f;
         int bgAlpha = (int) (110 * progress);
 
-         
         Render2D.drawRoundedRect(stack, 0, 0, this.width, this.height, 0, new Color(0, 0, 0, bgAlpha));
 
         List<Emote> emotes = module.getWheelEmotes();
 
-         
         boolean centerHovered = isCenterHovered(mouseX, mouseY, cx, cy);
         boolean playing = EmoteManager.isPlayingLocal();
         Color centerColor = centerHovered && playing
@@ -132,7 +129,6 @@ public class EmoteWheelScreen extends Screen {
         }
     }
 
-      
     private float[] nodePosition(int index, int count, float cx, float cy, float progress) {
         float angle = (float) (-Math.PI / 2 + (Math.PI * 2 / count) * index);
         float radius = WHEEL_RADIUS * (0.75f + 0.25f * progress);
@@ -198,8 +194,7 @@ public class EmoteWheelScreen extends Screen {
 
         var bind = module.getWheelBind().getValue();
         if (bind != null && !bind.isMouse() && keyCode == bind.getKey()) {
-             
-             
+
             if (bindHeldSinceOpen) {
                 return true;
             }

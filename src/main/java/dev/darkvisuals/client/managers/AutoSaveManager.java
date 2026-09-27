@@ -20,11 +20,9 @@ public class AutoSaveManager implements Wrapper {
     private static final Logger LOGGER = LogManager.getLogger(AutoSaveManager.class);
     private static final String AUTO_SAVE_CONFIG_NAME = "autocfg";
 
-     
     private final java.util.concurrent.atomic.AtomicBoolean emergencySaving = new java.util.concurrent.atomic.AtomicBoolean(false);
     private Thread shutdownHook;
 
-     
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor(r -> {
         Thread thread = new Thread(r, "SV-AutoSaveScheduler");
         thread.setDaemon(true);
@@ -33,14 +31,12 @@ public class AutoSaveManager implements Wrapper {
     private ScheduledFuture<?> pendingSave;
     private final Object saveLock = new Object();
 
-     
     private volatile boolean allowAutoSave = false;
 
     public AutoSaveManager() {
-         
+
         darkvisuals.getInstance().getEventHandler().subscribe(this);
 
-         
         registerShutdownHook();
         registerUncaughtExceptionHandler();
     }
@@ -76,7 +72,7 @@ public class AutoSaveManager implements Wrapper {
     }
 
      public void scheduleAutoSave() {
-        if (!allowAutoSave) return;  
+        if (!allowAutoSave) return;
         synchronized (saveLock) {
             if (pendingSave != null && !pendingSave.isDone()) {
                 pendingSave.cancel(false);
@@ -99,7 +95,7 @@ public class AutoSaveManager implements Wrapper {
     }
 
      public void loadAutoSave() {
-         
+
         ClientTickEvents.END_CLIENT_TICK.register(new ClientTickEvents.EndTick() {
             private boolean attempted = false;
             @Override
@@ -116,11 +112,11 @@ public class AutoSaveManager implements Wrapper {
                         } else {
                             LOGGER.error("Ошибка при загрузке автоматически сохраненной конфигурации");
                         }
-                         
+
                         allowAutoSave = true;
                     });
                 } else {
-                     
+
                     allowAutoSave = true;
                 }
             }
@@ -147,7 +143,6 @@ public class AutoSaveManager implements Wrapper {
         }
     }
 
-     
     private void registerShutdownHook() {
         if (shutdownHook != null) return;
         shutdownHook = new Thread(() -> {
@@ -164,7 +159,7 @@ public class AutoSaveManager implements Wrapper {
         try {
             Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> {
                 LOGGER.error("Необработанное исключение в потоке {}: {}", thread.getName(), throwable.toString());
-                 
+
                 emergencySave("Uncaught exception");
             });
         } catch (Throwable t) {
@@ -177,7 +172,7 @@ public class AutoSaveManager implements Wrapper {
         try {
             LOGGER.info("Экстренное сохранение конфигурации ({}).", reason);
             ConfigManager configManager = darkvisuals.getInstance().getConfigManager();
-             
+
             configManager.saveConfig(AUTO_SAVE_CONFIG_NAME).join();
             LOGGER.info("Экстренное сохранение завершено");
         } catch (Throwable t) {

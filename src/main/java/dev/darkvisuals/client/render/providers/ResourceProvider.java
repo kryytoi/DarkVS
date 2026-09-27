@@ -17,7 +17,6 @@ import net.minecraft.util.Identifier;
 public final class ResourceProvider {
 
 	private static final Gson GSON = new Gson();
-	 
 
 	public static Identifier getShaderIdentifier(String name) {
 		return darkvisuals.id("core/" + name);
@@ -36,7 +35,7 @@ public final class ResourceProvider {
 	}
 
 	public static String toString(Identifier identifier, String delimiter) {
-		 
+
 		ResourceManager rm = MinecraftClient.getInstance().getResourceManager();
 		try (InputStream inputStream = rm.open(identifier);
 		     BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {

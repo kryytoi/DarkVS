@@ -28,13 +28,6 @@ import org.joml.Matrix4f;
 
 import java.awt.Color;
 
-/**
- * BlockBreakProgress - индикатор разрушения блока.
- *
- * Когда игрок ломает блок в прицеле, на блоке рисуется заливка,
- * поднимающаяся снизу вверх по мере прогресса, и контур блока.
- * Прогресс берётся из ClientPlayerInteractionManager (стадии 0..10).
- */
 public class BlockBreakProgress extends Module {
 
     public enum Mode {
@@ -101,7 +94,7 @@ public class BlockBreakProgress extends Module {
             matrices.push();
 
             if (m == Mode.Fill || m == Mode.Both) {
-                // Заливка, поднимающаяся снизу вверх по прогрессу
+
                 double height = box.maxY - box.minY;
                 double top = box.minY + height * progress;
                 Box fillBox = new Box(box.minX, box.minY, box.minZ, box.maxX, top, box.maxZ);
@@ -137,13 +130,11 @@ public class BlockBreakProgress extends Module {
 
         BufferBuilder buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
 
-        // Верхняя грань (уровень прогресса)
         buffer.vertex(matrix, minX, maxY, minZ).color(r, g, b, a);
         buffer.vertex(matrix, maxX, maxY, minZ).color(r, g, b, a);
         buffer.vertex(matrix, maxX, maxY, maxZ).color(r, g, b, a);
         buffer.vertex(matrix, minX, maxY, maxZ).color(r, g, b, a);
 
-        // Боковые грани до уровня прогресса
         buffer.vertex(matrix, minX, minY, minZ).color(r, g, b, a);
         buffer.vertex(matrix, maxX, minY, minZ).color(r, g, b, a);
         buffer.vertex(matrix, maxX, maxY, minZ).color(r, g, b, a);
@@ -186,7 +177,6 @@ public class BlockBreakProgress extends Module {
 
         BufferBuilder buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.DEBUG_LINES, VertexFormats.POSITION_COLOR);
 
-        // Нижнее кольцо
         buffer.vertex(matrix, minX, minY, minZ).color(r, g, b, a);
         buffer.vertex(matrix, maxX, minY, minZ).color(r, g, b, a);
         buffer.vertex(matrix, maxX, minY, minZ).color(r, g, b, a);
@@ -196,7 +186,6 @@ public class BlockBreakProgress extends Module {
         buffer.vertex(matrix, minX, minY, maxZ).color(r, g, b, a);
         buffer.vertex(matrix, minX, minY, minZ).color(r, g, b, a);
 
-        // Верхнее кольцо
         buffer.vertex(matrix, minX, maxY, minZ).color(r, g, b, a);
         buffer.vertex(matrix, maxX, maxY, minZ).color(r, g, b, a);
         buffer.vertex(matrix, maxX, maxY, minZ).color(r, g, b, a);
@@ -206,7 +195,6 @@ public class BlockBreakProgress extends Module {
         buffer.vertex(matrix, minX, maxY, maxZ).color(r, g, b, a);
         buffer.vertex(matrix, minX, maxY, minZ).color(r, g, b, a);
 
-        // Вертикальные рёбра
         buffer.vertex(matrix, minX, minY, minZ).color(r, g, b, a);
         buffer.vertex(matrix, minX, maxY, minZ).color(r, g, b, a);
         buffer.vertex(matrix, maxX, minY, minZ).color(r, g, b, a);

@@ -28,7 +28,6 @@ public abstract class HitSoundMixin {
 	private void onAttack(Entity target, CallbackInfo ci) {
 		MinecraftClient mc = MinecraftClient.getInstance();
 
-		 
 		if (mc.player == null || (Object) this != mc.player) return;
 
 		HitSound module = darkvisuals.getInstance().getModuleManager().getModule(HitSound.class);
@@ -41,14 +40,11 @@ public abstract class HitSoundMixin {
 				soundId, id -> SoundEvent.of(Identifier.of(id)));
 
 		try {
-			 
-			 
-			 
-			 
+
 			mc.getSoundManager().play(
 					PositionedSoundInstance.master(sound, 1.0f, volume));
 		} catch (java.util.ConcurrentModificationException ignored) {
-			 
+
 		}
 	}
 }

@@ -22,9 +22,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-/**
- * MagneticField — искажающиеся линии магнитного поля вокруг игрока.
- */
 public class MagneticField extends Module {
 
     private final NumberSetting count = new NumberSetting("Количество линий", 10f, 3f, 30f, 1f);

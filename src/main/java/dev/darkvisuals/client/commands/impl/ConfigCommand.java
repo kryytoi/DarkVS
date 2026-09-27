@@ -10,19 +10,18 @@ import net.minecraft.command.CommandSource;
 import net.minecraft.client.resource.language.I18n;
 
 public class ConfigCommand extends Command {
-    
+
     public ConfigCommand() {
         super("cfg");
     }
-    
+
     @Override
     public void execute(com.mojang.brigadier.builder.LiteralArgumentBuilder<CommandSource> builder) {
         builder.executes(context -> {
             showHelp();
             return 1;
         });
-        
-         
+
         builder.then(literal("save")
                 .then(arg("название", StringArgumentType.string())
                         .executes(context -> {
@@ -30,8 +29,7 @@ public class ConfigCommand extends Command {
                             saveConfig(configName);
                             return 1;
                         })));
-        
-         
+
         builder.then(literal("load")
                 .executes(context -> {
                     ChatUtils.sendMessage(I18n.translate("cfg.error.provideName"));
@@ -47,22 +45,19 @@ public class ConfigCommand extends Command {
                             loadConfig(configName);
                             return 1;
                         })));
-        
-         
+
         builder.then(literal("list")
                 .executes(context -> {
                     listConfigs();
                     return 1;
                 }));
-        
-         
+
         builder.then(literal("dir")
                 .executes(context -> {
                     showConfigDirectory();
                     return 1;
                 }));
-        
-         
+
         builder.then(literal("delete")
                 .then(arg("название", StringArgumentType.string())
                         .executes(context -> {
@@ -70,8 +65,7 @@ public class ConfigCommand extends Command {
                             deleteConfig(configName);
                             return 1;
                         })));
-        
-         
+
         builder.then(literal("info")
                 .then(arg("название", StringArgumentType.string())
                         .executes(context -> {
@@ -79,10 +73,9 @@ public class ConfigCommand extends Command {
                             showConfigInfo(configName);
                             return 1;
                         })));
-        
-        
+
     }
-    
+
     private void showHelp() {
         ChatUtils.sendMessage(I18n.translate("cfg.help.header"));
         ChatUtils.sendMessage(I18n.translate("cfg.help.save"));
@@ -93,15 +86,15 @@ public class ConfigCommand extends Command {
         ChatUtils.sendMessage(I18n.translate("cfg.help.info"));
         ChatUtils.sendMessage(I18n.translate("cfg.help.aliases"));
     }
-    
+
     private void saveConfig(String configName) {
         if (configName == null || configName.trim().isEmpty()) {
             ChatUtils.sendMessage(I18n.translate("cfg.error.provideConfigName"));
             return;
         }
-        
+
         ChatUtils.sendMessage(String.format(I18n.translate("cfg.saving"), configName));
-        
+
         ConfigManager configManager = darkvisuals.getInstance().getConfigManager();
         configManager.saveConfig(configName).thenAccept(success -> {
             if (success) {
@@ -111,21 +104,21 @@ public class ConfigCommand extends Command {
             }
         });
     }
-    
+
     private void loadConfig(String configName) {
         if (configName == null || configName.trim().isEmpty()) {
             ChatUtils.sendMessage(I18n.translate("cfg.error.provideName"));
             return;
         }
-        
+
         ConfigManager configManager = darkvisuals.getInstance().getConfigManager();
         if (!configManager.configExists(configName)) {
             ChatUtils.sendMessage(String.format(I18n.translate("cfg.notFound"), configName));
             return;
         }
-        
+
         ChatUtils.sendMessage(String.format(I18n.translate("cfg.loading"), configName));
-        
+
         configManager.loadConfig(configName).thenAccept(success -> {
             if (success) {
                 ChatUtils.sendMessage(String.format(I18n.translate("cfg.loaded"), configName));
@@ -134,30 +127,30 @@ public class ConfigCommand extends Command {
             }
         });
     }
-    
+
     private void listConfigs() {
         ConfigManager configManager = darkvisuals.getInstance().getConfigManager();
         String[] configs = configManager.getConfigList();
-        
+
         if (configs.length == 0) {
             ChatUtils.sendMessage(I18n.translate("cfg.list.empty"));
             return;
         }
-        
+
         ChatUtils.sendMessage(I18n.translate("cfg.list.header"));
         for (String config : configs) {
             ChatUtils.sendMessage(String.format(I18n.translate("cfg.list.item"), config));
         }
         ChatUtils.sendMessage(String.format(I18n.translate("cfg.list.total"), configs.length));
     }
-    
+
     private void showConfigDirectory() {
         ConfigManager configManager = darkvisuals.getInstance().getConfigManager();
         String directory = configManager.getConfigsDirectory();
         ChatUtils.sendMessage(String.format(I18n.translate("cfg.dir.path"), directory));
-        
+
         try {
-             
+
             java.io.File dirFile = new java.io.File(directory);
             if (!dirFile.exists()) {
                 dirFile.mkdirs();
@@ -193,19 +186,19 @@ public class ConfigCommand extends Command {
             ChatUtils.sendMessage(String.format(I18n.translate("cfg.dir.openError"), e.getMessage()));
         }
     }
-    
+
     private void deleteConfig(String configName) {
         if (configName == null || configName.trim().isEmpty()) {
             ChatUtils.sendMessage(I18n.translate("cfg.error.provideConfigName"));
             return;
         }
-        
+
         ConfigManager configManager = darkvisuals.getInstance().getConfigManager();
         if (!configManager.configExists(configName)) {
             ChatUtils.sendMessage(String.format(I18n.translate("cfg.notFound"), configName));
             return;
         }
-        
+
         boolean deleted = configManager.deleteConfig(configName);
         if (deleted) {
             ChatUtils.sendMessage(String.format(I18n.translate("cfg.deleted"), configName));
@@ -213,30 +206,30 @@ public class ConfigCommand extends Command {
             ChatUtils.sendMessage(String.format(I18n.translate("cfg.deleteError"), configName));
         }
     }
-    
+
     private void showConfigInfo(String configName) {
         if (configName == null || configName.trim().isEmpty()) {
             ChatUtils.sendMessage(I18n.translate("cfg.error.provideConfigName"));
             return;
         }
-        
+
         ConfigManager configManager = darkvisuals.getInstance().getConfigManager();
         if (!configManager.configExists(configName)) {
             ChatUtils.sendMessage(String.format(I18n.translate("cfg.notFound"), configName));
             return;
         }
-        
+
         ChatUtils.sendMessage(String.format(I18n.translate("cfg.info.header"), configName));
         ChatUtils.sendMessage(String.format(I18n.translate("cfg.info.file"), configName));
         ChatUtils.sendMessage(String.format(I18n.translate("cfg.info.path"), configManager.getConfigsDirectory(), configName));
         ChatUtils.sendMessage(I18n.translate("cfg.info.exists"));
     }
-    
+
     private void suggestConfigs(SuggestionsBuilder suggestionsBuilder) {
         String[] configs = darkvisuals.getInstance().getConfigManager().getConfigList();
         for (String cfg : configs) {
             suggestionsBuilder.suggest(cfg);
         }
     }
-    
-} 
+
+}

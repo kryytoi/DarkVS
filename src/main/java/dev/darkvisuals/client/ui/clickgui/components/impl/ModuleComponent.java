@@ -27,7 +27,6 @@ public class ModuleComponent extends Component {
     private boolean showBindModeMenu;
     private boolean renderExternally;
 
-     
     private float bindTextX, bindTextY, bindTextW, bindTextH;
 
     @Getter private final List<Component> components = new ArrayList<>();
@@ -64,11 +63,11 @@ public class ModuleComponent extends Component {
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         boolean hovered = MathUtils.isHovered(x, y, width, HEADER_HEIGHT, mouseX, mouseY);
-         
+
         if (hovered && mc.currentScreen instanceof dev.darkvisuals.client.ui.clickgui.ClickGui clickGui) {
             clickGui.setDescription(module.getDescription());
         }
-         
+
         if (!hoverAnimInitialized) {
             hoverAnim.setDuration(0);
             hoverAnim.update(hovered);
@@ -77,7 +76,7 @@ public class ModuleComponent extends Component {
         } else {
             hoverAnim.update(hovered);
         }
-         
+
         boolean currentState = module.isToggled();
         if (!toggleAnimInitialized) {
             toggleAnim.setDuration(0);
@@ -97,7 +96,6 @@ public class ModuleComponent extends Component {
         openAnimation.update(open);
         bindMenuAnimation.update(showBindModeMenu);
 
-         
         Color base = new Color(67, 67, 67, (int) (120 * Math.max(0f, Math.min(1f, globalAlpha))));
         Color themeAccent = ThemeManager.getInstance().getCurrentTheme().getAccentColor();
         Color active = new Color(themeAccent.getRed(), themeAccent.getGreen(), themeAccent.getBlue(), 180);
@@ -105,7 +103,6 @@ public class ModuleComponent extends Component {
 
         float totalHeight = getHeight();
         Render2D.drawRoundedRect(context.getMatrices(), x, y, width, totalHeight, 5f, bg);
-
 
         Color textColor = new Color(255, 255, 255, (int) ((200 + 55 * hoverAnim.getValue()) * Math.max(0f, Math.min(1f, globalAlpha))));
         float titleFontSize = 8f;
@@ -115,36 +112,30 @@ public class ModuleComponent extends Component {
         Render2D.drawFont(context.getMatrices(), Fonts.BOLD.getFont(titleFontSize),
                 localizedModuleName, x + 8f, titleY, textColor);
 
-         
         String bindText = "";
         if (binding) bindText = "Press key...";
         else if (module.getBind() != null && module.getBind().getKey() != -1)
             bindText = module.getBind().toString().replace("_", " ");
 
-         
         float bindFontSize = 6f;
         bindTextW = bindText.isEmpty() ? 0f : Fonts.REGULAR.getWidth(bindText, bindFontSize);
         bindTextH = Fonts.REGULAR.getHeight(bindFontSize);
-         
-         
+
         bindTextX = Float.NaN;
         bindTextY = Float.NaN;
 
-         
-         
         if (!toggleAnimInitialized) {
             toggleAnim.setDuration(0);
             toggleAnim.update(module.isToggled());
-             
+
             toggleAnim.setDuration(200);
             toggleAnimInitialized = true;
         }
 
-                 
         float switchW = 20f;
         float switchH = 10f;
-        float reservedRight = 0f;  
-        float switchX = x + width - reservedRight - 24f;  
+        float reservedRight = 0f;
+        float switchX = x + width - reservedRight - 24f;
         float switchY = y + (HEADER_HEIGHT - switchH) / 2f;
         Color accent = ThemeManager.getInstance().getCurrentTheme().getAccentColor();
         float progress = isToggleAnimating ? (float) toggleAnim.getValue() : (currentState ? 1f : 0f);
@@ -154,18 +145,16 @@ public class ModuleComponent extends Component {
                 switchW * (1f - progress), switchH, 3f, new Color(23, 23, 23, (int) (100 * Math.max(0f, Math.min(1f, globalAlpha)))));
         float thumbW = 8f;
         float thumbH = 8f;
-         
+
         float padding = 1.5f;
         float thumbX = switchX + padding + (switchW - thumbW - 2f * padding) * progress;
         float thumbY = switchY + padding + (switchH - thumbH - 2f * padding) / 2f;
         Render2D.drawRoundedRect(context.getMatrices(), thumbX, thumbY, thumbW, thumbH, 3f, Color.WHITE);
 
-         
         if (open && !renderExternally) {
             float childY = y + HEADER_HEIGHT;
             float visibleH = getChildrenFullHeight();
 
-             
             context.enableScissor((int) x, (int) (y + HEADER_HEIGHT),
                     (int) (x + width), (int) (y + HEADER_HEIGHT + visibleH));
 
@@ -183,7 +172,6 @@ public class ModuleComponent extends Component {
             context.disableScissor();
         }
 
-         
         if (!bindText.isEmpty()) {
             float totalHeightAfter = getHeight();
             bindTextX = x + 8f;
@@ -193,22 +181,19 @@ public class ModuleComponent extends Component {
                     new Color(200, 200, 200, (int) (180 * Math.max(0f, Math.min(1f, globalAlpha)))));
         }
 
-         
         if (showBindModeMenu) {
             float itemW = 80f;
-            float itemH = 15f;  
+            float itemH = 15f;
 
-             
             float desiredX = (Float.isNaN(bindTextX) ? (x + width - 90f) : (bindTextX + bindTextW + 6f));
             float menuX = Math.min(desiredX, x + width - itemW - 6f);
-             
+
             if (!Float.isNaN(bindTextX) && menuX < bindTextX) {
                 float leftCandidate = bindTextX - itemW - 6f;
                 if (leftCandidate >= x + 6f) menuX = leftCandidate;
             }
             float menuYBase = (Float.isNaN(bindTextY) ? (y + HEADER_HEIGHT + 2f) : (bindTextY - (itemH * 2f + 7f) - 4f));
 
-             
             float a = (float) Math.max(0f, Math.min(1f, bindMenuAnimation.getValue()));
             float slideOffset = (1f - a) * 6f;
             float menuY = menuYBase + slideOffset;
@@ -223,12 +208,11 @@ public class ModuleComponent extends Component {
             boolean isHold = module.getBind() != null && module.getBind().getMode() == Bind.Mode.HOLD;
 
             int textAlpha = (int) (255 * a * Math.max(0f, Math.min(1f, globalAlpha)));
-             
+
             Render2D.drawFont(context.getMatrices(), Fonts.BOLD.getFont(7f), opt1, menuX + 18f, menuY + 5f, new Color(255, 255, 255, textAlpha));
             Render2D.drawFont(context.getMatrices(), Fonts.ICONS.getFont(10f), "D", menuX + 6f, menuY + 5.5f,
                     new Color(0, 0, 0, (int) ((isToggle ? 255 : 0) * a * Math.max(0f, Math.min(1f, globalAlpha)))));
 
-             
             Render2D.drawFont(context.getMatrices(), Fonts.BOLD.getFont(7f), opt2, menuX + 18f, menuY + 5f + itemH, new Color(255, 255, 255, textAlpha));
             Render2D.drawFont(context.getMatrices(), Fonts.ICONS.getFont(10f), "D", menuX + 6f, menuY + 5.5f + itemH,
                     new Color(0, 0, 0, (int) ((isHold ? 255 : 0) * a * Math.max(0f, Math.min(1f, globalAlpha)))));
@@ -240,7 +224,6 @@ public class ModuleComponent extends Component {
         boolean onHeader = MathUtils.isHovered(x, y, width, HEADER_HEIGHT, (float) mouseX, (float) mouseY);
         boolean onBindText = (!Float.isNaN(bindTextX)) && MathUtils.isHovered(bindTextX, bindTextY - 1f, bindTextW, bindTextH + 2f, (float) mouseX, (float) mouseY);
 
-         
         if (button == 0 && onBindText && !binding) {
             if (module.getBind() != null && !module.getBind().isEmpty()) {
                 showBindModeMenu = !showBindModeMenu;
@@ -249,22 +232,21 @@ public class ModuleComponent extends Component {
         }
 
         if (onHeader) {
-            if (button == 0 && !binding) {  
+            if (button == 0 && !binding) {
                 module.toggle();
                 return;
-            } else if (button == 1 && !components.isEmpty() && !binding && !renderExternally) {  
+            } else if (button == 1 && !components.isEmpty() && !binding && !renderExternally) {
                 open = !open;
                 return;
-            } else if (button == 2 && !binding) {  
+            } else if (button == 2 && !binding) {
                 binding = true;
                 return;
             }
         }
 
-         
         if (showBindModeMenu) {
             float itemW = 80f;
-            float itemH = 15f;  
+            float itemH = 15f;
 
             float desiredX = (Float.isNaN(bindTextX) ? (x + width - 90f) : (bindTextX + bindTextW + 6f));
             float menuX = Math.min(desiredX, x + width - itemW - 6f);
@@ -284,12 +266,12 @@ public class ModuleComponent extends Component {
                 showBindModeMenu = false;
                 return;
             }
-             
+
             if (!MathUtils.isHovered(menuX, menuY, itemW, itemH * 2f + 7f, (float) mouseX, (float) mouseY)) {
                 showBindModeMenu = false;
                 return;
             }
-             
+
             return;
         }
 
@@ -300,7 +282,7 @@ public class ModuleComponent extends Component {
 
     @Override
     public void mouseReleased(double mouseX, double mouseY, int button) {
-         
+
         if (showBindModeMenu) return;
         if (open && !renderExternally) {
             for (Component component : components) component.mouseReleased(mouseX, mouseY, button);
@@ -311,9 +293,9 @@ public class ModuleComponent extends Component {
     public void keyPressed(int keyCode, int scanCode, int modifiers) {
         if (binding) {
             if (keyCode == org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE || keyCode == org.lwjgl.glfw.GLFW.GLFW_KEY_DELETE) {
-                module.setBind(new Bind(-1, false));  
+                module.setBind(new Bind(-1, false));
             } else {
-                 
+
                 Bind.Mode mode = module.getBind() != null ? module.getBind().getMode() : Bind.Mode.TOGGLE;
                 module.setBind(new Bind(keyCode, false, mode));
             }
@@ -340,7 +322,6 @@ public class ModuleComponent extends Component {
         }
     }
 
-     
     @Override
     public float getHeight() {
         if (renderExternally) return HEADER_HEIGHT;

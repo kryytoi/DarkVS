@@ -46,7 +46,6 @@ public class Predictions extends Module implements ThemeManager.ThemeChangeListe
     private Color currentColor;
     private Color currentColorSecondary;
 
-     
     private final BooleanSetting showPearl = new BooleanSetting("Show Pearl", true, () -> true);
     private final BooleanSetting showBow = new BooleanSetting("Show Bow", true, () -> true);
     private final BooleanSetting showCrossbow = new BooleanSetting("Show Crossbow", true, () -> true);
@@ -55,21 +54,18 @@ public class Predictions extends Module implements ThemeManager.ThemeChangeListe
     private final BooleanSetting showLandingInfo = new BooleanSetting("Show Landing Info", true, () -> true);
     private final BooleanSetting highlightPlayers = new BooleanSetting("Highlight Players", true, () -> true);
     private static final double highlightRange = 100f;
-     
+
     private static final int MAX_TICKS = 240;
     private static final int SUBSTEPS = 8;
     private static final float BASE_LINE_WIDTH = 4.0f;
 
-     
     private static final double PEARL_SPEED = 1.5;
     private static final double PEARL_SPEED_FACTOR = 1.06;
     private static final double PEARL_GRAVITY = 0.03;
 
-     
     private static final double ARROW_SPEED = 3.0;
     private static final double ARROW_GRAVITY = 0.05;
 
-     
     private static final double TRIDENT_SPEED = 2.5;
     private static final double TRIDENT_GRAVITY = 0.03;
 
@@ -109,7 +105,6 @@ public class Predictions extends Module implements ThemeManager.ThemeChangeListe
     public void onRender2D(EventRender2D e) {
         if (fullNullCheck()) return;
 
-         
         if (showLandingInfo.getValue() && !projectilePoints.isEmpty()) {
             renderLandingInfo2D(e);
         }
@@ -119,10 +114,8 @@ public class Predictions extends Module implements ThemeManager.ThemeChangeListe
     public void onRender3D(EventRender3D.Game e) {
         if (fullNullCheck()) return;
 
-         
         Render3D.setTickDelta(e.getTickDelta());
 
-         
         prevProjectilePoints.clear();
         prevProjectilePoints.addAll(projectilePoints);
         projectilePoints.clear();
@@ -134,7 +127,7 @@ public class Predictions extends Module implements ThemeManager.ThemeChangeListe
                 boolean isPlayerThrown = pearl.getOwner() != null && pearl.getOwner() == mc.player;
                 hasPlayerProjectiles |= isPlayerThrown;
                 simulatePearl(pearl, isPlayerThrown);
-                 
+
             } else if (ent instanceof ArrowEntity arrow && (arrow.getOwner() != null) && (showBow.getValue() || showCrossbow.getValue())) {
                 boolean isMoving = !arrow.isOnGround() && !arrow.isTouchingWater() && arrow.getVelocity().lengthSquared() >= 0.01;
                 if (isMoving) {
@@ -150,7 +143,6 @@ public class Predictions extends Module implements ThemeManager.ThemeChangeListe
             }
         }
 
-         
         boolean holdingPearl = isHoldingEnderPearl();
         boolean holdingBow = isHoldingBow();
         boolean holdingCrossbow = isHoldingCrossbow();
@@ -490,13 +482,11 @@ public class Predictions extends Module implements ThemeManager.ThemeChangeListe
     }
 
     private void renderProjectileTrajectory3D(EventRender3D.Game e, boolean hasFlyingProjectiles) {
-         
+
         List<List<ProjectilePoint>> trajectories = groupTrajectories(projectilePoints);
         List<List<ProjectilePoint>> prevTrajectories = groupTrajectories(prevProjectilePoints);
         float tickDelta = e.getTickDelta();
 
-         
-        // геометрия просто ставится в общую очередь — миксин кадра сам подготовит и нарисует её
         Render3D.DEBUG_LINE_WIDTH = BASE_LINE_WIDTH;
 
         for (int g = 0; g < trajectories.size(); g++) {
@@ -508,20 +498,17 @@ public class Predictions extends Module implements ThemeManager.ThemeChangeListe
             for (int i = 1; i < trajectory.size(); i++) {
                 Vec3d currPos = interpolatePoint(prevTrajectory, trajectory, i, tickDelta);
 
-                 
                 float t = (float) i / (float) trajectory.size();
-                
-                 
+
                 int r = (int) (currentColor.getRed() * (1.0f - t) + currentColorSecondary.getRed() * t);
                 int gg = (int) (currentColor.getGreen() * (1.0f - t) + currentColorSecondary.getGreen() * t);
                 int b = (int) (currentColor.getBlue() * (1.0f - t) + currentColorSecondary.getBlue() * t);
-                int a = (int) (255.0f * (1.0f - t));  
+                int a = (int) (255.0f * (1.0f - t));
                 a = Math.max(24, Math.min(255, a));
                 int argb = new Color(r, gg, b, a).getRGB();
 
                 Render3D.drawLine(prevPos, currPos, argb, BASE_LINE_WIDTH);
 
-                 
                 if (trajectory.get(i).isPlayerThrown() && trajectory.get(i).hitEntity() != null && trajectory.get(i).isLandingPoint()) {
                     Entity hitEntity = trajectory.get(i).hitEntity();
                     if (hitEntity instanceof LivingEntity living && living.isAlive()) {
@@ -561,7 +548,7 @@ public class Predictions extends Module implements ThemeManager.ThemeChangeListe
         if (prev == null || prev.isEmpty()) return c;
         int prevIndex = Math.min(index, prev.size() - 1);
         Vec3d p = prev.get(prevIndex).pos();
-         
+
         float tt = 1.0f - (float) Math.pow(1.0f - Math.min(Math.max(t, 0.0f), 1.0f), 3.0);
         double x = p.x + (c.x - p.x) * tt;
         double y = p.y + (c.y - p.y) * tt;

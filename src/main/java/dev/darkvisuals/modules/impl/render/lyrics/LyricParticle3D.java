@@ -47,18 +47,10 @@ public class LyricParticle3D {
         return text;
     }
 
-    /**
-     * Renders this 3D text in world space with STATIC 3D SIZE (no distance compensation), full 3D occlusion, and selectable animations.
-     *
-     * @param ignoreDepth рисовать поверх геометрии. Строка спавнится в 2–4.5 блока от игрока
-     *                    под случайным углом, поэтому в помещении или пещере она почти всегда
-     *                    оказывается за стеной и с depth-тестом просто не видна.
-     */
     public void render(MatrixStack matrices, Camera camera, MsdfFont font, String animMode, int colorRgb, long nowMs, boolean ignoreDepth) {
         long elapsed = nowMs - spawnTimeMs;
         if (elapsed < 0 || elapsed > durationMs || forceExpire) return;
 
-        // Normalized lifecycle progress [0.0 ... 1.0]
         float progress = MathHelper.clamp((float) elapsed / (float) durationMs, 0.0f, 1.0f);
 
         float alpha = 1.0f;
@@ -132,7 +124,7 @@ public class LyricParticle3D {
                     alpha = 1.0f - ((progress - 0.80f) / 0.20f);
                 }
             }
-            default -> { // "LyricFlow"
+            default -> {
                 if (progress < 0.15f) {
                     float t = progress / 0.15f;
                     alpha = easeOutCubic(t);
@@ -154,13 +146,11 @@ public class LyricParticle3D {
         alpha = MathHelper.clamp(alpha, 0.0f, 1.0f);
         if (alpha <= 0.001f || displayText == null || displayText.isBlank()) return;
 
-        // 3D Camera-Relative Translation (World Space -> Camera View Space)
         Vec3d camPos = camera.getPos();
         double renderX = basePosition.x - camPos.x;
         double renderY = (basePosition.y + offsetY) - camPos.y;
         double renderZ = basePosition.z - camPos.z;
 
-        // 3D Depth & Occlusion Setup
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
         RenderSystem.disableCull();
@@ -168,26 +158,23 @@ public class LyricParticle3D {
             RenderSystem.disableDepthTest();
         } else {
             RenderSystem.enableDepthTest();
-            RenderSystem.depthFunc(515); // GL_LEQUAL
+            RenderSystem.depthFunc(515);
         }
         RenderSystem.depthMask(false);
 
         matrices.push();
         matrices.translate(renderX, renderY, renderZ);
 
-        // 1. Strict Billboarding to face camera
-        matrices.multiply(camera.getRotation());
+        matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(-camera.getYaw()));
+        matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(camera.getPitch()));
 
         if (rotationTilt != 0.0f) {
             matrices.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(rotationTilt));
         }
 
-        // 2. STATIC WORLD SCALE (No distance compensation)
-        // This makes it a true 3D object in the world. It will not grow when you walk away!
         float staticScale = 0.02f * animScale;
         matrices.scale(staticScale, -staticScale, staticScale);
 
-        // 3. Font sizing & centered alignment
         float fontSize = 24.0f;
         float textWidth = font.getWidth(displayText, fontSize);
         float xOffset = -textWidth / 2.0f;
@@ -196,7 +183,6 @@ public class LyricParticle3D {
         int alphaInt = (int) (alpha * 255.0f);
         Color finalColor = new Color((colorRgb >> 16) & 0xFF, (colorRgb >> 8) & 0xFF, colorRgb & 0xFF, alphaInt);
 
-        // 4. Ultra-crisp MSDF vector text render in 3D world space
         Matrix4f modelMatrix = matrices.peek().getPositionMatrix();
         BuiltText built = Builder.text()
                 .font(font)
@@ -209,11 +195,9 @@ public class LyricParticle3D {
 
         matrices.pop();
 
-        // Возвращаем состояние: без этого выключенный depth-тест утекает
-        // на остальную часть кадра (рука, партиклы, другие модули).
         RenderSystem.depthMask(true);
         RenderSystem.enableDepthTest();
-        RenderSystem.depthFunc(515); // GL_LEQUAL
+        RenderSystem.depthFunc(515);
     }
 
     private static float easeOutCubic(float t) {

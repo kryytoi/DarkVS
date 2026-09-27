@@ -24,11 +24,6 @@ import dev.darkvisuals.client.render.builders.states.SizeState;
 import dev.darkvisuals.client.render.providers.ResourceProvider;
 import dev.darkvisuals.client.render.renderers.IRenderer;
 
-/**
- * Порт LiquidGlass с 1.21.11 (RenderPipeline/GpuBuffer) на 1.21.4 (JsonShaderProgram).
- * Вместо uniform-буфера используются классические uniform'ы, вместо ScreenBlur —
- * копирование главного фреймбуфера во временный FBO и сэмпл из него (как в BuiltBlur).
- */
 public record BuiltLiquidGlass(
         SizeState size,
         QuadRadiusState radius,
@@ -47,10 +42,7 @@ public record BuiltLiquidGlass(
 
     private static final ShaderProgramKey GLASS_SHADER_KEY = new ShaderProgramKey(ResourceProvider.getShaderIdentifier("glass"), VertexFormats.POSITION_COLOR, Defines.EMPTY);
     private static final Supplier<SimpleFramebuffer> TEMP_FBO_SUPPLIER = Suppliers.memoize(() -> new SimpleFramebuffer(1920, 1024, false));
-    // ВАЖНО: главный фреймбуфер НЕ кешируем статически — Minecraft пересоздаёт его
-    // при запуске/изменении размера окна, и закешированный указатель становится
-    // удалённым FBO. Привязка такого имени даёт GL_INVALID_VALUE каждый кадр
-    // (тысячи ошибок в минуту → падение FPS и нестабильность драйвера).
+
     private static final float[] NO_CUTS = {0f, 0f, 0f, 0f};
 
     @Override
@@ -61,7 +53,6 @@ public record BuiltLiquidGlass(
         float width = Math.max(this.size.width(), 1f);
         float height = Math.max(this.size.height(), 1f);
 
-        // при слиянии квад должен покрывать оба блоба + радиус слияния
         float drawX = x, drawY = y, drawW = width, drawH = height;
         if (this.merge) {
             float pad = Math.max(0f, this.mergeRadius);
@@ -80,7 +71,6 @@ public record BuiltLiquidGlass(
             fbo.resize(main.textureWidth, main.textureHeight);
         }
 
-        // захватываем содержимое экрана за стеклом
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
         RenderSystem.disableCull();

@@ -4,7 +4,6 @@ import dev.darkvisuals.emotes.EmoteManager;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 
-  
 public final class EmotesClientNetwork {
 
     public static void register() {
@@ -16,7 +15,6 @@ public final class EmotesClientNetwork {
             }
         });
 
-         
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> EmoteManager.clearAll());
     }
 

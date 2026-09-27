@@ -30,20 +30,12 @@ import java.util.regex.Pattern;
     @Getter
     private final BooleanSetting showSelf = new BooleanSetting("Показывать себя", true);
 
-      
     @Getter
     private final BooleanSetting showSelfInList = new BooleanSetting("Я в табе", true);
 
-      
     @Getter
     private final BooleanSetting cleanOwnName = new BooleanSetting("Убирать квадраты", true);
 
-     
-     
-     
-     
-
-      
     private static final Pattern LEGACY_FORMATTING = Pattern.compile("§.");
 
      private static final Pattern PUA_GLYPHS =
@@ -65,7 +57,6 @@ import java.util.regex.Pattern;
         UserTabManager.init();
     }
 
-      
     public boolean isDarkVisualsUser(UUID uuid) {
         if (!isToggled() || uuid == null) return false;
 
@@ -142,7 +133,7 @@ import java.util.regex.Pattern;
         MutableText result = Text.empty();
         text.visit((style, str) -> {
             Identifier font = style.getFont();
-             
+
             if (font != null && "darkvisuals".equals(font.getNamespace())) {
                 result.append(Text.literal(str).setStyle(style));
                 return Optional.empty();

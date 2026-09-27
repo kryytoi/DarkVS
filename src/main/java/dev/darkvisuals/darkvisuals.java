@@ -1,6 +1,5 @@
 package dev.darkvisuals;
 
-
 import dev.darkvisuals.client.managers.*;
 import dev.darkvisuals.client.ui.mainmenu.MainMenu;
 import dev.darkvisuals.client.util.Wrapper;
@@ -20,7 +19,6 @@ import net.minecraft.util.Identifier;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import lombok.*;
-
 
 import java.io.File;
 import java.lang.invoke.MethodHandles;
@@ -54,7 +52,6 @@ public class darkvisuals implements ModInitializer, Wrapper {
         initTime = System.currentTimeMillis();
         instance = this;
 
-
         if (!LicenseGuard.verifyOnStartup()) {
             LOGGER.warn("[DarkVisuals] Глупий Крякер пашл вон");
             return;
@@ -87,15 +84,11 @@ public class darkvisuals implements ModInitializer, Wrapper {
         dev.darkvisuals.emotes.network.EmotesClientNetwork.register();
         dev.darkvisuals.client.managers.CosmeticsSyncManager.init();
 
-         
         waypointOverlay = new dev.darkvisuals.client.ui.hud.impl.WaypointOverlay();
         eventHandler.subscribe(waypointOverlay);
 
-         
         autoSaveManager.loadAutoSave();
 
-         
- 
         ResourceManagerHelper.get(ResourceType.CLIENT_RESOURCES).registerReloadListener(
                 new SimpleSynchronousResourceReloadListener() {
                     @Override
@@ -107,20 +100,16 @@ public class darkvisuals implements ModInitializer, Wrapper {
                     public void reload(ResourceManager manager) {
                         Fonts.reload();
                         dev.darkvisuals.client.util.IntroManager.init(manager);
-                        // подгружаем все PNG-граффити из assets/darkvisuals/grafi
+
                         dev.darkvisuals.client.managers.GraffityManager.reload(manager);
                     }
                 }
         );
 
-         
-         
-         
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
-             
-             
+
             LicenseGuard.tick();
-            if (!LicenseGuard.isValid()) return;  
+            if (!LicenseGuard.isValid()) return;
 
             if (client.currentScreen instanceof TitleScreen
                     && !(client.currentScreen instanceof MainMenu)) {
@@ -135,7 +124,6 @@ public class darkvisuals implements ModInitializer, Wrapper {
         for (File f : file) f.mkdirs();
     }
 
-      
     public static void post(Object event) {
         darkvisuals i = instance;
         if (i == null || i.eventHandler == null) return;

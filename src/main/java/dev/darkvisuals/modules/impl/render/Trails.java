@@ -41,7 +41,6 @@ public class Trails extends Module implements ThemeManager.ThemeChangeListener {
         themeManager.addThemeChangeListener(this);
     }
 
-      
     public BooleanSetting getShowFriends() {
         return showFriends;
     }
@@ -54,7 +53,7 @@ public class Trails extends Module implements ThemeManager.ThemeChangeListener {
         if (fullNullCheck()) return;
         try (var __ = Perf.scopeCpu("Trails.onRender3D")) {
             float tickDelta = Render3D.getTickDelta();
-             
+
             Color accent = ThemeManager.getInstance().getCurrentTheme().getAccentColor();
             Color base = ThemeManager.getInstance().getCurrentTheme().getBackgroundColor();
             int maxPoints = length.getValue().intValue();
@@ -62,17 +61,16 @@ public class Trails extends Module implements ThemeManager.ThemeChangeListener {
 
             long now = System.currentTimeMillis();
 
-             
             trails.keySet().removeIf(p -> p.isRemoved() || !mc.world.getPlayers().contains(p));
 
             for (PlayerEntity p : mc.world.getPlayers()) {
                 boolean isSelf = p == mc.player;
 
                 if (isSelf) {
-                     
+
                     if (mc.options.getPerspective().isFirstPerson()) continue;
                 } else {
-                     
+
                     if (!showFriends.getValue() || !FriendsManager.checkFriend(p.getGameProfile().getName())) {
                         trails.remove(p);
                         continue;
@@ -81,7 +79,6 @@ public class Trails extends Module implements ThemeManager.ThemeChangeListener {
 
                 Deque<TrailPoint> q = trails.computeIfAbsent(p, k -> new ArrayDeque<>());
 
-                 
                 while (!q.isEmpty() && now - q.peekFirst().timeMs > DEFAULT_LIFETIME_MS) q.removeFirst();
 
                 double h = p.getEyeHeight(p.getPose());
@@ -101,7 +98,6 @@ public class Trails extends Module implements ThemeManager.ThemeChangeListener {
                         TrailPoint a = list.get(i);
                         TrailPoint b = list.get(i + 1);
 
-                        // плавный градиент: свежий конец ярко-акцентный, старый тает в фон
                         float tA = (float) i / (float) (sz - 1);
                         float tB = (float) (i + 1) / (float) (sz - 1);
                         Color ca = trailColor(accent, base, tA);
@@ -123,10 +119,6 @@ public class Trails extends Module implements ThemeManager.ThemeChangeListener {
         }
     }
 
-    /**
-     * Цвет точки шлейфа: t=1 (свежая) — яркий акцентный, t=0 (старая) — тает в цвет фона.
-     * Затухание квадратичное, поэтому хвост растворяется мягче.
-     */
     private static Color trailColor(Color accent, Color base, float t) {
         float fade = t * t;
         int r = (int) (base.getRed() + (accent.getRed() - base.getRed()) * fade);

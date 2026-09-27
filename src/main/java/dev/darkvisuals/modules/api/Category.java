@@ -9,7 +9,7 @@ public enum Category {
     Render("H"),
     Utility("I"),
     Friends("F"),
-    Markers("M"),    
+    Markers("M"),
     Hud("LOL"),
     Config("C");
 

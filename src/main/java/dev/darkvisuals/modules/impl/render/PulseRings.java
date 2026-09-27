@@ -18,9 +18,6 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.Vec3d;
 import org.joml.Matrix4f;
 
-/**
- * PulseRings — расходящиеся от игрока пульсирующие кольца.
- */
 public class PulseRings extends Module {
 
     private final NumberSetting maxRings = new NumberSetting("Количество колец", 4f, 1f, 10f, 1f);

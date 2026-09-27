@@ -29,7 +29,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
-
 public class FallingLeaves extends Module {
 
     private final NumberSetting density =
@@ -82,7 +81,6 @@ public class FallingLeaves extends Module {
             Leaf leaf = it.next();
             leaf.prevPos = leaf.pos;
 
-            // порхание: покачивание по синусоиде + вращение
             leaf.pos = leaf.pos.add(
                     Math.sin(leaf.age * leaf.swaySpeed) * 0.05,
                     -0.03 * fallSpeed.getValue(),
@@ -118,7 +116,7 @@ public class FallingLeaves extends Module {
         Color autumn = autumnColor.getColor();
 
         for (Leaf leaf : leaves) {
-            // мягкое появление
+
             float fade = MathHelper.clamp(leaf.age / 10f, 0f, 1f);
             Color base = leaf.autumn ? autumn : green;
             int alpha = (int) (220 * fade);
@@ -131,7 +129,7 @@ public class FallingLeaves extends Module {
 
             Matrix4f matrix = matrices.peek().getPositionMatrix();
             float h = size.getValue() / 2f;
-            // ромбовидный листик
+
             BufferBuilder buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
             buffer.vertex(matrix, 0, -h, 0).color(c.getRGB());
             buffer.vertex(matrix, h, 0, 0).color(c.getRGB());
@@ -163,7 +161,7 @@ public class FallingLeaves extends Module {
             this.rotSpeedX = (random.nextFloat() - 0.5f) * 8f;
             this.rotSpeedY = (random.nextFloat() - 0.5f) * 14f;
             this.swaySpeed = 0.05f + random.nextFloat() * 0.06f;
-            this.autumn = random.nextInt(3) == 0; // каждый третий лист — осенний
+            this.autumn = random.nextInt(3) == 0;
         }
     }
 }

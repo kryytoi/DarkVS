@@ -25,7 +25,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
- 
 public final class AchievementManager implements Wrapper {
 
     private static final String SERVER_BASE_URL = "https://darkvisuals.vercel.app";
@@ -47,14 +46,12 @@ public final class AchievementManager implements Wrapper {
         return loaded;
     }
 
-      
     public static void loadIfNeeded() {
         if (loading || loaded) return;
         loading = true;
         new Thread(AchievementManager::fetchAchievements, "AchievementManager-Fetch").start();
     }
 
-      
     public static void reload() {
         loaded = false;
         loading = false;
@@ -115,7 +112,6 @@ public final class AchievementManager implements Wrapper {
 
             achievements = new CopyOnWriteArrayList<>(parsed);
 
-             
             for (Achievement a : parsed) {
                 loadIconAsync(a);
             }
@@ -127,7 +123,6 @@ public final class AchievementManager implements Wrapper {
         }
     }
 
-      
     public static AbstractTexture getIcon(Achievement achievement) {
         if (achievement.imageUrl == null || achievement.imageUrl.isEmpty()) return null;
         AbstractTexture cached = iconCache.get(achievement.imageUrl);

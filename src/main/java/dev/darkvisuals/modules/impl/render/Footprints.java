@@ -26,10 +26,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-/**
- * Footprints — следы, остающиеся на земле при ходьбе.
- * Каждые ~0.55 блока пути оставляем плоский квад, чередуя левую/правую ногу.
- */
 public class Footprints extends Module {
 
     private static final long PRINT_TTL_MS = 4000L;
@@ -48,7 +44,7 @@ public class Footprints extends Module {
         final Vec3d pos;
         final float yaw;
         final long birth;
-        final float side; // -1 левая, +1 правая
+        final float side;
 
         Footprint(Vec3d pos, float yaw, float side) {
             this.pos = pos;
@@ -104,7 +100,6 @@ public class Footprints extends Module {
         if (stepAccum < STEP_DISTANCE) return;
         stepAccum = 0.0;
 
-        // точка на земле чуть позади игрока, со смещением в сторону "ступни"
         float yawRad = (float) Math.toRadians(mc.player.getYaw());
         float side = nextSide;
         nextSide = -nextSide;
@@ -114,7 +109,6 @@ public class Footprints extends Module {
         double x = mc.player.getX() + Math.cos(yawRad) * behind - Math.sin(yawRad) * lateral * side;
         double z = mc.player.getZ() - Math.sin(yawRad) * behind - Math.cos(yawRad) * lateral * side;
 
-        // ищем поверхность под ногами
         BlockPos feet = BlockPos.ofFloored(x, mc.player.getY() - 0.1, z);
         double surfaceY = mc.player.getY() - 0.02;
         if (!mc.world.getBlockState(feet).isAir()) {
@@ -159,7 +153,7 @@ public class Footprints extends Module {
             matrices.multiply(net.minecraft.util.math.RotationAxis.POSITIVE_Y.rotationDegrees(-print.yaw));
 
             Matrix4f matrix = matrices.peek().getPositionMatrix();
-            // плоский квад на земле, слегка вытянутый по направлению движения
+
             float len = half * 1.5f;
             float wid = half * 0.6f;
             BufferBuilder buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);

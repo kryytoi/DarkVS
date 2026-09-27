@@ -39,17 +39,11 @@ public abstract class LivingEntityRendererMixin<S extends LivingEntityRenderStat
         HitColor module = darkvisuals.getInstance().getModuleManager().getModule(HitColor.class);
         if (module != null && module.isToggled() && state.hurt) {
             SV_SHOULD_TINT.set(true);
-             
+
             state.hurt = false;
         }
     }
 
-    /**
-     * Replaces the vanilla hurt tint color with the module's theme color when tinting is active.
-     *
-     * @author DarkVisuals
-     * @reason vanilla returns a hardcoded red mix color; we swap it for the HitColor module's theme color
-     */
     @Overwrite
     public int getMixColor(S state) {
         HitColor module = darkvisuals.getInstance().getModuleManager().getModule(HitColor.class);
@@ -68,8 +62,8 @@ public abstract class LivingEntityRendererMixin<S extends LivingEntityRenderStat
     private void darkvisuals$forceTranslucentLayer(S state, boolean showBody, boolean translucent, boolean showOutline, CallbackInfoReturnable<RenderLayer> cir) {
         HitColor module = darkvisuals.getInstance().getModuleManager().getModule(HitColor.class);
         if (module != null && module.isToggled() && Boolean.TRUE.equals(SV_SHOULD_TINT.get())) {
-             
+
             cir.setReturnValue(RenderLayer.getEntityTranslucent(SV_WHITE));
         }
     }
-} 
+}

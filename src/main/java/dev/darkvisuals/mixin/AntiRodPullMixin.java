@@ -11,7 +11,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
- 
 @Mixin(ClientPlayNetworkHandler.class)
 public class AntiRodPullMixin {
 
@@ -39,7 +38,6 @@ public class AntiRodPullMixin {
         } catch (Throwable ignored) {}
     }
 
- 
     @Inject(method = "onPlayerPositionLook", at = @At("HEAD"), cancellable = true)
     private void sv$cancelPositionVelocityPull(PlayerPositionLookS2CPacket packet, CallbackInfo ci) {
         RWHelper rwHelper = RWHelper.getInstance();
@@ -47,7 +45,7 @@ public class AntiRodPullMixin {
 
         try {
             if (rwHelper.shouldCancelPositionLookVelocity(packet)) {
-                 
+
                 ((ClientPlayNetworkHandler) (Object) this)
                         .sendPacket(new TeleportConfirmC2SPacket(packet.teleportId()));
                 ci.cancel();

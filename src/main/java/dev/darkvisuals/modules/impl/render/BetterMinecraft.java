@@ -23,4 +23,4 @@ public class BetterMinecraft extends Module {
         getSettings().add(smoothTab);
         getSettings().add(smoothThirdPersonZoom);
 	}
-} 
+}

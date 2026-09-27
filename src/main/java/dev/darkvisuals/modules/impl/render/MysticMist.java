@@ -26,7 +26,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
-
 public class MysticMist extends Module {
 
     private static final long MIST_TTL_MS = 7000L;
@@ -67,7 +66,6 @@ public class MysticMist extends Module {
     public void onTick(EventTick event) {
         if (fullNullCheck()) return;
 
-        // поддерживаем нужное количество облаков тумана
         while (mists.size() < (int) (float) density.getValue()) {
             double ang = rnd.nextDouble() * Math.PI * 2;
             double dist = radius.getValue() * (0.2 + 0.8 * rnd.nextDouble());
@@ -84,19 +82,18 @@ public class MysticMist extends Module {
         while (it.hasNext()) {
             Mist m = it.next();
             m.age++;
-            // медленный дрейф по кругу вокруг своей точки
+
             double t = m.age / 40.0;
             m.pos = m.pos.add(
                     Math.sin(t * 0.2 * driftSpeed.getValue() + m.phase) * 0.02 * driftSpeed.getValue(),
                     Math.sin(t * 0.15 + m.phase * 2.0) * 0.004,
                     Math.cos(t * 0.17 * driftSpeed.getValue() + m.phase * 0.6) * 0.02 * driftSpeed.getValue());
 
-            // дыхание тумана: размер колеблется
             m.currentSize = m.baseSize * (0.8f + 0.2f * MathHelper.sin((float) t * driftSpeed.getValue() + m.phase));
 
             long age = System.currentTimeMillis() - m.birth;
             if (age >= MIST_TTL_MS || m.pos.distanceTo(mc.player.getPos()) > radius.getValue() * 1.8) {
-                // переспавн рядом с игроком
+
                 double ang = rnd.nextDouble() * Math.PI * 2;
                 double dist = radius.getValue() * (0.2 + 0.8 * rnd.nextDouble());
                 m.pos = mc.player.getPos().add(Math.cos(ang) * dist, 0.05 + rnd.nextDouble() * 0.4, Math.sin(ang) * dist);
@@ -128,7 +125,7 @@ public class MysticMist extends Module {
             float lifeT = (now - m.birth) / (float) MIST_TTL_MS;
             float fadeIn = MathHelper.clamp(lifeT / 0.2f, 0f, 1f);
             float fadeOut = MathHelper.clamp((1f - lifeT) / 0.25f, 0f, 1f);
-            // туман дышит прозрачностью
+
             float breathe = 0.7f + 0.3f * MathHelper.sin(now / 1400f + m.phase * 2f);
             int alpha = (int) (90 * alphaSetting.getValue() * fadeIn * fadeOut * breathe);
             if (alpha <= 3) continue;
@@ -138,7 +135,7 @@ public class MysticMist extends Module {
             Matrix4f matrix = matrices.peek().getPositionMatrix();
 
             float half = m.currentSize / 2f;
-            // два повёрнутых друг к другу квадрата для объёмности
+
             BufferBuilder buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
             buffer.vertex(matrix, -half, 0, -half).color(c.getRed(), c.getGreen(), c.getBlue(), alpha);
             buffer.vertex(matrix, -half, 0, half).color(c.getRed(), c.getGreen(), c.getBlue(), alpha);

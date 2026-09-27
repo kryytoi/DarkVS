@@ -6,7 +6,7 @@ public record Emote(String id, String translationKey, long durationMs, EmotePose
 
     @FunctionalInterface
     public interface EmotePose {
- 
+
         void apply(PlayerEntityModel model, float blend, float seconds);
     }
 }

@@ -58,7 +58,7 @@ public class ColorUtils implements Wrapper {
     public Color getGlobalColor() {
         return getGlobalColor(255);
     }
-    
+
     public Color gradient(Color color1, Color color2, float amount) {
         amount = MathHelper.clamp(amount, 0, 1);
         int r = MathHelper.lerp(amount, color1.getRed(), color2.getRed());
@@ -69,7 +69,6 @@ public class ColorUtils implements Wrapper {
         return new Color(r, g, b, a);
     }
 
-     
     public static int rgb(int r, int g, int b) {
         return new Color(r, g, b).getRGB();
     }

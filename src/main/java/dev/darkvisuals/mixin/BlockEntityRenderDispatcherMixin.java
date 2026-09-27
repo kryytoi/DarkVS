@@ -26,18 +26,26 @@ public abstract class BlockEntityRenderDispatcherMixin {
     )
     private void darkvisuals$hideBlockEntities(BlockEntity blockEntity, float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers, CallbackInfo ci) {
         Optimization optimization = darkvisuals.getInstance().getModuleManager().getModule(Optimization.class);
-        if (optimization == null || !optimization.isToggled() || !optimization.hideBlockEntities.getValue()) return;
+        if (optimization == null || !optimization.isToggled()) return;
 
+        MinecraftClient mc = MinecraftClient.getInstance();
+        Frustum frustum = null;
         try {
-            MinecraftClient mc = MinecraftClient.getInstance();
-            Frustum frustum = ((IWorldRenderer) mc.worldRenderer).getFrustum();
-            if (frustum == null) return;
-
-            BlockPos pos = blockEntity.getPos();
-            Box box = new Box(pos).expand(0.5);
-            if (!frustum.isVisible(box)) {
-                ci.cancel();
+            if (mc.worldRenderer != null) {
+                frustum = ((IWorldRenderer) mc.worldRenderer).getFrustum();
             }
         } catch (Throwable ignored) {}
+
+        double camX = 0, camY = 0, camZ = 0;
+        if (mc.gameRenderer != null && mc.gameRenderer.getCamera() != null) {
+            var cpos = mc.gameRenderer.getCamera().getPos();
+            camX = cpos.x;
+            camY = cpos.y;
+            camZ = cpos.z;
+        }
+
+        if (Optimization.shouldCullBlockEntity(blockEntity.getPos(), camX, camY, camZ, frustum)) {
+            ci.cancel();
+        }
     }
 }

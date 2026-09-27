@@ -17,7 +17,7 @@ public abstract class AttackEventMixin {
     @Inject(method = "attack", at = @At("HEAD"), cancellable = true)
     private void onAttack(Entity target, CallbackInfo ci) {
         PlayerEntity self = (PlayerEntity) (Object) this;
-         
+
         if (target instanceof LivingEntity living && living.hurtTime > 2) {
             ci.cancel();
             return;
@@ -29,12 +29,12 @@ public abstract class AttackEventMixin {
             ci.cancel();
             return;
         }
-         
+
         boolean duplicateByTime = !dev.darkvisuals.client.managers.HitDetectionManager.getInstance().canProcessHit(self, target);
         if (duplicateByTime) {
             event.setEffectsAllowed(false);
         }
-         
+
         HitDetectionManager.getInstance().registerHit(self, target);
     }
-} 
+}

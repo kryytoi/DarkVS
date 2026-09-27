@@ -26,7 +26,7 @@ import java.util.List;
     private static final Identifier GIF_ID = Identifier.of("darkvisuals", "gif/startgif.gif");
 
     private final List<Identifier> frameIds = new ArrayList<>();
-    private final List<Integer> frameDurations = new ArrayList<>();  
+    private final List<Integer> frameDurations = new ArrayList<>();
 
     private long startTimeMs = -1L;
     private boolean finished = false;
@@ -86,7 +86,6 @@ import java.util.List;
         }
     }
 
-      
     private Identifier registerFrame(BufferedImage image, int index) {
         try {
             int width = image.getWidth();
@@ -161,7 +160,7 @@ import java.util.List;
         if (frameIndex < frameIds.size()) {
             try {
                 int W = this.width, H = this.height;
-                 
+
                 float scale = Math.max(W / 1920f, H / 1012f);
                 float drawW = 1920f * scale;
                 float drawH = 1012f * scale;

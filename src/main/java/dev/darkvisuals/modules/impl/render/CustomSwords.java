@@ -22,7 +22,6 @@ import java.util.List;
 
  public class CustomSwords extends Module {
 
-      
     public enum Weapon implements Nameable {
         ABOMINABLE_BLADE("Abominable Blade"),
         ABOMINABLE_GREAT_SABER("Abominable Great Saber"),
@@ -195,7 +194,6 @@ import java.util.List;
         ItemStack stack = mc.player.getMainHandStack();
         if (!isSword(stack)) return;
 
-         
         String key = weapon.getValue().getName();
         CustomModelDataComponent data = new CustomModelDataComponent(
                 List.of(), List.of(), List.of(key), List.of());

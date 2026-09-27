@@ -95,15 +95,15 @@ public class ListComponent extends Component {
 
     @Override
     public void mouseClicked(double mouseX, double mouseY, int button) {
-         
+
         if (MathUtils.isHovered(x, y, width, height, (float) mouseX, (float) mouseY)) {
-            if (button == 1) {  
+            if (button == 1) {
                 open = !open;
                 return;
             }
-            if (button == 0) {  
+            if (button == 0) {
                 if (setting.isSingleSelect()) {
-                     
+
                     List<BooleanSetting> opts = setting.getValue();
                     int current = -1;
                     for (int i = 0; i < opts.size(); i++) if (opts.get(i).getValue()) { current = i; break; }
@@ -111,17 +111,17 @@ public class ListComponent extends Component {
                     for (BooleanSetting bs : opts) bs.setValue(false);
                     opts.get(next).setValue(true);
                 } else {
-                    open = !open;  
+                    open = !open;
                 }
                 return;
             }
         }
-         
+
         if (openAnimation.getValue() > 0 && button == 0) {
             float yOffset = height;
             float visibleH = (float) (setting.getValue().size() * 14f * Math.max(0f, Math.min(1f, openAnimation.getValue())));
             for (BooleanSetting s : setting.getValue()) {
-                if (yOffset >= height + visibleH) break;  
+                if (yOffset >= height + visibleH) break;
                 if (MathUtils.isHovered(x, y + yOffset, width, 14f, (float) mouseX, (float) mouseY)) {
                     if (setting.isSingleSelect()) {
                         for (BooleanSetting all : setting.getValue()) all.setValue(false);

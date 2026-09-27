@@ -33,10 +33,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-/**
- * SoundBasVisual — визуализация басов и громкости музыки прямо в небе:
- * расходящиеся в зените басовые кольца, круговой 3D-эквалайзер и пульсирующая сфера звука.
- */
 public class SoundBasVisual extends Module {
 
     public enum VisualMode implements Nameable {
@@ -118,19 +114,17 @@ public class SoundBasVisual extends Module {
         long now = System.currentTimeMillis();
         boolean musicActive = false;
 
-        // 1. Проверяем внешнюю музыку через NowPlayingBridge (Spotify, браузер и т.д.)
         NowPlayingBridge.Snapshot mediaSnap = NowPlayingBridge.getCurrent();
         if (mediaSnap != null && mediaSnap.playing) {
             musicActive = true;
         }
 
-        // 2. Проверяем воспроизведение музыки дисков / внутриигровой музыки
         if (mc.getSoundManager() != null) {
-            // Если играет музыка или медиа
+
             if (musicActive) {
                 float beatSpeed = 2.1f * bassSpeed.getValue();
                 audioPhase += 0.05f * beatSpeed;
-                // Имитация басовых ударов музыки (Kick + Bassline)
+
                 float beat1 = (float) Math.pow(Math.max(0.0, Math.sin(audioPhase * Math.PI * 2.0)), 4.0);
                 float beat2 = (float) Math.pow(Math.max(0.0, Math.sin(audioPhase * Math.PI * 1.0 + 0.3)), 6.0) * 0.7f;
                 float currentImpulse = (beat1 + beat2) * sensitivity.getValue();
@@ -138,11 +132,9 @@ public class SoundBasVisual extends Module {
             }
         }
 
-        // Плавная интерполяция энергии баса
         smoothBassEnergy = MathHelper.lerp(0.18f, smoothBassEnergy, targetBassEnergy);
         targetBassEnergy *= 0.88f;
 
-        // Спавн басового кольца при пиковом значении
         if (smoothBassEnergy > 0.45f && (now - lastRingSpawnTime) > 350L / bassSpeed.getValue()) {
             lastRingSpawnTime = now;
             activeRings.add(new BassRing(
@@ -153,7 +145,6 @@ public class SoundBasVisual extends Module {
             ));
         }
 
-        // Обновление колец
         Iterator<BassRing> it = activeRings.iterator();
         while (it.hasNext()) {
             BassRing ring = it.next();
@@ -182,21 +173,18 @@ public class SoundBasVisual extends Module {
         RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR);
 
         matrices.push();
-        // Привязываем центр эффекта к позиции игрока над его головой в небе
+
         matrices.translate(0f, yHeight, 0f);
         Matrix4f m = matrices.peek().getPositionMatrix();
 
-        // 1. Расходящиеся басовые кольца (Bass Rings)
         if (mode == VisualMode.All || mode == VisualMode.BassRings) {
             renderBassRings(m, themeColor);
         }
 
-        // 2. Круговой 3D-эквалайзер (Equalizer Circle)
         if (mode == VisualMode.All || mode == VisualMode.EqualizerCircle) {
             renderEqualizerCircle(m, themeColor);
         }
 
-        // 3. Пульсирующий купол звука в зените (Sky Dome)
         if (mode == VisualMode.All || mode == VisualMode.SkyDome) {
             renderSkyDomeGlow(m, themeColor);
         }
@@ -223,7 +211,7 @@ public class SoundBasVisual extends Module {
 
             float innerR = curR * 0.94f;
             float outerR = curR;
-            float heightOffset = t * 24.0f; // Кольцо медленно взмывает выше в небо
+            float heightOffset = t * 24.0f;
 
             float cr = r.color.getRed() / 255f;
             float cg = r.color.getGreen() / 255f;
@@ -261,7 +249,7 @@ public class SoundBasVisual extends Module {
 
         for (int i = 0; i < bars; i++) {
             double angle = (Math.PI * 2.0 / bars) * i;
-            // Динамическая волна амплитуды эквалайзера
+
             float barWave = (float) Math.sin(angle * 4.0 + time * 3.0) * 0.35f
                     + (float) Math.cos(angle * 7.0 - time * 2.0) * 0.25f;
             float barHeight = (1.5f + Math.abs(barWave) * 12.0f + smoothBassEnergy * 16.0f);
@@ -273,7 +261,6 @@ public class SoundBasVisual extends Module {
             float cx = cos * radius;
             float cz = sin * radius;
 
-            // Касательный вектор к окружности для ориентации планки
             float perpX = -sin * (barWidth * 0.5f);
             float perpZ = cos * (barWidth * 0.5f);
 

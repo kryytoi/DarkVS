@@ -26,7 +26,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-
 public class OrbitingOrbs extends Module {
 
     private final NumberSetting count =
@@ -64,7 +63,6 @@ public class OrbitingOrbs extends Module {
     public void onTick(EventTick event) {
         if (fullNullCheck()) return;
 
-        // подгоняем количество орбов под настройку
         while (orbs.size() < (int) (float) count.getValue()) {
             orbs.add(new Orb(orbs.size()));
         }
@@ -99,12 +97,10 @@ public class OrbitingOrbs extends Module {
             double angle = time * orbitSpeed.getValue() * orb.direction + orb.phase;
             double height = py + orb.heightOffset + Math.sin(time * 0.8 + orb.phase) * 0.25;
 
-            // ядро орба
             drawOrb(matrices, cam, px + Math.cos(angle) * orbitRadius.getValue(),
                     height, pz + Math.sin(angle) * orbitRadius.getValue(),
                     glowSize.getValue(), c, 1f, yaw, pitch);
 
-            // лёгкий шлейф из призрачных позиций
             for (int i = 1; i <= 5; i++) {
                 double trailAngle = angle - i * 0.11 * orbitSpeed.getValue() * orb.direction;
                 drawOrb(matrices, cam, px + Math.cos(trailAngle) * orbitRadius.getValue(),
@@ -122,7 +118,7 @@ public class OrbitingOrbs extends Module {
 
     private void drawOrb(MatrixStack matrices, Vec3d cam, double x, double y, double z,
                          float size, Color c, float intensity, float yaw, float pitch) {
-        // пульсация свечения
+
         float pulse = 0.75f + 0.25f * MathHelper.sin((float) (System.currentTimeMillis() / 600f));
         int alpha = (int) (200 * intensity * pulse);
         if (alpha <= 3 || size <= 0.01f) return;
@@ -137,7 +133,7 @@ public class OrbitingOrbs extends Module {
         int mid = alpha / 3;
 
         BufferBuilder buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
-        // мягкое свечение: прозрачная середина и яркие края
+
         buffer.vertex(matrix, -half, -half, 0).color(c.getRed(), c.getGreen(), c.getBlue(), alpha);
         buffer.vertex(matrix, -half, half, 0).color(c.getRed(), c.getGreen(), c.getBlue(), mid);
         buffer.vertex(matrix, half, half, 0).color(c.getRed(), c.getGreen(), c.getBlue(), alpha);

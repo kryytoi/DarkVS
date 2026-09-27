@@ -8,11 +8,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-/**
- * Подстраховка BuildSpacePacketMixin: если sendPacket объявлен не в общем
- * сетевом хендлере, а в игровом — работает этот миксин.
- * require = 0: несовпавшая сигнатура просто пропускается, без краша.
- */
 @Mixin(ClientCommonNetworkHandler.class)
 public abstract class BuildSpacePlayPacketMixin {
 

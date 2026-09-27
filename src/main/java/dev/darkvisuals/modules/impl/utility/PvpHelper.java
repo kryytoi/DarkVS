@@ -34,7 +34,6 @@ public class PvpHelper extends Module {
 
         long window = mc.getWindow().getHandle();
 
-         
         boolean pearlDown = isBindDown(window, pearlBind.getValue());
         if (pearlDown && !pearlLatch) {
             switchToItem(mc, Items.ENDER_PEARL);
@@ -64,10 +63,7 @@ public class PvpHelper extends Module {
             int slot = findInHotbar(mc, item);
             if (slot != -1) {
                 mc.player.getInventory().selectedSlot = slot;
-                 
-                 
 
-                 
                 mc.options.useKey.setPressed(true);
                 forcedUseKey = true;
 

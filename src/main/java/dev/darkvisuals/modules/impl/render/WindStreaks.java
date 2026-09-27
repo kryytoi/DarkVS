@@ -23,9 +23,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-/**
- * WindStreaks — горизонтальные линии ветра, проносящиеся мимо игрока.
- */
 public class WindStreaks extends Module {
 
     private final NumberSetting count = new NumberSetting("Количество", 26f, 6f, 80f, 2f);

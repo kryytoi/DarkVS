@@ -36,7 +36,7 @@ public class DogBrain {
 
     private ClientPlayerEntity entity;
     private LivingEntity attackTarget;
-    private boolean isBiting = false;  
+    private boolean isBiting = false;
 
     public void setEntity(ClientPlayerEntity entity) {
         this.entity = entity;
@@ -105,11 +105,11 @@ public class DogBrain {
             boolean tooFar = playerPos.distanceTo(attackTarget.getPos()) > 5.0;
             boolean dogFar = pos.distanceTo(attackTarget.getPos()) > 14.0;
             if (dead || tooFar || dogFar) {
-                setAttackTarget(null);  
+                setAttackTarget(null);
             }
         }
 
-        isBiting = false;  
+        isBiting = false;
         if (attackTarget != null) {
             handleAttackMode(onGround);
         } else if (playerHighAbove) {
@@ -151,7 +151,6 @@ public class DogBrain {
         Vec3d toStrike = attackStrikeTarget.subtract(pos);
         double dist = toStrike.horizontalLength();
 
-         
         if (dist < 0.8 && attackPhase == AttackPhase.RUNNING_FORWARD) {
             isBiting = true;
         }
@@ -377,7 +376,6 @@ public class DogBrain {
     public float getPitch() { return smoothHeadPitch; }
     public boolean isLay()  { return lay; }
 
-     
     public double getVelocityY() { return motion.y; }
     public boolean isBiting() { return isBiting; }
 

@@ -17,13 +17,6 @@ import org.lwjgl.glfw.GLFW;
 import java.awt.Color;
 import java.util.List;
 
-/**
- * GraffityWheelScreen — круг выбора граффити в стиле GTA 5.
- *
- * Открывается по бинду (по умолчанию G). Иконки граффити расставлены по кругу,
- * каждая в своём секторе. Наведя мышку на сектор и кликнув, выбираешь граффити —
- * оно ставится в мире перед игроком, круг закрывается.
- */
 public class GraffityWheelScreen extends Screen {
 
     private static final float WHEEL_RADIUS = 130f;
@@ -35,7 +28,6 @@ public class GraffityWheelScreen extends Screen {
     private final SmoothAnimation openAnimation = new SmoothAnimation(0f, 16f);
     private boolean closing = false;
 
-    // пока бинд зажат после открытия, не считаем его повторным нажатием
     private boolean bindHeldSinceOpen = true;
 
     public GraffityWheelScreen(Graffity module) {
@@ -72,14 +64,12 @@ public class GraffityWheelScreen extends Screen {
         float cx = this.width / 2f;
         float cy = this.height / 2f;
 
-        // лёгкое затемнение, чтобы круг читался на любом фоне
         Render2D.drawRoundedRect(stack, 0, 0, this.width, this.height, 0,
                 new Color(0, 0, 0, (int) (90 * progress)));
 
         List<Identifier> textures = GraffityManager.getTextures();
         List<String> names = GraffityManager.getNames();
 
-        // центральный круг
         boolean centerHovered = isCenterHovered(mouseX, mouseY, cx, cy);
         Color centerColor = centerHovered
                 ? new Color(200, 60, 60, (int) (220 * progress))
@@ -107,7 +97,6 @@ public class GraffityWheelScreen extends Screen {
         int count = textures.size();
         int hovered = getHoveredIndex(mouseX, mouseY, count, cx, cy);
 
-        // рисуем сначала «спицы» — линии от центра к каждой иконке
         for (int i = 0; i < count; i++) {
             float angle = angleFor(i, count);
             float r = WHEEL_RADIUS * (0.75f + 0.25f * progress);
@@ -137,22 +126,19 @@ public class GraffityWheelScreen extends Screen {
             float drawY = pos[1] - drawSize / 2f;
 
             if (isHovered) {
-                // свечение под выбранной иконкой
+
                 Render2D.drawBlurredRect(stack, drawX, drawY, drawSize, drawSize, drawSize / 2f, 8f,
                         new Color(theme.getRed(), theme.getGreen(), theme.getBlue(), (int) (110 * progress)));
             }
 
-            // рамка-квадрат под иконку (скруглённая)
             Color frameColor = isHovered
                     ? new Color(theme.getRed(), theme.getGreen(), theme.getBlue(), (int) (240 * progress))
                     : new Color(30, 30, 36, (int) (210 * progress));
             Render2D.drawRoundedRect(stack, drawX, drawY, drawSize, drawSize, 10f, frameColor);
 
-            // сама картинка граффити
             Render2D.drawTexture(stack, drawX + 5f, drawY + 5f, drawSize - 10f, drawSize - 10f, 0f,
                     textures.get(i), new Color(255, 255, 255, (int) (255 * progress)));
 
-            // подпись под иконкой
             String label = i < names.size() ? names.get(i) : "graffity " + (i + 1);
             float tw = Fonts.MEDIUM.getWidth(label, FONT_SIZE);
             float labelY = drawY + drawSize + 4f;
@@ -177,24 +163,16 @@ public class GraffityWheelScreen extends Screen {
         };
     }
 
-    /**
-     * Секторный выбор как в GTA 5: мышка попадает в сектор круга,
-     * а не в саму иконку. Так целиться проще и понятнее.
-     */
     private int getHoveredIndex(double mouseX, double mouseY, int count, float cx, float cy) {
         double dx = mouseX - cx;
         double dy = mouseY - cy;
         double dist = Math.sqrt(dx * dx + dy * dy);
 
-        // слишком близко к центру — ничего не выбрано
         if (dist <= CENTER_RADIUS) return -1;
 
-        // угол мыши: 0 справа, растёт по часовой. Переводим так, чтобы
-        // первая иконка была сверху и порядок шёл по часовой.
-        double mouseAngle = Math.atan2(dy, dx); // -PI..PI, вверх это -PI/2
+        double mouseAngle = Math.atan2(dy, dx);
         double sector = (Math.PI * 2) / count;
 
-        // сдвигаем так, что верхний сектор — нулевой
         double normalized = mouseAngle + Math.PI / 2;
         if (normalized < 0) normalized += Math.PI * 2;
 
@@ -219,7 +197,7 @@ public class GraffityWheelScreen extends Screen {
         float cy = this.height / 2f;
 
         if (isCenterHovered(mouseX, mouseY, cx, cy)) {
-            // клик по центру — закрыть, ничего не ставя
+
             beginClose();
             return true;
         }
@@ -228,7 +206,7 @@ public class GraffityWheelScreen extends Screen {
         int hovered = getHoveredIndex(mouseX, mouseY, count, cx, cy);
         if (hovered >= 0 && hovered < count) {
             module.placeSelected(hovered);
-            // звук клика как в остальных UI
+
             if (this.client != null) {
                 this.client.getSoundManager().play(net.minecraft.client.sound.PositionedSoundInstance.master(
                         net.minecraft.sound.SoundEvents.UI_BUTTON_CLICK.value(), 1.0f, 0.7f));
@@ -248,7 +226,7 @@ public class GraffityWheelScreen extends Screen {
 
         var bind = module.getWheelBind().getValue();
         if (bind != null && !bind.isMouse() && keyCode == bind.getKey()) {
-            // бинд ещё зажат с момента открытия — игнорируем
+
             if (bindHeldSinceOpen) return true;
             beginClose();
             return true;

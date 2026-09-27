@@ -27,8 +27,6 @@ public record RockstarBuiltBlur(
 
 	private static final ShaderProgramKey BLUR_SHADER_KEY = new ShaderProgramKey(ResourceProvider.getShaderIdentifier("rock_blur"), VertexFormats.POSITION_COLOR, Defines.EMPTY);
     private static final Supplier<SimpleFramebuffer> TEMP_FBO_SUPPLIER = Suppliers.memoize(() -> new SimpleFramebuffer(1920, 1024, false));
-    // MAIN_FBO намеренно НЕ кешируется — Minecraft пересоздаёт его при запуске/ресайзе,
-    // и закешированный указатель становится удалённым FBO → GL_INVALID_VALUE каждый кадр.
 
     @Override
     public void render(Matrix4f matrix, float x, float y, float z) {

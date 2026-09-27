@@ -73,7 +73,6 @@ public class BindCommand extends Command {
     private int set(CommandContext<CommandSource> ctx) {
         String raw = StringArgumentType.getString(ctx, "args").trim();
 
-         
         int lastSpace = raw.lastIndexOf(' ');
         if (lastSpace <= 0) {
             ChatUtils.sendMessage(I18n.translate("bind.help"));
@@ -102,7 +101,7 @@ public class BindCommand extends Command {
         ModuleManager mm = darkvisuals.getInstance().getModuleManager();
         Module m = mm.getModuleByName(name);
         if (m != null) return m;
-         
+
         for (Module mod : mm.getModules()) {
             if (mod.getName().equalsIgnoreCase(name)) return mod;
         }
@@ -111,7 +110,7 @@ public class BindCommand extends Command {
 
     private Bind parseBindToken(String token) {
         String t = token.toLowerCase(Locale.ROOT);
-         
+
         if (t.startsWith("mouse") || t.startsWith("mb")) {
             int idx = -1;
             try {
@@ -122,10 +121,9 @@ public class BindCommand extends Command {
             }
             return null;
         }
-         
+
         if (t.equals("none") || t.equals("clear")) return new Bind(-1, false);
 
-         
         int key = keyNameToGlfw(token);
         if (key >= 0) return new Bind(key, false);
         return null;
@@ -133,7 +131,7 @@ public class BindCommand extends Command {
 
     private int keyNameToGlfw(String name) {
         String n = name.toUpperCase(Locale.ROOT);
-         
+
         if (n.equals("RSHIFT")) n = "RIGHT_SHIFT";
         if (n.equals("LSHIFT")) n = "LEFT_SHIFT";
         if (n.equals("RCTRL")) n = "RIGHT_CONTROL";
@@ -155,24 +153,24 @@ public class BindCommand extends Command {
     private String bindToString(Bind b) {
         if (b == null || b.getKey() < 0) return I18n.translate("bind.none");
         if (b.isMouse()) return "MOUSE" + b.getKey();
-         
+
         return keyToName(b.getKey());
     }
 
     private String keyToName(int key) {
-         
+
         if (key >= GLFW.GLFW_KEY_A && key <= GLFW.GLFW_KEY_Z) {
             return String.valueOf((char) ('A' + (key - GLFW.GLFW_KEY_A)));
         }
-         
+
         if (key >= GLFW.GLFW_KEY_0 && key <= GLFW.GLFW_KEY_9) {
             return String.valueOf((char) ('0' + (key - GLFW.GLFW_KEY_0)));
         }
-         
+
         if (key >= GLFW.GLFW_KEY_F1 && key <= GLFW.GLFW_KEY_F25) {
             return "F" + (key - GLFW.GLFW_KEY_F1 + 1);
         }
-         
+
         try {
             for (java.lang.reflect.Field f : GLFW.class.getFields()) {
                 if (!f.getName().startsWith("GLFW_KEY_")) continue;

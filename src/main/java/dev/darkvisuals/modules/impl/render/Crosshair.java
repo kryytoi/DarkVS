@@ -20,9 +20,8 @@ import java.awt.*;
 
 public class Crosshair extends Module implements ThemeManager.ThemeChangeListener {
 
-    private static Crosshair instance;  
+    private static Crosshair instance;
 
-     
     public enum Mode implements Nameable {
         CLASSIC("Классический"),
         CUSTOM("Свой");
@@ -34,7 +33,6 @@ public class Crosshair extends Module implements ThemeManager.ThemeChangeListene
 
     private final EnumSetting<Mode> mode = new EnumSetting<>("Режим", Mode.CLASSIC);
 
-     
     private final NumberSetting thickness = new NumberSetting("Толщина", 1f, 0.5f, 3f, 0.1f,
             () -> mode.getValue() == Mode.CLASSIC);
     private final NumberSetting length = new NumberSetting("Длина", 3f, 1f, 8f, 0.5f,
@@ -44,22 +42,18 @@ public class Crosshair extends Module implements ThemeManager.ThemeChangeListene
     private final BooleanSetting dynamicGap = new BooleanSetting("Динамический разрыв", false,
             () -> mode.getValue() == Mode.CLASSIC);
 
-     
     private final ButtonSetting configureButton = new ButtonSetting("Настроить", this::openEditor);
     private final NumberSetting pixelScale = new NumberSetting("Масштаб", 1f, 0.5f, 3f, 0.5f,
             () -> mode.getValue() == Mode.CUSTOM);
-     
+
     private final StringSetting patternData = new StringSetting("PatternData", "", () -> false, false);
 
-     
     private final BooleanSetting useEntityColor = new BooleanSetting("Цвет при наведении", false);
 
-     
     private final ThemeManager themeManager;
     private Color currentColor;
     private final Color entityColor = new Color(255, 0, 0);
 
-     
     private CrosshairPattern cachedPattern;
     private String cachedPatternSource;
 
@@ -84,17 +78,11 @@ public class Crosshair extends Module implements ThemeManager.ThemeChangeListene
         return instance;
     }
 
-     
-     
-     
-
-      
     private void openEditor() {
-        mode.setValue(Mode.CUSTOM);  
+        mode.setValue(Mode.CUSTOM);
         mc.setScreen(new CrosshairEditorScreen(this));
     }
 
-      
     public CrosshairPattern getPattern() {
         String src = patternData.getValue();
         if (cachedPattern == null || !src.equals(cachedPatternSource)) {
@@ -104,23 +92,18 @@ public class Crosshair extends Module implements ThemeManager.ThemeChangeListene
         return cachedPattern;
     }
 
-      
     public void applyPattern(CrosshairPattern pattern) {
         cachedPattern = pattern;
         cachedPatternSource = pattern.serialize();
-        patternData.setValue(cachedPatternSource);  
-        if (!isToggled()) setToggled(true);         
+        patternData.setValue(cachedPatternSource);
+        if (!isToggled()) setToggled(true);
     }
-
-     
-     
-     
 
     @EventHandler
     public void onRender2D(EventRender2D e) {
         if (mc.player == null || mc.world == null) return;
         if (!mc.options.getPerspective().isFirstPerson()) return;
-        if (mc.currentScreen instanceof CrosshairEditorScreen) return;  
+        if (mc.currentScreen instanceof CrosshairEditorScreen) return;
 
         int sw = mc.getWindow().getScaledWidth();
         int sh = mc.getWindow().getScaledHeight();
@@ -141,7 +124,7 @@ public class Crosshair extends Module implements ThemeManager.ThemeChangeListene
                 renderCustom(matrices, x, y, p, color);
                 return;
             }
-             
+
         }
 
         renderClassic(matrices, x, y, color);

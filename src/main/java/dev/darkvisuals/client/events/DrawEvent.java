@@ -6,9 +6,9 @@ import net.minecraft.client.util.math.MatrixStack;
 @Getter
 public class DrawEvent extends Event {
     private final DrawType drawType;
-    private final DrawContext drawContext;      
-    private final MatrixStack matrixStack;      
-    private final float tickDelta;              
+    private final DrawContext drawContext;
+    private final MatrixStack matrixStack;
+    private final float tickDelta;
 
     private DrawEvent(DrawType drawType, DrawContext drawContext, MatrixStack matrixStack, float tickDelta) {
         this.drawType = drawType;

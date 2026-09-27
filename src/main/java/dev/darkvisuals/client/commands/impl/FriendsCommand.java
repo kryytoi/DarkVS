@@ -80,4 +80,4 @@ public class FriendsCommand extends Command {
         }
         return 1;
     }
-} 
+}

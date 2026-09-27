@@ -8,7 +8,7 @@ import dev.firstdark.rpc.models.User;
 import dev.firstdark.rpc.handlers.RPCEventHandler;
 
 public class DiscordRichPresenceUtil {
-     
+
     private static final String DEFAULT_APP_ID = "1524636505639878706";
 
     private static volatile boolean running = false;
@@ -86,11 +86,9 @@ public class DiscordRichPresenceUtil {
         DiscordRichPresence presence = DiscordRichPresence.builder()
                 .details(state != null && !state.isEmpty() ? state : "Самый лучший пвп мод на 1.21.4 fabric")
 
-                 
                 .largeImageKey("logo_large")
                 .largeImageText("Dark Visuals Client")
 
-                 
                 .smallImageKey("logo_small")
                 .smallImageText("Playing")
 

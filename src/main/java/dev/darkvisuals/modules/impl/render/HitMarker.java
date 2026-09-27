@@ -14,10 +14,6 @@ import net.minecraft.client.util.math.MatrixStack;
 
 import java.awt.Color;
 
-/**
- * HitMarker — маркер-крестик в центре экрана при ударе по цели.
- * Четыре диагональные полосы разлетаются от центра и гаснут.
- */
 public class HitMarker extends Module {
 
     private static final long FADE_MS = 400L;
@@ -57,9 +53,9 @@ public class HitMarker extends Module {
         long age = System.currentTimeMillis() - lastHitMs;
         if (age < 0 || age > FADE_MS) return;
 
-        float progress = age / (float) FADE_MS; // 0 -> 1
+        float progress = age / (float) FADE_MS;
         float fade = 1f - progress;
-        // плавное затухание в конце
+
         float eased = fade * fade;
 
         DrawContext context = event.getContext();
@@ -67,7 +63,7 @@ public class HitMarker extends Module {
         int cy = context.getScaledWindowHeight() / 2;
 
         float s = size.getValue();
-        float gap = 3f + spread.getValue() * progress; // полосы разлетаются
+        float gap = 3f + spread.getValue() * progress;
         float w = Math.max(1f, thickness.getValue() * (0.4f + 0.6f * fade));
 
         Color base = color.getColor();
@@ -76,12 +72,11 @@ public class HitMarker extends Module {
 
         MatrixStack matrices = context.getMatrices();
 
-        // четыре диагональные полосы: / \ по обе стороны от центра
         float o = gap;
         float e = gap + s;
-        Render2D.drawLine(matrices, cx - e, cy - e, cx - o, cy - o, w, c); // лево-верх /
-        Render2D.drawLine(matrices, cx + o, cy - o, cx + e, cy - e, w, c); // право-верх \
-        Render2D.drawLine(matrices, cx - e, cy + e, cx - o, cy + o, w, c); // лево-низ \
-        Render2D.drawLine(matrices, cx + o, cy + o, cx + e, cy + e, w, c); // право-низ /
+        Render2D.drawLine(matrices, cx - e, cy - e, cx - o, cy - o, w, c);
+        Render2D.drawLine(matrices, cx + o, cy - o, cx + e, cy - e, w, c);
+        Render2D.drawLine(matrices, cx - e, cy + e, cx - o, cy + o, w, c);
+        Render2D.drawLine(matrices, cx + o, cy + o, cx + e, cy + e, w, c);
     }
 }

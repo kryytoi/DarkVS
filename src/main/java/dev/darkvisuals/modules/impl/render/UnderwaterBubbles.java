@@ -29,9 +29,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
-/**
- * UnderwaterBubbles — пузырьки, поднимающиеся вокруг игрока под водой.
- */
 public class UnderwaterBubbles extends Module {
 
     private static final Identifier BUBBLE_TEXTURE = darkvisuals.id("textures/bubble.png");
@@ -83,7 +80,6 @@ public class UnderwaterBubbles extends Module {
     public void onTick(EventTick event) {
         if (fullNullCheck()) return;
 
-        // вне воды пузырьки исчезают
         if (!mc.player.isSubmergedInWater()) {
             bubbles.clear();
             return;
@@ -112,7 +108,6 @@ public class UnderwaterBubbles extends Module {
                     riseSpeed.getValue() * bubble.size,
                     Math.cos(t * bubble.wobbleSpeed * 0.8 + bubble.phase) * 0.01);
 
-            // всплыли к поверхности или уплыли далеко — пересоздаём рядом
             boolean aboveSurface = bubble.pos.y > mc.world.getSeaLevel() + 1
                     && mc.world.getFluidState(net.minecraft.util.math.BlockPos.ofFloored(bubble.pos)).isEmpty();
             if (aboveSurface || bubble.pos.distanceTo(mc.player.getPos()) > radius.getValue() * 2.5) {
@@ -139,7 +134,7 @@ public class UnderwaterBubbles extends Module {
         RenderSystem.setShader(ShaderProgramKeys.POSITION_TEX_COLOR);
 
         for (Bubble bubble : bubbles) {
-            // мягкое покачивание размера
+
             float wobble = 1f + 0.15f * MathHelper.sin(now / 180f + bubble.phase * 4f);
             int alpha = 170;
             float half = size.getValue() * bubble.size * wobble;

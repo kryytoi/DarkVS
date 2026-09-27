@@ -68,7 +68,6 @@ public class HudManager implements Wrapper {
                 }
             } catch (Exception ignored) {}
 
-             
             try {
                 darkvisuals.getInstance().getEventHandler().subscribe(element);
             } catch (Throwable ignored) {}
@@ -104,14 +103,13 @@ public class HudManager implements Wrapper {
             }
 
             if (e.getButton() == 1) {
-                 
+
                 for (HudElement element : hudElements) {
                     if (MathUtils.isHovered(element.getX(), element.getY(), element.getWidth(), element.getHeight(), mouseX(), mouseY())) {
                         return;
                     }
                 }
 
-                 
                 for (HudElement element : hudElements) {
                     if (element.getWindow() == null) continue;
                     if (element.getSettings().size() == 1) return;

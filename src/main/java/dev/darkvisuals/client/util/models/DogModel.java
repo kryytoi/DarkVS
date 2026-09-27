@@ -34,7 +34,6 @@ public class DogModel {
         this.bodyYaw   =  brain.getBody();
         this.lay       =  brain.isLay();
 
-         
         if (brain.isBiting()) {
             this.headPitch += (float) Math.toRadians(40.0);
         }
@@ -60,9 +59,8 @@ public class DogModel {
             frontLeftLegY = frontRightLegY = backLeftLegY = backRightLegY = 0.0F;
         }
 
-         
-        float tailSpeed = amount > 0.1F ? 0.6F : 0.15F;  
-        float tailAmplitude = amount > 0.1F ? 0.5F : 0.2F;  
+        float tailSpeed = amount > 0.1F ? 0.6F : 0.15F;
+        float tailAmplitude = amount > 0.1F ? 0.5F : 0.2F;
 
         tailX = (float) Math.toRadians(lay ? 45.0 : 22.0);
         tailZ = (float) Math.toRadians(-22.5)
@@ -79,7 +77,6 @@ public class DogModel {
         ms.multiply(RotationAxis.POSITIVE_X.rotationDegrees(180.0F));
         ms.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(bodyYaw));
 
-         
         if (!lay) {
             float jumpPitch = (float) MathHelper.clamp(brain.getVelocityY() * -25.0, -35.0, 35.0);
             ms.multiply(RotationAxis.POSITIVE_X.rotationDegrees(jumpPitch));

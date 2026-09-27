@@ -18,7 +18,7 @@ public class EventAttackEntity extends Event {
         this.target = target;
         this.effectsAllowed = true;
     }
-    
+
      public boolean canProcess() {
         HitDetectionManager manager = HitDetectionManager.getInstance();
         return manager.canProcessHit(player, target);
@@ -31,7 +31,7 @@ public class EventAttackEntity extends Event {
     public void setEffectsAllowed(boolean allowed) {
         this.effectsAllowed = allowed;
     }
-    
+
      public void registerHit() {
         HitDetectionManager.getInstance().registerHit(player, target);
     }

@@ -31,7 +31,7 @@ public abstract class Setting<Value> {
         darkvisuals.post(event);
         if (!event.isCancelled()) {
             this.value = value;
-             
+
             try {
                 dev.darkvisuals.client.managers.AutoSaveManager asm = darkvisuals.getInstance().getAutoSaveManager();
                 if (asm != null) asm.scheduleAutoSave();

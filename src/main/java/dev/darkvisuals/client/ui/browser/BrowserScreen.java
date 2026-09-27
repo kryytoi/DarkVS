@@ -12,31 +12,16 @@ import org.lwjgl.glfw.GLFW;
 
 import java.awt.Color;
 
-/**
- * Полноэкранный вид реального браузера: кадр окна браузера растягивается
- * на весь экран, а весь ввод (клики, скролл, клавиатура) пересылается
- * в само окно через PostMessage — можно листать и делать всё как в обычном
- * браузере.
- *
- * Повторное нажатие бинда (или Esc) убирает полноэкранный вид и возвращает
- * управление игроку — при этом браузер продолжает рендериться на 3D-плоскости
- * в мире.
- */
 public class BrowserScreen extends Screen {
 
     private static final float FONT_SMALL = 7.5f;
     private static final float BAR_HEIGHT = 16f;
-    /**
-     * Защита от мгновенного закрытия: нажатие бинда, открывшее экран,
-     * доходит и самому экрану (EventKey постится до передачи клавиши GUI),
-     * поэтому первые OPEN_GUARD_MS мс бинд экран не закрывает.
-     */
+
     private static final long OPEN_GUARD_MS = 300L;
 
     private final BrowserModule module;
     private final long openedAt = System.currentTimeMillis();
 
-    // раскладка кадра на экране (с учётом letterbox)
     private float drawX, drawY, drawW, drawH;
     private float scale = 1f;
 
@@ -72,7 +57,7 @@ public class BrowserScreen extends Screen {
             scale = 1f;
             return;
         }
-        // вписать кадр в экран (letterbox)
+
         scale = Math.min(
                 (float) this.width / capture.getWidth(),
                 (float) (this.height - BAR_HEIGHT) / capture.getHeight());
@@ -82,10 +67,6 @@ public class BrowserScreen extends Screen {
         drawY = (this.height - BAR_HEIGHT - drawH) / 2f;
     }
 
-    // ------------------------------------------------------------------
-    // Рендер
-    // ------------------------------------------------------------------
-
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         super.render(context, mouseX, mouseY, delta);
@@ -94,11 +75,10 @@ public class BrowserScreen extends Screen {
         MatrixStack stack = context.getMatrices();
         BrowserCapture capture = module.getCapture();
 
-        // фон
         Render2D.drawRect(stack, 0, 0, this.width, this.height, new Color(8, 10, 13, 255));
 
         if (capture.isAvailable()) {
-            // кадр реального браузера
+
             Render2D.drawTexture(stack, drawX, drawY, drawW, drawH, 0,
                     capture.getTexture(), new Color(255, 255, 255, 255));
             renderInfoBar(stack, capture);
@@ -108,7 +88,7 @@ public class BrowserScreen extends Screen {
     }
 
     private void renderInfoBar(MatrixStack stack, BrowserCapture capture) {
-        // нижняя панель-подсказка
+
         Render2D.drawRect(stack, 0, this.height - BAR_HEIGHT, this.width, BAR_HEIGHT,
                 new Color(12, 14, 18, 235));
 
@@ -152,19 +132,15 @@ public class BrowserScreen extends Screen {
         }
     }
 
-    // ------------------------------------------------------------------
-    // Ввод -> пересылка в браузер
-    // ------------------------------------------------------------------
-
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        // бинд-мышью тоже должен закрывать полноэкранный вид
+
         var bind = module.getBind();
         if (bind != null && bind.isMouse() && bind.getKey() >= 0 && button == bind.getKey()) {
             if (System.currentTimeMillis() - openedAt > OPEN_GUARD_MS) {
                 closeScreen();
             }
-            return true; // бинд не пересылается в браузер
+            return true;
         }
 
         BrowserCapture capture = module.getCapture();
@@ -224,17 +200,15 @@ public class BrowserScreen extends Screen {
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        // повторное нажатие бинда — убрать полноэкранный вид,
-        // браузер продолжает рендериться на 3D-плоскости
+
         var bind = module.getBind();
         if (bind != null && !bind.isMouse() && bind.getKey() >= 0 && keyCode == bind.getKey()) {
             if (System.currentTimeMillis() - openedAt > OPEN_GUARD_MS) {
                 closeScreen();
             }
-            return true; // бинд не пересылается в браузер
+            return true;
         }
 
-        // Esc закрывает через super.keyPressed (shouldCloseOnEsc)
         if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
             return super.keyPressed(keyCode, scanCode, modifiers);
         }
@@ -252,7 +226,7 @@ public class BrowserScreen extends Screen {
 
     @Override
     public boolean keyReleased(int keyCode, int scanCode, int modifiers) {
-        // отпускание бинда тоже не должно попадать в браузер
+
         var bind = module.getBind();
         if (bind != null && !bind.isMouse() && bind.getKey() >= 0 && keyCode == bind.getKey()) {
             return true;
@@ -279,14 +253,6 @@ public class BrowserScreen extends Screen {
         return super.charTyped(chr, modifiers);
     }
 
-    // ------------------------------------------------------------------
-    // Утилиты
-    // ------------------------------------------------------------------
-
-    /**
-     * Переводит координаты экрана игры в координаты клиентской области
-     * окна браузера. null — если точка вне кадра.
-     */
     private int[] toBrowser(double mouseX, double mouseY) {
         if (drawW <= 0 || drawH <= 0 || scale <= 0f) return null;
         if (mouseX < drawX || mouseX > drawX + drawW) return null;

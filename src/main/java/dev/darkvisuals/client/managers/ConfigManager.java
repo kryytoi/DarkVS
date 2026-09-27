@@ -34,7 +34,6 @@ public class ConfigManager implements Wrapper {
     private final File configsDir;
     private final Map<String, ConfigData> configCache = new java.util.concurrent.ConcurrentHashMap<>();
 
-    // Старые английские имена модулей -> текущие русские (для загрузки старых конфигов)
     private static final Map<String, String> LEGACY_MODULE_NAMES = Map.of(
             "Optimization", "Оптимизация"
     );
@@ -50,7 +49,6 @@ public class ConfigManager implements Wrapper {
         }
         LOGGER.info("Путь к папке конфигураций: {}", this.configsDir.getAbsolutePath());
 
-         
         this.gson = new GsonBuilder()
                 .setPrettyPrinting()
                 .setLenient()
@@ -58,7 +56,7 @@ public class ConfigManager implements Wrapper {
     }
 
      public CompletableFuture<Boolean> saveConfig(String configName) {
-         
+
         CompletableFuture<ConfigData> snapshotFuture = new CompletableFuture<>();
         Runnable collect = () -> {
             try {
@@ -75,7 +73,6 @@ public class ConfigManager implements Wrapper {
             client.execute(collect);
         }
 
-         
         return snapshotFuture.thenApplyAsync(configData -> {
             if (configData == null) return false;
             try {
@@ -95,34 +92,30 @@ public class ConfigManager implements Wrapper {
      private ConfigData collectConfigData() {
         ConfigData configData = new ConfigData();
 
-         
         try {
             String pref = darkvisuals.getInstance().getCommandManager().getPrefix();
             configData.setCommandPrefix(pref);
         } catch (Exception ignored) {}
 
-         
         for (Module module : darkvisuals.getInstance().getModuleManager().getModules()) {
             ModuleData moduleData = new ModuleData();
             moduleData.setToggled(module.isToggled());
             moduleData.setBind(module.getBind());
 
-             
             Map<String, Object> settings = new HashMap<>();
             for (Setting<?> setting : module.getSettings()) {
                 Object value = setting.getValue();
 
-                 
                 if (setting instanceof ColorSetting) {
-                     
+
                     value = String.format("%06X", (Integer) value);
                 } else if (setting instanceof BindSetting) {
-                     
+
                     dev.darkvisuals.modules.settings.api.Bind bind = (dev.darkvisuals.modules.settings.api.Bind) value;
                     String modeName = bind.getMode() != null ? bind.getMode().name() : dev.darkvisuals.modules.settings.api.Bind.Mode.TOGGLE.name();
                     value = bind.getKey() + ":" + bind.isMouse() + ":" + modeName;
                 } else if (setting instanceof ListSetting) {
-                     
+
                     ListSetting listSetting = (ListSetting) setting;
                     Map<String, Boolean> listValues = new HashMap<>();
                     for (BooleanSetting boolSetting : listSetting.getValue()) {
@@ -138,17 +131,15 @@ public class ConfigManager implements Wrapper {
             configData.getModules().put(module.getName(), moduleData);
         }
 
-         
         configData.setCurrentTheme(ThemeManager.getInstance().getCurrentTheme().getName());
 
-         
         Map<String, HudPositionData> hudPositions = new HashMap<>();
         for (HudElement hudElement : darkvisuals.getInstance().getHudManager().getHudElements()) {
             HudPositionData hudData = new HudPositionData();
             hudData.setX(hudElement.getPosition().getValue().getX());
             hudData.setY(hudElement.getPosition().getValue().getY());
             try {
-                 
+
                 dev.darkvisuals.modules.settings.impl.ListSetting elementsList = darkvisuals.getInstance().getHudManager().getElements();
                 dev.darkvisuals.modules.settings.impl.BooleanSetting bs = elementsList.getName(hudElement.getName());
                 boolean enabled = bs != null ? bs.getValue() : hudElement.isToggled();
@@ -160,7 +151,6 @@ public class ConfigManager implements Wrapper {
         }
         configData.setHudPositions(hudPositions);
 
-         
         Map<String, Map<String, Object>> hudSettings = new HashMap<>();
         for (HudElement hudElement : darkvisuals.getInstance().getHudManager().getHudElements()) {
             Map<String, Object> settings = new HashMap<>();
@@ -190,7 +180,7 @@ public class ConfigManager implements Wrapper {
     }
 
      public CompletableFuture<Boolean> loadConfig(String configName) {
-         
+
         return CompletableFuture.supplyAsync(() -> {
             try {
                 File configFile = new File(configsDir, configName + ".simple");
@@ -205,7 +195,7 @@ public class ConfigManager implements Wrapper {
                 return null;
             }
         }).thenCompose(configData -> {
-             
+
             CompletableFuture<Boolean> result = new CompletableFuture<>();
             if (configData == null) {
                 result.complete(false);
@@ -213,31 +203,29 @@ public class ConfigManager implements Wrapper {
             }
             MinecraftClient.getInstance().execute(() -> {
                 try {
-                     
+
                     try {
                         String pref = configData.getCommandPrefix();
                         if (pref != null && !pref.isEmpty()) {
                             darkvisuals.getInstance().getCommandManager().setPrefix(pref);
                         }
                     } catch (Exception ignored) {}
-                     
+
                     for (Map.Entry<String, ModuleData> entry : configData.getModules().entrySet()) {
                         String moduleName = entry.getKey();
                         ModuleData moduleData = entry.getValue();
 
                         Module module = darkvisuals.getInstance().getModuleManager().getModuleByName(legacyNameToCurrent(moduleName));
                         if (module != null) {
-                             
+
                             if (moduleData.isToggled() != module.isToggled()) {
                                 module.setToggled(moduleData.isToggled());
                             }
 
-                             
                             if (moduleData.getBind() != null) {
                                 module.setBind(moduleData.getBind());
                             }
 
-                             
                             for (Map.Entry<String, Object> settingEntry : moduleData.getSettings().entrySet()) {
                                 String settingName = settingEntry.getKey();
                                 Object value = settingEntry.getValue();
@@ -249,7 +237,7 @@ public class ConfigManager implements Wrapper {
 
                                 if (setting != null) {
                                     try {
-                                         
+
                                         setSettingValue(setting, value);
                                     } catch (Exception e) {
                                         LOGGER.warn("Не удалось применить настройку {} для модуля {}: {}",
@@ -260,7 +248,6 @@ public class ConfigManager implements Wrapper {
                         }
                     }
 
-                     
                     try {
                         ThemeManager themeManager = ThemeManager.getInstance();
                         ThemeManager.Theme[] availableThemes = themeManager.getAvailableThemes();
@@ -275,7 +262,6 @@ public class ConfigManager implements Wrapper {
                         LOGGER.warn("Не удалось применить тему {}: {}", configData.getCurrentTheme(), e.getMessage());
                     }
 
-                     
                     if (configData.getHudPositions() != null) {
                         try {
                             for (Map.Entry<String, HudPositionData> entry : configData.getHudPositions().entrySet()) {
@@ -293,7 +279,7 @@ public class ConfigManager implements Wrapper {
                                     if (hudData.isEnabled() != hudElement.isToggled()) {
                                         hudElement.setToggled(hudData.isEnabled());
                                     }
-                                     
+
                                     try {
                                         dev.darkvisuals.modules.settings.impl.ListSetting elementsList = darkvisuals.getInstance().getHudManager().getElements();
                                         dev.darkvisuals.modules.settings.impl.BooleanSetting bs = elementsList.getName(hudName);
@@ -308,7 +294,6 @@ public class ConfigManager implements Wrapper {
                         }
                     }
 
-                     
                     if (configData.getHudSettings() != null) {
                         for (Map.Entry<String, Map<String, Object>> entry : configData.getHudSettings().entrySet()) {
                             String hudName = entry.getKey();
@@ -337,7 +322,6 @@ public class ConfigManager implements Wrapper {
                         }
                     }
 
-                     
                     configCache.put(configName, configData);
                     LOGGER.info("Конфигурация '{}' успешно загружена", configName);
                     result.complete(true);
@@ -404,7 +388,7 @@ public class ConfigManager implements Wrapper {
             if (value instanceof String) {
                 EnumSetting<?> enumSetting = (EnumSetting<?>) setting;
                 try {
-                     
+
                     enumSetting.setEnumValue((String) value);
                 } catch (Exception e) {
                     LOGGER.warn("Неверное значение enum: {}", value);
@@ -414,15 +398,13 @@ public class ConfigManager implements Wrapper {
             if (value instanceof String) {
                 try {
                     String hex = (String) value;
-                    // принимаем и 6-значный RGB (как сохраняем сейчас), и 8-значный
-                    // ARGB из старых конфигов (FF96BEFF) — иначе parseLong падает
-                    // на значениях, не влезающих в int, и цвет теряется
+
                     long parsed = Long.parseLong(hex, 16);
                     int color;
                     if (hex.length() > 6) {
-                        color = (int) parsed; // 8 hex-цифр ARGB
+                        color = (int) parsed;
                     } else {
-                        color = (int) (parsed | 0xFF000000L); // RGB -> непрозрачный ARGB
+                        color = (int) (parsed | 0xFF000000L);
                     }
                     ((ColorSetting) setting).set(color);
                 } catch (NumberFormatException e) {

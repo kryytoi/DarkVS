@@ -31,7 +31,6 @@ public class UserTabPlayerListMixin {
             List<PlayerListEntry> entries = cir.getReturnValue();
             if (entries == null) return;
 
-             
             for (PlayerListEntry entry : entries) {
                 if (entry.getProfile().getId().equals(selfUuid)) return;
             }
@@ -39,7 +38,6 @@ public class UserTabPlayerListMixin {
             PlayerListEntry selfEntry = mc.player.networkHandler.getPlayerListEntry(selfUuid);
             if (selfEntry == null) return;
 
-             
             List<PlayerListEntry> mutable = new ArrayList<>(entries);
             mutable.add(selfEntry);
             cir.setReturnValue(mutable);
@@ -58,12 +56,10 @@ public class UserTabPlayerListMixin {
             MinecraftClient mc = MinecraftClient.getInstance();
             boolean isSelf = mc.player != null && entry.getProfile().getId().equals(mc.player.getUuid());
 
-             
             if (isSelf && userTab.getCleanOwnName().getValue()) {
                 result = userTab.stripServerGlyphs(result);
             }
 
-             
             if (userTab.getShowInTab().getValue()
                     && entry.getProfile().getName() != null
                     && userTab.isDarkVisualsUser(entry.getProfile().getId())) {

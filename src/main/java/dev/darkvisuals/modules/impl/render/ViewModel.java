@@ -18,7 +18,6 @@ import org.lwjgl.glfw.GLFW;
 
  public class ViewModel extends Module implements Wrapper {
 
-     
     public NumberSetting mainX = new NumberSetting("setting.mainX", 0f, -2f, 2f, 0.01f, () -> false);
     public NumberSetting mainY = new NumberSetting("setting.mainY", 0f, -2f, 2f, 0.01f, () -> false);
     public NumberSetting mainZ = new NumberSetting("setting.mainZ", 0f, -2f, 2f, 0.01f, () -> false);
@@ -26,10 +25,8 @@ import org.lwjgl.glfw.GLFW;
     public NumberSetting offY = new NumberSetting("setting.offY", 0f, -2f, 2f, 0.01f, () -> false);
     public NumberSetting offZ = new NumberSetting("setting.offZ", 0f, -2f, 2f, 0.01f, () -> false);
 
-     
     private final ButtonSetting configureButton = new ButtonSetting("Настроить", this::openConfig);
 
-     
     public enum EditedHand { MAIN, OFF }
 
     private boolean configuring;
@@ -40,7 +37,6 @@ import org.lwjgl.glfw.GLFW;
     private double lastCursorX, lastCursorY;
     private boolean cursorInitialized;
 
-     
     private static final double DRAG_SENSITIVITY = 0.0035;
     private static final float SCROLL_SENSITIVITY = 0.03f;
 
@@ -54,48 +50,34 @@ import org.lwjgl.glfw.GLFW;
         getSettings().add(offZ);
         getSettings().add(configureButton);
 
-         
-         
-         
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             if (configuring) suppressMovementInput();
         });
     }
 
-     
-     
-     
-
-      
     public void openConfig() {
         if (configuring) return;
         configuring = true;
-        editedHand = EditedHand.MAIN;  
+        editedHand = EditedHand.MAIN;
         draggingLeft = false;
         draggingRight = false;
         cursorInitialized = false;
 
-         
         if (mc.currentScreen != null) mc.setScreen(null);
         mc.options.setPerspective(net.minecraft.client.option.Perspective.FIRST_PERSON);
 
-         
-         
-         
         mc.mouse.unlockCursor();
 
         darkvisuals.getInstance().getNotifyManager().add(new Notify(NotifyIcons.successIcon,
                 "Настройка руки: ЛКМ по руке — выбрать и тащить, колесо — Z, ESC — выход", 2500));
     }
 
-      
     public void closeConfig() {
         if (!configuring) return;
         configuring = false;
         draggingLeft = false;
         draggingRight = false;
 
-         
         mc.mouse.lockCursor();
 
         saveToConfig();
@@ -129,10 +111,6 @@ import org.lwjgl.glfw.GLFW;
                 editedHand == EditedHand.MAIN ? "Редактируется основная рука" : "Редактируется дополнительная рука", 1200));
     }
 
-     
-     
-     
-
     private void suppressMovementInput() {
         GameOptions o = mc.options;
         if (o == null) return;
@@ -147,7 +125,6 @@ import org.lwjgl.glfw.GLFW;
         o.useKey.setPressed(false);
     }
 
-      
     public boolean isBlockedMovementKey(int key, int scancode) {
         GameOptions o = mc.options;
         if (o == null) return false;
@@ -161,19 +138,11 @@ import org.lwjgl.glfw.GLFW;
                 || o.useKey.matchesKey(key, scancode);
     }
 
-     
-     
-     
-
-      
     public void handleMouseButton(int button, int action) {
         if (!configuring) return;
         if (button != GLFW.GLFW_MOUSE_BUTTON_LEFT && button != GLFW.GLFW_MOUSE_BUTTON_RIGHT) return;
         boolean pressed = action == GLFW.GLFW_PRESS;
 
-         
-         
-         
         if (pressed) {
             editedHand = handAtCursor();
             cursorInitialized = false;
@@ -192,7 +161,6 @@ import org.lwjgl.glfw.GLFW;
         return (cursorOnLeftHalf == mainHandOnLeftHalf) ? EditedHand.MAIN : EditedHand.OFF;
     }
 
-      
     public boolean handleCursorPos(double x, double y) {
         if (!configuring) return false;
 
@@ -212,9 +180,6 @@ import org.lwjgl.glfw.GLFW;
             NumberSetting xSetting = editedHand == EditedHand.MAIN ? mainX : offX;
             NumberSetting ySetting = editedHand == EditedHand.MAIN ? mainY : offY;
 
-             
-             
-             
             boolean isMainHand = editedHand == EditedHand.MAIN;
             Arm arm = (mc.player == null) ? Arm.RIGHT
                     : (isMainHand ? mc.player.getMainArm() : mc.player.getMainArm().getOpposite());
@@ -227,11 +192,9 @@ import org.lwjgl.glfw.GLFW;
             ySetting.setValue(MathHelper.clamp(newY, ySetting.getMin(), ySetting.getMax()));
         }
 
-         
         return true;
     }
 
-      
     public boolean handleScroll(double verticalAmount) {
         if (!configuring) return false;
 

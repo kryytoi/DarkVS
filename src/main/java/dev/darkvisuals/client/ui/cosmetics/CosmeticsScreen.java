@@ -37,10 +37,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.prefs.Preferences;
 
- 
 public final class CosmeticsScreen extends Screen {
 
-     
     private static final Color ACCENT       = new Color(0x6B, 0x11, 0x7B);
     private static final Color ACCENT_BRIGHT = new Color(0x9A, 0x24, 0xB0);
     private static final Color PANEL_BG      = new Color(0x0D, 0x0D, 0x10, 244);
@@ -71,7 +69,6 @@ public final class CosmeticsScreen extends Screen {
     private Perspective previousPerspective;
     private boolean perspectiveForced = false;
 
-     
     private float pX, pY, pW, pH;
     private float listX, listY, listW, listBottom;
     private float rightX, rightW;
@@ -99,9 +96,14 @@ public final class CosmeticsScreen extends Screen {
         items.add(new Item("morty", "Повязка Морти", "Повязка Злого Морти.", module.getMortyPatchSetting()));
         items.add(new Item("nike", "Кепка Nike", "Чёрная бейсболка Nike с белым свушем в майнкрафт-стиле", module.getNikeCapSetting()));
         items.add(new Item("robot_tentacles", "Робо-щупальца", "Механические щупальца с сервоприводами и клешнями", module.getRobotTentaclesSetting()));
+        items.add(new Item("horns", "Рожки Дьявола", "Стильные демонические рожки на голове", module.getHornsSetting()));
+        items.add(new Item("katana", "Катана самурая", "Ножны с катаной за спиной под углом", module.getKatanaSetting()));
+        items.add(new Item("cat_ears", "Кошачьи Ушки", "Милые аниме неко-ушки", module.getCatEarsSetting()));
+        items.add(new Item("bandana", "Бандана ниндзя", "Тёмная маска-бандана на нижнюю часть лица", module.getBandanaSetting()));
+        items.add(new Item("crown", "Корона монарха", "Золотая корона с драгоценными камнями", module.getCrownSetting()));
         loadFavorites();
         sortItems();
-         
+
         selectedId = items.get(0).id;
         for (Item it : items) {
             if (it.setting.getValue()) { selectedId = it.id; break; }
@@ -115,8 +117,6 @@ public final class CosmeticsScreen extends Screen {
         if (!closing) open.setTarget(1f);
         module.setPreviewOverride(selectedId);
 
-         
-         
         if (!perspectiveForced && this.client != null) {
             previousPerspective = this.client.options.getPerspective();
             if (previousPerspective.isFirstPerson()) {
@@ -125,8 +125,6 @@ public final class CosmeticsScreen extends Screen {
             perspectiveForced = true;
         }
     }
-
-     
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
@@ -144,10 +142,8 @@ public final class CosmeticsScreen extends Screen {
 
         MatrixStack ms = context.getMatrices();
 
-         
         Render2D.drawRect(ms, 0, 0, this.width, this.height, new Color(0, 0, 0, c255(150 * p)));
 
-         
         pW = 460f;
         pH = 300f;
         pX = (this.width - pW) / 2f;
@@ -162,23 +158,18 @@ public final class CosmeticsScreen extends Screen {
         ms.scale(sc, sc, 1f);
         ms.translate(-cx, -cy, 0);
 
-         
         Render2D.drawRoundedRect(ms, pX, pY, pW, pH, 14f, fade(PANEL_BG, p));
         Render2D.drawBorder(ms, pX, pY, pW, pH, 14f, 0f, 1f, fade(PANEL_BORDER, p));
 
-         
         Render2D.drawRoundedRect(ms, pX + 14f, pY + 54f, 2f, pH - 72f, 1f,
                 fade(new Color(0xFF, 0xFF, 0xFF, 40), p));
 
-         
         Render2D.drawFont(ms, Fonts.BOLD.getFont(13f), "Cosmetics", pX + 22f, pY + 16f, fade(TEXT_PRIMARY, p));
         Render2D.drawRect(ms, pX + 18f, pY + 42f, pW - 36f, 1f, fade(DIVIDER, p));
 
-         
         rightW = 128f;
         rightX = pX + pW - rightW - 18f;
 
-         
         listX = pX + 22f;
         listY = pY + 56f;
         listW = rightX - 14f - listX;
@@ -186,13 +177,11 @@ public final class CosmeticsScreen extends Screen {
 
         renderList(context, ms, mouseX, mouseY, p);
 
-         
         String prev = "Предпросмотр";
         float pw = Fonts.SEMIBOLD.getWidth(prev, 8.5f);
         Render2D.drawFont(ms, Fonts.SEMIBOLD.getFont(8.5f), prev,
                 rightX + (rightW - pw) / 2f, pY + 60f, fade(TEXT_SECONDARY, p));
 
-         
         previewX = rightX;
         previewY = pY + 80f;
         previewW = rightW;
@@ -200,7 +189,6 @@ public final class CosmeticsScreen extends Screen {
         Render2D.drawRoundedRect(ms, previewX, previewY, previewW, previewH, 10f, fade(PREVIEW_BG, p));
         Render2D.drawBorder(ms, previewX, previewY, previewW, previewH, 10f, 0f, 1f, fade(PANEL_BORDER, p));
 
-         
         applyX = rightX; applyW = rightW; applyH = 26f; applyY = pY + pH - 60f;
         removeX = rightX; removeW = rightW; removeH = 22f; removeY = pY + pH - 28f;
 
@@ -217,7 +205,6 @@ public final class CosmeticsScreen extends Screen {
 
         ms.pop();
 
-         
         renderPreviewModel(context, mouseX, mouseY, p);
     }
 
@@ -246,21 +233,16 @@ public final class CosmeticsScreen extends Screen {
             if (focused) Render2D.drawBorder(ms, listX, ry, listW, ROW_H, 12f, 0f, 1f,
                     fade(new Color(0xC9, 0x6C, 0xDC, 160), p));
 
-             
-             
-             
             float iconSize = 34f;
             float iconX = listX + 8f;
             float iconY = ry + (ROW_H - iconSize) / 2f;
             Render2D.drawRoundedRect(ms, iconX, iconY, iconSize, iconSize, 7f, fade(ICON_BG, p));
             drawCosmeticIcon3D(context, iconX, iconY, iconX + iconSize, iconY + iconSize, it.id);
 
-             
             float tx = iconX + iconSize + 10f;
             Render2D.drawFont(ms, Fonts.SEMIBOLD.getFont(8.5f), it.title, tx, ry + 12f, fade(TEXT_PRIMARY, p));
             Render2D.drawFont(ms, Fonts.REGULAR.getFont(7.5f), it.desc, tx, ry + 27f, fade(TEXT_SECONDARY, p));
 
-             
             float starCX = listX + listW - 22f;
             float starCY = ry + ROW_H / 2f;
             if (it.favorite) starFilled(ms, starCX, starCY, 6.5f, 2.8f, fade(STAR_ON, p));
@@ -282,17 +264,12 @@ public final class CosmeticsScreen extends Screen {
 
         Item sel = selected();
 
-         
         if (sel != null && sel.setting.getValue()) {
             Render2D.drawGlow(ms,
                     previewX + previewW / 2f - 20f, previewY + previewH / 2f - 26f, 40f, 52f, 11f,
                     new Color(ACCENT.getRed(), ACCENT.getGreen(), ACCENT.getBlue(), c255(120 * p)), 20f, 4);
         }
 
-         
-         
-         
-         
         float animX = (float) Math.sin((System.currentTimeMillis() % 6000L) / 6000.0 * Math.PI * 2.0) * (previewW * 0.22f);
         float exCx = previewX + previewW / 2f;
         float exFootY = previewY + previewH * 0.35f;
@@ -311,7 +288,6 @@ public final class CosmeticsScreen extends Screen {
         }
     }
 
- 
     private void drawEntityWithCosmetics(DrawContext context, int x1, int y1, int x2, int y2, int size, float yOffset,
                                          double mouseX, double mouseY, PlayerEntity entity, Item cosmetic) {
         if (this.client == null) return;
@@ -360,16 +336,9 @@ public final class CosmeticsScreen extends Screen {
         dispatcher.render(entity, 0.0, 0.0, 0.0, 0.0F, matrices, immediate, 15728880);
         immediate.draw();
 
-
-         
         if (cosmetic != null && cosmetic.setting != null) {
             RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR);
 
-             
-             
-             
-             
-             
             float guiYaw = entity.bodyYaw + 180.0f;
             this.module.renderCosmeticForGui(cosmetic.id, entity, matrices, guiYaw);
         }
@@ -387,8 +356,6 @@ public final class CosmeticsScreen extends Screen {
         context.disableScissor();
     }
 
- 
- 
     private void drawCosmeticIcon3D(DrawContext context, float x1, float y1, float x2, float y2, String cosmeticId) {
         if (this.client == null || this.client.player == null) return;
         PlayerEntity entity = this.client.player;
@@ -398,16 +365,15 @@ public final class CosmeticsScreen extends Screen {
         float tile = x2 - x1;
         context.enableScissor((int) x1, (int) y1, (int) x2, (int) y2);
 
-         
         float span = switch (cosmeticId) {
             case "nimbus" -> 1.15f;
             case "black"  -> 2.6f;
             case "w1"     -> 3.5f;
             case "w2"     -> 3.2f;
-            case "cap"    -> 1.4f;   
-            case "china"  -> 2.0f;   
-            case "kagune" -> 3.0f;    
-            case "morty"  -> 1.2f;  
+            case "cap"    -> 1.4f;
+            case "china"  -> 2.0f;
+            case "kagune" -> 3.0f;
+            case "morty"  -> 1.2f;
             case "nike"   -> 1.2f;
             case "robot_tentacles" -> 3.0f;
             default       -> 2.6f;
@@ -415,10 +381,10 @@ public final class CosmeticsScreen extends Screen {
         float anchorY = switch (cosmeticId) {
             case "nimbus" -> entity.getHeight() + 0.1f;
             case "black"  -> 1.45f;
-            case "cap"    -> 1.85f;  
-            case "china"  -> 1.80f;  
+            case "cap"    -> 1.85f;
+            case "china"  -> 1.80f;
             case "kagune" -> 1.30f;
-            case "morty"  -> entity.getEyeHeight(entity.getPose()); 
+            case "morty"  -> entity.getEyeHeight(entity.getPose());
             case "nike"   -> entity.getEyeHeight(entity.getPose()) + 0.15f;
             case "robot_tentacles" -> 1.30f;
             default       -> 1.35f;
@@ -429,27 +395,22 @@ public final class CosmeticsScreen extends Screen {
         matrices.translate(f, g, 60.0);
         float iconScale = (tile * 0.92f) / span;
         matrices.scale(iconScale, iconScale, -iconScale);
-         
+
         matrices.multiply(new Quaternionf().rotateZ((float) Math.PI));
         matrices.multiply(new Quaternionf().rotateY((float) Math.PI));
-         
+
         float tiltX = "nimbus".equals(cosmeticId) ? -38f : -12f;
         float tiltY = "nimbus".equals(cosmeticId) ? 0f : 20f;
         matrices.multiply(new Quaternionf().rotateX(tiltX * 0.017453292F));
         matrices.multiply(new Quaternionf().rotateY(tiltY * 0.017453292F));
-         
+
         matrices.translate(0.0, -anchorY, 0.0);
 
-         
-         
-         
         this.module.renderCosmeticForGui(cosmeticId, entity, matrices, 360.0f);
 
         matrices.pop();
         context.disableScissor();
     }
-
-     
 
     private boolean inputLocked() {
         return closing || open.getValue() < 0.85f;
@@ -459,7 +420,7 @@ public final class CosmeticsScreen extends Screen {
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (inputLocked()) return true;
         if (button == 0) {
-             
+
             if (inside(mouseX, mouseY, applyX, applyY, applyW, applyH)) {
                 Item it = selected();
                 if (it != null) it.setting.setValue(true);
@@ -470,7 +431,7 @@ public final class CosmeticsScreen extends Screen {
                 if (it != null) it.setting.setValue(false);
                 return true;
             }
-             
+
             if (mouseX >= listX && mouseX <= listX + listW && mouseY >= listY && mouseY <= listBottom) {
                 for (int i = 0; i < items.size(); i++) {
                     Item it = items.get(i);
@@ -536,8 +497,6 @@ public final class CosmeticsScreen extends Screen {
         super.removed();
     }
 
-     
-
     private Item selected() {
         for (Item it : items) if (it.id.equals(selectedId)) return it;
         return items.isEmpty() ? null : items.get(0);
@@ -587,7 +546,6 @@ public final class CosmeticsScreen extends Screen {
         return new Color(col.getRed(), col.getGreen(), col.getBlue(), c255(col.getAlpha() * p));
     }
 
-     
     private void starFilled(MatrixStack ms, float cx, float cy, float rOut, float rIn, Color color) {
         RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR);
         RenderSystem.enableBlend();
@@ -605,7 +563,6 @@ public final class CosmeticsScreen extends Screen {
         RenderSystem.disableBlend();
     }
 
-     
     private void starOutline(MatrixStack ms, float cx, float cy, float rOut, float rIn, Color color) {
         float[] xs = new float[10];
         float[] ys = new float[10];

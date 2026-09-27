@@ -31,7 +31,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
-
 public class Fireflies extends Module {
 
     private static final Identifier FIREFLY_TEXTURE = darkvisuals.id("particles/firefly.png");
@@ -76,7 +75,6 @@ public class Fireflies extends Module {
             return;
         }
 
-        // поддерживаем популяцию
         while (fireflies.size() < (int) (float) density.getValue()) {
             double ang = rnd.nextDouble() * Math.PI * 2;
             double dist = radius.getValue() * (0.3 + 0.7 * rnd.nextDouble());
@@ -92,7 +90,7 @@ public class Fireflies extends Module {
         Iterator<Firefly> it = fireflies.iterator();
         while (it.hasNext()) {
             Firefly f = it.next();
-            // блуждание
+
             f.vel = f.vel.add(
                     (rnd.nextDouble() - 0.5) * 0.012 * speed.getValue(),
                     (rnd.nextDouble() - 0.5) * 0.008 * speed.getValue(),
@@ -100,7 +98,6 @@ public class Fireflies extends Module {
             f.vel = f.vel.multiply(0.96);
             f.pos = f.pos.add(f.vel);
 
-            // не даём улетать далеко и проваливаться под землю
             Vec3d center = mc.player.getPos();
             if (f.pos.distanceTo(center) > radius.getValue()) {
                 f.vel = f.vel.add(center.subtract(f.pos).normalize().multiply(0.02));
@@ -131,7 +128,7 @@ public class Fireflies extends Module {
 
         Color c = color.getColor();
         for (Firefly f : fireflies) {
-            // мерцание: светлячок мигает своим ритмом
+
             float blink = 0.35f + 0.65f * MathHelper.clamp(
                     (float) Math.sin(now / 900.0 * f.blinkSpeed + f.blinkPhase), 0f, 1f);
             int alpha = (int) (200 * blink);

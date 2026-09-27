@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
- 
 public class RWHelper extends Module {
 
     @Getter
@@ -43,7 +42,6 @@ public class RWHelper extends Module {
     @Getter
     private final BooleanSetting mentionNotify = new BooleanSetting("Уведомление при упоминании вашего ника", true);
 
-      
     private static final List<String> BLOCKED_WORDS = List.of(
             "Юпитер", "Метеор", "Дельта", "Флюгер", "Целестиал",
             "Delta", "Celestial", "Fluger", "FlugerNew", "Целка",
@@ -51,16 +49,15 @@ public class RWHelper extends Module {
             "Nursultan", "Венус"
     );
 
-      
     private static final Map<String, DonateItem> DONATE_ITEMS = new LinkedHashMap<>();
 
     static {
-         
+
         DONATE_ITEMS.put("ловушка", new DonateItem(Shape.SQUARE, 6.0f));
-         
+
         DONATE_ITEMS.put("шар хаоса", new DonateItem(Shape.CIRCLE, 8.0f));
         DONATE_ITEMS.put("шар света", new DonateItem(Shape.CIRCLE, 16.0f));
-         
+
         DONATE_ITEMS.put("шар огня", new DonateItem(Shape.NONE, 0f));
         DONATE_ITEMS.put("шар воздуха", new DonateItem(Shape.NONE, 0f));
         DONATE_ITEMS.put("шар порядка", new DonateItem(Shape.NONE, 0f));
@@ -68,21 +65,17 @@ public class RWHelper extends Module {
         DONATE_ITEMS.put("шар земли", new DonateItem(Shape.NONE, 0f));
     }
 
-     
-      
-    private static final double HOOK_RANGE_SQ = 64.0D;   
-      
+    private static final double HOOK_RANGE_SQ = 64.0D;
+
     private static final int PROTECT_TICKS = 15;
     private int protectTicks = 0;
     private Vec3d safeVelocity = Vec3d.ZERO;
 
-     
     private static final long MENTION_COOLDOWN = 1500L;
     private long lastMention = 0L;
 
-     
     private static final int CIRCLE_SEGMENTS = 72;
-    private static final int SQUARE_ALPHA = (int) (255 * 0.35f);  
+    private static final int SQUARE_ALPHA = (int) (255 * 0.35f);
 
     public RWHelper() {
         super("RWHelper", Category.Utility, "Помощник для сервера Really World: защита от удочки, фильтр слов, радиусы донат-предметов и упоминания ника");
@@ -93,20 +86,13 @@ public class RWHelper extends Module {
         getSettings().add(mentionNotify);
     }
 
-      
-      
-      
-
- 
     public boolean shouldCancelVelocityPacket(int entityId) {
         if (!antiRodPull.getValue()) return false;
         if (mc.player == null || mc.world == null) return false;
         if (entityId != mc.player.getId()) return false;
 
-         
         if (mc.player.hurtTime > 0) return false;
 
-         
         if (!hasForeignBobberOnMe()) return false;
 
         protectTicks = PROTECT_TICKS;
@@ -151,7 +137,6 @@ public class RWHelper extends Module {
         return true;
     }
 
-      
     public boolean hasForeignBobberOnMe() {
         if (mc.player == null || mc.world == null) return false;
         ClientPlayerEntity player = mc.player;
@@ -166,7 +151,6 @@ public class RWHelper extends Module {
         return false;
     }
 
- 
     @EventHandler
     public void onPlayerTick(EventPlayerTick e) {
         if (fullNullCheck()) return;
@@ -177,8 +161,6 @@ public class RWHelper extends Module {
 
         ClientPlayerEntity player = mc.player;
 
-         
-         
         if (player.hurtTime > 0) {
             protectTicks = 0;
             safeVelocity = player.getVelocity();
@@ -215,11 +197,6 @@ public class RWHelper extends Module {
         }
     }
 
-      
-      
-      
-
- 
     public String findBlockedWord(String message) {
         if (message == null || message.isBlank()) return null;
         String lower = message.toLowerCase(Locale.ROOT);
@@ -229,15 +206,10 @@ public class RWHelper extends Module {
         return null;
     }
 
-      
     public void notifyBlockedWord(String word) {
         ChatUtils.sendMessage("Слово \"" + word + "\" запрещено на сервере Really World, сообщение не отправлен��");
         addNotify("Слово \"" + word + "\" запрещено на Really World");
     }
-
-      
-      
-      
 
     @EventHandler
     public void onRender3D(EventRender3D.Game e) {
@@ -263,7 +235,6 @@ public class RWHelper extends Module {
         }
     }
 
-      
     private void renderSquare(EventRender3D.Game e, Vec3d center, float size, Color theme) {
         double half = size / 2.0D;
         Box box = new Box(
@@ -276,7 +247,6 @@ public class RWHelper extends Module {
         Render3D.renderBoxOutline(e.getMatrices(), box, outline);
     }
 
-      
     private void renderCircle(Vec3d center, float radius, Color theme) {
         int argb = new Color(theme.getRed(), theme.getGreen(), theme.getBlue(), 235).getRGB();
         Render3D.DEBUG_LINE_WIDTH = 2.0f;
@@ -295,7 +265,6 @@ public class RWHelper extends Module {
         }
     }
 
-      
     private DonateItem getHeldDonateItem() {
         DonateItem main = resolveDonateItem(mc.player.getMainHandStack());
         if (main != null) return main;
@@ -312,11 +281,6 @@ public class RWHelper extends Module {
         return null;
     }
 
-      
-      
-      
-
- 
     public void handleIncomingMessage(String raw) {
         if (!mentionNotify.getValue()) return;
         if (raw == null || raw.isBlank()) return;
@@ -327,10 +291,9 @@ public class RWHelper extends Module {
 
         String message = stripFormatting(raw);
         String sender = parseSender(message);
-         
+
         if (sender != null && sender.equalsIgnoreCase(self)) return;
 
-         
         String body = sender != null ? message.substring(message.indexOf(sender) + sender.length()) : message;
         if (!containsWord(body, self)) return;
 
@@ -343,7 +306,6 @@ public class RWHelper extends Module {
         ChatUtils.sendMessage("[" + who + "] Написал ваш ник!");
     }
 
-      
     private String parseSender(String message) {
         int colon = message.indexOf(':');
         int bracketOpen = message.indexOf('<');
@@ -389,10 +351,6 @@ public class RWHelper extends Module {
     private boolean isNickChar(char c) {
         return Character.isLetterOrDigit(c) || c == '_';
     }
-
-      
-      
-      
 
     private void addNotify(String text) {
         try {

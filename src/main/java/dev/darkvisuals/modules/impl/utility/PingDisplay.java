@@ -15,9 +15,6 @@ import net.minecraft.client.util.math.MatrixStack;
 
 import java.awt.*;
 
-/**
- * PingDisplay — задержка до сервера в стеклянной панели.
- */
 public class PingDisplay extends Module {
 
     private final NumberSetting x = new NumberSetting("X", 20f, 0f, 3840f, 1f);
@@ -37,7 +34,7 @@ public class PingDisplay extends Module {
     @EventHandler
     public void onTick(EventTick event) {
         if (mc.player == null) return;
-        if (++tickCounter < 20) return; // обновляем раз в секунду
+        if (++tickCounter < 20) return;
         tickCounter = 0;
 
         ClientPlayNetworkHandler handler = mc.getNetworkHandler();

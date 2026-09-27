@@ -11,9 +11,6 @@ import net.minecraft.client.gui.DrawContext;
 
 import java.awt.Color;
 
-/**
- * LowHealthFX — пульсирующая цветная виньетка по краям экрана при низком здоровье.
- */
 public class LowHealthFX extends Module {
 
     private final NumberSetting threshold =
@@ -44,7 +41,6 @@ public class LowHealthFX extends Module {
 
         if (health > max) return;
 
-        // 1.0 на пороге -> 0.0 при нулевом здоровье
         float danger = Math.max(0f, Math.min(1f, 1f - health / max));
 
         DrawContext context = e.getContext();
@@ -53,7 +49,7 @@ public class LowHealthFX extends Module {
 
         float strength = intensity.getValue() * (0.35f + 0.65f * danger);
         if (pulse.getValue()) {
-            // пульс как сердцебиение, учащается при меньшем здоровье
+
             double rate = 2.0 + danger * 5.0;
             double beat = Math.abs(Math.sin(System.currentTimeMillis() / 1000.0 * Math.PI * rate));
             strength *= (float) (0.6 + 0.4 * beat);

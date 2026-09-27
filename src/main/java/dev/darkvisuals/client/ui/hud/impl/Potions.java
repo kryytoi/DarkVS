@@ -33,9 +33,8 @@ public class Potions extends HudElement implements ThemeManager.ThemeChangeListe
 	private final InfinityAnimation heightAnim = new InfinityAnimation(Easing.OUT_QUAD);
 	private final InfinityAnimation widthAnim = new InfinityAnimation(Easing.OUT_QUAD);
 
-	 
 	private final Map<String, InfinityAnimation> itemAlpha = new LinkedHashMap<>();
-	 
+
 	private final Map<String, String> lastText = new HashMap<>();
 	private final Map<String, String> lastIconKey = new HashMap<>();
 
@@ -86,10 +85,9 @@ public class Potions extends HudElement implements ThemeManager.ThemeChangeListe
 			Collection<StatusEffectInstance> raw = player.getStatusEffects();
 			boolean hasAny = !raw.isEmpty();
 			boolean chatOpen = mc.currentScreen instanceof net.minecraft.client.gui.screen.ChatScreen;
-			 
+
 			int contentHudAlpha = 255;
 
-			 
 			List<StatusEffectInstance> effects = new ArrayList<>();
 			for (StatusEffectInstance eff : raw) {
 				StatusEffect type = eff.getEffectType().value();
@@ -98,7 +96,6 @@ public class Potions extends HudElement implements ThemeManager.ThemeChangeListe
 			}
 			effects.sort(Comparator.comparing(a -> a.getEffectType().value().getName().getString()));
 
-			 
 			List<String> keys = new ArrayList<>();
 			List<String> texts = new ArrayList<>();
 			List<String> icons = new ArrayList<>();
@@ -109,7 +106,7 @@ public class Potions extends HudElement implements ThemeManager.ThemeChangeListe
 				String display = name + level;
 				Identifier rid = Registries.STATUS_EFFECT.getId(type);
 				String effectKey = rid == null ? "" : rid.getPath();
-				String key = effectKey;  
+				String key = effectKey;
 				keys.add(key);
 				texts.add(display);
 				icons.add(effectKey);
@@ -117,7 +114,6 @@ public class Potions extends HudElement implements ThemeManager.ThemeChangeListe
 				lastIconKey.put(key, effectKey);
 			}
 
-			 
 			boolean previewMode = chatOpen && keys.isEmpty();
 			if (previewMode) {
 				keys.add("speed");
@@ -125,17 +121,15 @@ public class Potions extends HudElement implements ThemeManager.ThemeChangeListe
 				icons.add("speed");
 			}
 
-			 
 			for (String k : itemAlpha.keySet()) {
 				boolean active = keys.contains(k);
-				 
+
 				itemAlpha.get(k).animate(active ? 1f : 0f, (active ? 220 : (hasAny ? 160 : 0)));
 			}
 			for (String k : keys) {
 				itemAlpha.computeIfAbsent(k, kk -> new InfinityAnimation(Easing.OUT_QUAD)).animate(1f, 220);
 			}
 
-			 
 			float posX = getX();
 			float posY = getY();
 			float uiScale = 0.90f;
@@ -154,21 +148,17 @@ public class Potions extends HudElement implements ThemeManager.ThemeChangeListe
 				targetWidth = Math.max(targetWidth, w);
 			}
 
-			 
 			float visibleRows = keys.size();
 			if (previewMode) visibleRows = 1f;
 			float targetHeight = headerH + spacing + Math.max(0, visibleRows) * rowH;
 
-			 
 			heightAnim.animate(targetHeight, (hasAny || previewMode) ? 140 : 100);
 			widthAnim.animate(targetWidth, 220);
 			float currentHeight = heightAnim.getValue();
 			float currentWidth = widthAnim.getValue();
 
-			 
 			boolean nothingVisible = false;
 
-			 
 			setBounds(getX(), getY(), currentWidth, Math.max(headerH + spacing, currentHeight));
 			if (nothingVisible) {
 				super.onRender2D(e);
@@ -187,10 +177,8 @@ public class Potions extends HudElement implements ThemeManager.ThemeChangeListe
 				return;
 			}
 
-			 
 			Render2D.drawHudBackground(matrices, posX, posY, currentWidth, currentHeight, radius, 1f);
 
-			 
 			String titleStr = net.minecraft.client.resource.language.I18n.translate("hud.potions.title");
 			float titleX = posX + currentWidth / 2f - Fonts.MEDIUM.getWidth(titleStr, titleFont) / 2f;
 			float titleY = posY + headerH / 2f - Fonts.MEDIUM.getHeight(titleFont) / 2f;
@@ -198,7 +186,6 @@ public class Potions extends HudElement implements ThemeManager.ThemeChangeListe
 
 			float curY = posY + headerH + spacing;
 
-			 
 			for (int i = 0; i < keys.size(); i++) {
 				String k = keys.get(i);
 				float a = 1f;
@@ -213,7 +200,7 @@ public class Potions extends HudElement implements ThemeManager.ThemeChangeListe
 				Color draw = previewMode ? textColor : (low && highlightLowDuration.getValue() ? liveAccent : (negative ? negativeColor.brighter() : textColor));
 
 				String iconKeyActive = icons.get(i) == null ? "" : icons.get(i);
-				 
+
 				float iconX = posX + pad + 2f * uiScale + xOffset;
 				float rowCenterY = curY + yAdjust + rowH / 2f;
 				String nameText = texts.get(i) == null ? "" : texts.get(i);
@@ -231,7 +218,6 @@ public class Potions extends HudElement implements ThemeManager.ThemeChangeListe
 							new Color(draw.getRed(), draw.getGreen(), draw.getBlue(), alpha));
 				}
 
-				 
 				String t = previewMode ? "0:30" : (eff == null ? "" : formatDuration(eff.getDuration()));
 				if (!t.isBlank()) {
 					float tw = Fonts.MEDIUM.getWidth(t, font);
@@ -241,7 +227,7 @@ public class Potions extends HudElement implements ThemeManager.ThemeChangeListe
 					float pillX = rightEdge - pillW;
 					float pillY = curY + yAdjust + 2f * uiScale;
 					float pillR = pillH / 2f;
-					 
+
 					Render2D.drawHudPill(matrices, pillX, pillY, pillW, pillH, pillR, 1f);
 					drawGlassText(matrices, font, t,
 							pillX + (pillW - tw)/2f, rowCenterY - Fonts.MEDIUM.getHeight(font)/2f,
@@ -345,7 +331,6 @@ public class Potions extends HudElement implements ThemeManager.ThemeChangeListe
 		return String.format("%d:%02d", minutes, seconds);
 	}
 
-	  
 	private void drawGlassText(net.minecraft.client.util.math.MatrixStack matrices,
 	                           float fontSize, String text, float x, float y, Color color) {
 		Render2D.drawHudText(matrices, Fonts.MEDIUM.getFont(fontSize), text, x, y, color);

@@ -76,7 +76,7 @@ public class Particles {
         }
 
         public void update(Vec3d origin, double time, double omega, float animVal, boolean isSoulMode, double ghostRadius) {
-             
+
             if (!scattering && trailPositions.size() < MAX_TRAIL_LENGTH) {
                 trailPositions.add(pos);
             } else if (trailPositions.size() >= MAX_TRAIL_LENGTH) {
@@ -92,14 +92,14 @@ public class Particles {
                 vz *= 0.98;
                 age++;
             } else if (isSoulMode) {
-                 
+
                 Vec3d direction = targetPos.subtract(pos).normalize().multiply(0.2);
                 pos = pos.add(direction);
                 if (pos.distanceTo(targetPos) < 0.05) {
                     age = maxAge;
                 }
             } else {
-                 
+
                 double currentRadius = ghostRadius * (2.0 - animVal);
                 double offsetX = Math.cos(angle + angleOffset) * currentRadius;
                 double offsetZ = Math.sin(angle + angleOffset) * currentRadius;

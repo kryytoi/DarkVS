@@ -25,10 +25,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
-
 public class FireAura extends Module {
 
-    // время жизни одного уголька
     private static final long EMBER_TTL_MS = 1800L;
 
     private final NumberSetting density =
@@ -64,7 +62,6 @@ public class FireAura extends Module {
     public void onTick(EventTick event) {
         if (fullNullCheck()) return;
 
-        // спавним угольки у ног игрока
         int count = (int) (float) density.getValue();
         for (int i = 0; i < count; i++) {
             double ang = rnd.nextDouble() * Math.PI * 2;
@@ -79,7 +76,7 @@ public class FireAura extends Module {
         while (it.hasNext()) {
             Ember e = it.next();
             e.age++;
-            // ускоряемся вверх и немного колышемся в стороны
+
             e.vel = e.vel.add(0, 0.006 * riseSpeed.getValue(), 0);
             e.vel = new Vec3d(
                     e.vel.x + (rnd.nextDouble() - 0.5) * 0.004 * riseSpeed.getValue(),
@@ -112,15 +109,14 @@ public class FireAura extends Module {
 
         for (Ember e : embers) {
             float lifeT = (now - e.birth) / (float) e.ttl;
-            // угольки ярко вспыхивают и гаснут по мере подъёма
+
             float fade = MathHelper.clamp(1f - lifeT, 0f, 1f);
             float ignite = MathHelper.clamp(lifeT / 0.1f, 0f, 1f);
-            // дрожание пламени
+
             float flick = 1f - flicker.getValue() * 0.4f * MathHelper.abs(MathHelper.sin(now / 120f + e.phase * 3f));
             int alpha = (int) (230 * fade * ignite * flick);
             if (alpha <= 3) continue;
 
-            // смесь оранжевого и красного в зависимости от возраста уголька
             float hot = MathHelper.clamp(1f - lifeT * 1.4f, 0f, 1f);
             int r = (int) (255);
             int g = (int) (60 + 110 * hot);

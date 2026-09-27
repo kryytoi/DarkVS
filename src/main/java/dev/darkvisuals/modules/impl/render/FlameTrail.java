@@ -23,9 +23,6 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Random;
 
-/**
- * FlameTrail — пламенный след за игроком с искрами.
- */
 public class FlameTrail extends Module {
 
     private final NumberSetting density = new NumberSetting("Плотность", 24f, 4f, 80f, 4f);
@@ -123,7 +120,7 @@ public class FlameTrail extends Module {
             Matrix4f m = matrices.peek().getPositionMatrix();
             BufferBuilder buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
             int alpha = (int) (240 * fade);
-            // цвет от жёлтого к красному по мере угасания
+
             int r = 255;
             int g = (int) (180 - 140 * age);
             int b = 40;

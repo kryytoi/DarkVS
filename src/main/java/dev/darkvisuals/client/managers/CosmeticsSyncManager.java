@@ -29,7 +29,6 @@ import java.util.concurrent.TimeUnit;
 
  public final class CosmeticsSyncManager {
 
-     
     public static String API_BASE = "http://159.194.201.201:8080";
 
     private static final String REPORT_URL = API_BASE + "/cosmetics/report";
@@ -38,7 +37,6 @@ import java.util.concurrent.TimeUnit;
 
     private static final int POLL_INTERVAL_SECONDS = 10;
 
-      
     private static final Map<UUID, Set<String>> REMOTE_COSMETICS = new ConcurrentHashMap<>();
 
     private static final HttpClient HTTP = HttpClient.newBuilder()
@@ -63,26 +61,19 @@ import java.util.concurrent.TimeUnit;
         if (started) return;
         started = true;
 
-         
         scheduler.scheduleWithFixedDelay(CosmeticsSyncManager::syncCosmetics,
                 1, POLL_INTERVAL_SECONDS, TimeUnit.SECONDS);
 
-         
         connectWs();
 
-         
-         
         ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
             scheduler.schedule(CosmeticsSyncManager::syncCosmetics, 1, TimeUnit.SECONDS);
             scheduler.schedule(CosmeticsSyncManager::syncCosmetics, 5, TimeUnit.SECONDS);
         });
 
-         
-         
         ClientTickEvents.END_CLIENT_TICK.register(client -> registerWsSelfIfPossible());
     }
 
-      
     public static Set<String> getRemoteCosmetics(UUID uuid) {
         Set<String> s = REMOTE_COSMETICS.get(uuid);
         return s == null ? Set.of() : s;
@@ -105,8 +96,6 @@ import java.util.concurrent.TimeUnit;
             scheduler.shutdownNow();
         } catch (Throwable ignored) {}
     }
-
-     
 
     private static void syncCosmetics() {
         MinecraftClient mc = MinecraftClient.getInstance();
@@ -176,7 +165,6 @@ import java.util.concurrent.TimeUnit;
         }
     }
 
-      
     private static Set<String> currentCosmetics() {
         Set<String> set = new HashSet<>();
         try {
@@ -193,11 +181,14 @@ import java.util.concurrent.TimeUnit;
             if (mod.getMortyPatchSetting().getValue()) set.add("morty");
             if (mod.getNikeCapSetting().getValue()) set.add("nike");
             if (mod.getRobotTentaclesSetting().getValue()) set.add("robot_tentacles");
+            if (mod.getHornsSetting().getValue()) set.add("horns");
+            if (mod.getKatanaSetting().getValue()) set.add("katana");
+            if (mod.getCatEarsSetting().getValue()) set.add("cat_ears");
+            if (mod.getBandanaSetting().getValue()) set.add("bandana");
+            if (mod.getCrownSetting().getValue()) set.add("crown");
         } catch (Throwable ignored) {}
         return set;
     }
-
-     
 
     private static void connectWs() {
         scheduler.execute(() -> {
@@ -237,7 +228,6 @@ import java.util.concurrent.TimeUnit;
         }
     }
 
-      
     public static void sendEmote(String emoteId) {
         if (!wsConnected || ws == null) return;
         try {
@@ -253,7 +243,6 @@ import java.util.concurrent.TimeUnit;
         }
     }
 
-      
     private static final class Listener implements WebSocket.Listener {
 
         @Override
@@ -265,7 +254,6 @@ import java.util.concurrent.TimeUnit;
                     UUID uuid = UUID.fromString(obj.get("uuid").getAsString());
                     String emoteId = obj.get("emote_id").getAsString();
 
-                     
                     MinecraftClient mc = MinecraftClient.getInstance();
                     if (mc.player != null && mc.player.getUuid().equals(uuid)) {
                         return CompletableFuture.completedFuture(null);

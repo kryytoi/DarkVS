@@ -21,21 +21,19 @@ public abstract class PlayerListHudMixin {
 		if (module == null || !module.isToggled() || !module.smoothTab.getValue()) return;
 
 		float value = module.getTabOpenAnimation().getValue();
-		 
+
 		if (!module.isTabPressed() && value <= 0.01f) {
-			ci.cancel();  
+			ci.cancel();
 			return;
 		}
 
 		MatrixStack matrices = context.getMatrices();
 		matrices.push();
 
-		 
 		float slideOffset = 22.0f;
 		float slide = slideOffset * (1.0f - value);
 		matrices.translate(0, -slide, 0);
 
-		 
 		RenderSystem.enableBlend();
 		RenderSystem.defaultBlendFunc();
 		RenderSystem.setShaderColor(1f, 1f, 1f, value);
@@ -46,7 +44,6 @@ public abstract class PlayerListHudMixin {
 		BetterMinecraft module = darkvisuals.getInstance().getModuleManager().getModule(BetterMinecraft.class);
 		if (module == null || !module.isToggled() || !module.smoothTab.getValue()) return;
 
-		 
 		context.getMatrices().pop();
 		RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
 		RenderSystem.disableBlend();

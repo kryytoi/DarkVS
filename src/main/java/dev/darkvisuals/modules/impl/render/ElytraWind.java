@@ -26,10 +26,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
-/**
- * ElytraWind — линии встречного ветра при быстром полёте на элитрах.
- * Полосы вытянуты вдоль скорости и проносятся мимо игрока.
- */
 public class ElytraWind extends Module {
 
     private static final long STREAK_TTL_MS = 380L;
@@ -146,7 +142,6 @@ public class ElytraWind extends Module {
                 c = new Color(base.getRed(), base.getGreen(), base.getBlue(), (int) (alpha * 255));
             }
 
-            // вытянутый вдоль направления полёта «прямоугольник»
             Vec3d start = s.pos.subtract(cam);
             Vec3d end = start.add(s.dir.multiply(length.getValue() * s.sizeMul));
             Vec3d side = new Vec3d(-s.dir.z, 0, s.dir.x).normalize().multiply(width.getValue());

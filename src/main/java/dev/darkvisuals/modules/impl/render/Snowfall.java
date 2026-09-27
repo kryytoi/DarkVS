@@ -28,10 +28,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
-/**
- * Snowfall — личный снегопад вокруг игрока в любом биоме.
- * Снежинки — billboard-квады, медленно падают с покачиванием.
- */
 public class Snowfall extends Module {
 
     private final NumberSetting density =

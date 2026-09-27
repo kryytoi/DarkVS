@@ -21,10 +21,8 @@ import java.util.Map;
 
 public class Emotes extends Module {
 
-      
     private final BindSetting wheelBind = new BindSetting("setting.emoteWheelBind", new Bind(GLFW.GLFW_KEY_B, false));
 
-      
     private final Map<String, BooleanSetting> emoteToggles = new LinkedHashMap<>();
     private final ListSetting enabledEmotes;
 
@@ -37,7 +35,7 @@ public class Emotes extends Module {
             emoteToggles.put(emote.id(), toggle);
             toggles.add(toggle);
         }
-         
+
         enabledEmotes = new ListSetting("setting.emoteList", toggles.toArray(new BooleanSetting[0]));
 
         getSettings().add(wheelBind);
@@ -67,7 +65,6 @@ public class Emotes extends Module {
         return toggle != null && toggle.getValue();
     }
 
-      
     public List<Emote> getWheelEmotes() {
         List<Emote> result = new ArrayList<>();
         for (Emote emote : EmoteRegistry.all()) {

@@ -16,16 +16,11 @@ import net.minecraft.util.math.Vec3d;
 import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL11;
 
- 
 public final class BlackWings {
 
     private BlackWings() {
     }
 
-     
-     
-     
-     
     private static final String[] WING_SHAPE = {
             "..W...........",
             ".BWB......W...",
@@ -41,13 +36,13 @@ public final class BlackWings {
             "..M....M......"
     };
 
-    private static final int COLOR_CLAW     = 0xFFEDEDED;  
-    private static final int COLOR_BONE     = 0xFF7D7D7D;  
-    private static final int COLOR_DARK     = 0xFF262626;  
-    private static final int COLOR_MEMBRANE = 0xF50A0A0A;  
-    private static final int COLOR_GLINT    = 0xFF383838;  
+    private static final int COLOR_CLAW     = 0xFFEDEDED;
+    private static final int COLOR_BONE     = 0xFF7D7D7D;
+    private static final int COLOR_DARK     = 0xFF262626;
+    private static final int COLOR_MEMBRANE = 0xF50A0A0A;
+    private static final int COLOR_GLINT    = 0xFF383838;
 
-    private static final float PIXEL = 0.072f;  
+    private static final float PIXEL = 0.072f;
     private static final float FLAP_SPEED = 0.26f;
 
     public static void render(PlayerEntity player, float tickDelta, MatrixStack matrices, Vec3d cameraPos,
@@ -64,12 +59,11 @@ public final class BlackWings {
         float verticalMove = (float) velocity.y;
         float motion = MathHelper.clamp(Math.abs(forwardMove) * 1.2f + Math.abs(verticalMove) * 0.9f, 0.0f, 1.5f);
 
-         
         float anim = (player.age + tickDelta) * FLAP_SPEED * (1.0f + motion * 0.9f);
         float sin = animated ? MathHelper.sin(anim) : 0.0f;
 
-        float spreadAngle = 26.0f + motion * 6.0f;               
-        float rollAngle = animated ? sin * 16.0f + 6.0f : 6.0f;  
+        float spreadAngle = 26.0f + motion * 6.0f;
+        float rollAngle = animated ? sin * 16.0f + 6.0f : 6.0f;
         float pitchAngle = 8.0f + (animated ? MathHelper.cos(anim) * 3.0f : 0.0f);
 
         double px = MathHelper.lerp(tickDelta, player.prevX, player.getX()) - cameraPos.x;
@@ -80,7 +74,6 @@ public final class BlackWings {
         matrices.translate(px, py, pz);
         matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(-bodyYaw));
 
-         
         if (player.isSneaking()) {
             matrices.translate(0.0f, 1.02f, 0.02f);
             matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(24.0f));
@@ -115,7 +108,7 @@ public final class BlackWings {
         matrices.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(-side * roll));
 
         float pixel = PIXEL * size;
-        float topY = 3.0f * pixel;  
+        float topY = 3.0f * pixel;
 
         Matrix4f matrix = matrices.peek().getPositionMatrix();
         BufferBuilder buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
@@ -130,7 +123,7 @@ public final class BlackWings {
                 float x1 = side * (0.04f + (col + 1) * pixel);
                 float y0 = topY - row * pixel;
                 float y1 = topY - (row + 1) * pixel;
-                 
+
                 float z = -col * pixel * 0.10f;
 
                 quad(buffer, matrix, x0, y0, x1, y1, z, color);

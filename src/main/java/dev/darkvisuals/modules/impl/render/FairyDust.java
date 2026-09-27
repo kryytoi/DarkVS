@@ -28,10 +28,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
-
 public class FairyDust extends Module {
 
-    // время жизни одной пылинки
     private static final long DUST_TTL_MS = 1400L;
 
     private final NumberSetting density =
@@ -74,7 +72,6 @@ public class FairyDust extends Module {
     public void onTick(EventTick event) {
         if (fullNullCheck()) return;
 
-        // спавним новую порцию пыли, пока игрок двигается
         if (!onlyMoving.getValue() || isMoving()) {
             int count = Math.round(density.getValue());
             for (int i = 0; i < count; i++) {
@@ -91,7 +88,7 @@ public class FairyDust extends Module {
         while (it.hasNext()) {
             Dust d = it.next();
             d.age++;
-            // пыль парит и медленно оседает
+
             d.pos = d.pos.add(d.vel);
             d.vel = d.vel.add(0, -0.0008, 0).multiply(0.97);
             d.pos = d.pos.add(
@@ -123,10 +120,10 @@ public class FairyDust extends Module {
 
         for (Dust d : dusts) {
             float lifeT = (now - d.birth) / (float) d.ttl;
-            // плавное появление и исчезновение
+
             float fadeIn = MathHelper.clamp(lifeT / 0.2f, 0f, 1f);
             float fadeOut = MathHelper.clamp((1f - lifeT) / 0.25f, 0f, 1f);
-            // мерцание искры
+
             float twinkle = 0.3f + 0.7f * MathHelper.clamp(
                     MathHelper.sin(now / 1000f * twinkleSpeed.getValue() * 2f + d.phase * 4f), 0f, 1f);
             int alpha = (int) (220 * fadeIn * fadeOut * twinkle);

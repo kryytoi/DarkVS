@@ -10,7 +10,6 @@ import dev.darkvisuals.modules.settings.impl.BooleanSetting;
 import meteordevelopment.orbit.EventHandler;
 import org.lwjgl.glfw.GLFW;
 
- 
 public class QuickMarkers extends Module {
 
     private final BindSetting quickBind = new BindSetting("Бинд быстрой метки", new Bind(GLFW.GLFW_KEY_B, false));
@@ -28,7 +27,7 @@ public class QuickMarkers extends Module {
     @EventHandler
     public void onKey(EventKey e) {
         if (!isToggled() || fullNullCheck()) return;
-        if (mc.currentScreen != null) return;  
+        if (mc.currentScreen != null) return;
 
         Bind bind = quickBind.getValue();
         if (bind == null || bind.isEmpty() || bind.isMouse()) return;
@@ -47,7 +46,6 @@ public class QuickMarkers extends Module {
     private void placeQuickMarker() {
         var pos = mc.player.getPos();
 
-         
         if (toggleNearby.getValue()) {
             for (WaypointManager.Waypoint w : WaypointManager.list()) {
                 if (w.name.startsWith("Quick #") && w.pos.distanceTo(pos) < 8.0) {

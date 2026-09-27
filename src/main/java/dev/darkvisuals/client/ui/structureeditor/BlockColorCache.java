@@ -38,7 +38,6 @@ import java.util.concurrent.ConcurrentHashMap;
         Color cached = CACHE.get(blockId);
         if (cached != null) return cached;
 
-         
         Color hashColor = colorFromId(blockId);
 
         Color result = hashColor;
@@ -52,12 +51,12 @@ import java.util.concurrent.ConcurrentHashMap;
             } catch (Throwable t) {
                 return hashColor;
             }
-             
+
             if (block == null || block == net.minecraft.block.Blocks.AIR) {
                 return hashColor;
             }
             if (mc == null || mc.world == null || mc.getBlockRenderManager() == null) {
-                 
+
                 return hashColor;
             }
 
@@ -67,7 +66,7 @@ import java.util.concurrent.ConcurrentHashMap;
             List<BakedQuad> quads = model.getQuads(state, Direction.UP, random);
             if (quads.isEmpty()) quads = model.getQuads(state, null, random);
             if (quads.isEmpty()) {
-                 
+
                 CACHE.put(blockId, hashColor);
                 return hashColor;
             }

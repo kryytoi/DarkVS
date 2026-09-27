@@ -9,7 +9,6 @@ import net.minecraft.util.Uuids;
 
 import java.util.UUID;
 
-  
 public record EmoteS2CPayload(UUID player, String emoteId) implements CustomPayload {
 
     public static final CustomPayload.Id<EmoteS2CPayload> ID =

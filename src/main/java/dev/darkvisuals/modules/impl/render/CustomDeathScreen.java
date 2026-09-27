@@ -5,10 +5,6 @@ import dev.darkvisuals.modules.api.Category;
 import dev.darkvisuals.modules.api.Module;
 import dev.darkvisuals.modules.settings.impl.BooleanSetting;
 
-/**
- * CustomDeathScreen - заменяет ванильный экран смерти на кастомный
- * в стиле клиента (DarkDeathScreen). Логика респавна сохраняется.
- */
 public class CustomDeathScreen extends Module {
 
     private static CustomDeathScreen instance;
@@ -29,7 +25,6 @@ public class CustomDeathScreen extends Module {
         return animated.getValue();
     }
 
-    /** Вызывать из миксина: нужно ли заменять ванильный экран смерти. */
     public static boolean shouldReplace() {
         CustomDeathScreen m = instance;
         return m != null && m.isToggled();

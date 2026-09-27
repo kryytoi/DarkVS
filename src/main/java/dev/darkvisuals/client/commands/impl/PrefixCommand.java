@@ -31,7 +31,7 @@ public class PrefixCommand extends Command {
                             }
                             darkvisuals.getInstance().getCommandManager().setPrefix(newPrefix);
                             ChatUtils.sendMessage(String.format(I18n.translate("cmd.prefix.changed"), newPrefix));
-                             
+
                             try {
                                 darkvisuals.getInstance().getAutoSaveManager().scheduleAutoSave();
                             } catch (Throwable ignored) {}

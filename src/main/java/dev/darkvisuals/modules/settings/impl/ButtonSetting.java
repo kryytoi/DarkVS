@@ -11,7 +11,6 @@ import dev.darkvisuals.modules.settings.Setting;
         this.action = action;
     }
 
-      
     public void click() {
         if (action != null) action.run();
     }

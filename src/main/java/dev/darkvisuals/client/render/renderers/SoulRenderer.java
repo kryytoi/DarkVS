@@ -44,11 +44,10 @@ public class SoulRenderer {
 
         var camera = mc.gameRenderer.getCamera();
 
-         
         double entX, entY, entZ;
         float iAge;
         float height, radius;
-        
+
         if (target != null) {
             entX = target.prevX + (target.getX() - target.prevX) * e.getTickDelta();
             entY = target.prevY + (target.getY() - target.prevY) * e.getTickDelta();
@@ -57,8 +56,7 @@ public class SoulRenderer {
             height = target.getHeight();
             radius = target.getWidth();
         } else if (fadeOrigin != null) {
-             
-             
+
             entX = fadeOrigin.x;
             entY = fadeOrigin.y;
             entZ = fadeOrigin.z;
@@ -66,7 +64,7 @@ public class SoulRenderer {
             height = lastKnownHeight;
             radius = lastKnownWidth;
         } else {
-            return;  
+            return;
         }
 
         double tPosX = entX - camera.getPos().x;
@@ -92,7 +90,7 @@ public class SoulRenderer {
 
         MatrixStack base = e.getMatrices();
         base.push();
-         
+
         if (target != null) {
             base.translate(tPosX, tPosY + height * 0.5, tPosZ);
         } else {
@@ -105,12 +103,11 @@ public class SoulRenderer {
                 float jOffset = j * 120;
                 for (int i = 0; i <= particleDensity; i++) {
                     float iFloat = (float) i;
-                    
-                     
+
                     float particleProgress = iFloat / (float) particleDensity;
                     float fadeMultiplier = Math.min(1.0f, Math.max(0.0f, animationValue - particleProgress));
                     if (fadeMultiplier <= 0) continue;
-                    
+
                     double radians = Math.toRadians(((iFloat / 1.5f + iAge) * 8 + jOffset) % 2880);
                     double sinQuad = Math.sin(Math.toRadians(ageMultiplier + i * (j + 1)) * 3f) / 1.8f;
 
@@ -144,12 +141,11 @@ public class SoulRenderer {
 
             for (int i = 0; i <= particleDensity; i++) {
                 float iFloat = (float) i;
-                
-                 
+
                 float particleProgress = iFloat / (float) particleDensity;
                 float fadeMultiplier = Math.min(1.0f, Math.max(0.0f, animationValue - particleProgress));
                 if (fadeMultiplier <= 0) continue;
-                
+
                 double radians = Math.toRadians(((iFloat / 1.5f + iAge) * 8 + jOffset) % 2880);
                 double sinQuad = Math.sin(Math.toRadians(ageMultiplier + i * jMultiplier) * 3f) / 1.8f;
 
@@ -192,5 +188,4 @@ public class SoulRenderer {
         return (int) Math.round(v);
     }
 }
-
 

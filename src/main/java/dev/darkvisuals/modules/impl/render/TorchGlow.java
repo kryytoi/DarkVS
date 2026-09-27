@@ -31,10 +31,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
-/**
- * TorchGlow — тёплое свечение вокруг факелов и других светящихся блоков,
- * с редкими искрами, поднимающимися над ними.
- */
 public class TorchGlow extends Module {
 
     private static final Identifier GLOW_TEXTURE = darkvisuals.id("hud/glow.png");
@@ -88,7 +84,6 @@ public class TorchGlow extends Module {
     public void onTick(EventTick event) {
         if (fullNullCheck()) return;
 
-        // пересканируем блоки не каждый тик — экономим CPU
         if (--scanCooldown <= 0) {
             scanCooldown = 20;
             lightSources.clear();
@@ -145,7 +140,6 @@ public class TorchGlow extends Module {
         RenderSystem.setShaderTexture(0, GLOW_TEXTURE);
         RenderSystem.setShader(ShaderProgramKeys.POSITION_TEX_COLOR);
 
-        // мерцающее свечение над источниками света
         for (BlockPos pos : lightSources) {
             double dist = Vec3d.ofCenter(pos).distanceTo(mc.player.getPos());
             float distFade = MathHelper.clamp((float) ((radius.getValue() * 1.4 - dist) / 4f), 0f, 1f);
@@ -171,7 +165,6 @@ public class TorchGlow extends Module {
             matrices.pop();
         }
 
-        // искры-угольки
         for (Ember ember : embers) {
             float lifeT = (now - ember.birth) / 1400f;
             float fadeIn = MathHelper.clamp(lifeT / 0.15f, 0f, 1f);

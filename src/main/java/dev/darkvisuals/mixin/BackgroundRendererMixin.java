@@ -39,6 +39,9 @@ public class BackgroundRendererMixin {
 
 	@ModifyVariable(method = "applyFog", at = @At("HEAD"), argsOnly = true, ordinal = 0)
 	private static float darkvisuals$applyCustomFogDistance(float viewDistance) {
+		if (dev.darkvisuals.modules.impl.utility.Optimization.isNoFog()) {
+			return 10000.0f;
+		}
 		CustomFog customFog = darkvisuals.getInstance().getModuleManager().getModule(CustomFog.class);
 		if (customFog != null && customFog.isToggled()) {
 			return Math.max(0.0f, customFog.getFogDistance());

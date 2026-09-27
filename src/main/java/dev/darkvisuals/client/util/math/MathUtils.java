@@ -58,7 +58,7 @@ public class MathUtils implements Wrapper {
 
         return Math.abs(yawDelta) <= fov;
     }
-    
+
     public float getStep(float current, float target, float step) {
         if (Math.abs(target - current) <= step) return target;
 

@@ -25,7 +25,6 @@ import org.joml.Matrix4f;
 
 import java.awt.Color;
 
-
 public class LensFlare extends Module {
 
     private static final Identifier GLOW_TEXTURE = darkvisuals.id("hud/glow.png");
@@ -49,7 +48,6 @@ public class LensFlare extends Module {
     public void onRender3D(EventRender3D.Game event) {
         if (fullNullCheck()) return;
 
-        // направление на солнце по времени суток (восход — +X, полдень — верх)
         float skyAngle = getSkyAngle();
         double theta = skyAngle * Math.PI * 2;
         Vec3d sunDir = new Vec3d(Math.cos(theta), Math.sin(theta), 0);
@@ -69,7 +67,6 @@ public class LensFlare extends Module {
         float cp = MathHelper.cos(pitchRad);
         Vec3d forward = new Vec3d(Math.sin(yawRad) * cp, -Math.sin(pitchRad), Math.cos(yawRad) * cp);
 
-        // не рисуем, если свет за спиной
         if (lightDir.dotProduct(forward) < 0.15) return;
 
         Color accent = ThemeManager.getInstance().getCurrentTheme().getAccentColor();
@@ -89,10 +86,8 @@ public class LensFlare extends Module {
         RenderSystem.setShaderTexture(0, GLOW_TEXTURE);
         RenderSystem.setShader(ShaderProgramKeys.POSITION_TEX_COLOR);
 
-        // яркое ядро у самого светила
         drawFlare(matrices, camPos, lightDir, distance.getValue() * 0.98f, 14f * strength, tint, (int) (150 * strength));
 
-        // призраки вдоль линии светило — центр экрана
         float[] ghosts = {0.35f, 0.6f, 0.85f, 1.15f, 1.45f, -0.3f};
         float[] sizes = {4f, 7f, 3f, 9f, 5f, 3.5f};
         for (int i = 0; i < ghosts.length; i++) {

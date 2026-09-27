@@ -22,9 +22,6 @@ import org.joml.Matrix4f;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * TimeWarp — кольца замедления времени вокруг игрока, вращающиеся в разные стороны.
- */
 public class TimeWarp extends Module {
 
     private final NumberSetting rings = new NumberSetting("Количество колец", 5f, 2f, 12f, 1f);

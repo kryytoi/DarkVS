@@ -31,23 +31,21 @@ public class AltManagerScreen extends Screen {
     private String searchBuffer = "";
     private int selectedIndex = -1;
 	private int caretIndex = 0;
-	private int selectionStart = -1;  
+	private int selectionStart = -1;
     private int searchCaretIndex = 0;
     private int searchSelectionStart = -1;
 
     private boolean inputFocused = false;
     private boolean searchFocused = false;
-    
+
     private final Animation inputFocusAnimation = new Animation(220, 1.0, false, Easing.OUT_EXPO);
     private final Animation searchFocusAnimation = new Animation(220, 1.0, false, Easing.OUT_EXPO);
     private final Animation listHoverAnimation = new Animation(200, 1.0, false, Easing.OUT_EXPO);
     private int hoveredRowIndex = -1;
 
-     
     private float listScroll = 0f;
     private float listScrollTarget = 0f;
     private float listMaxScroll = 0f;
-
 
     public AltManagerScreen(Screen parent) {
         super(Text.literal(I18n.translate("darkvisuals.alt.title")));
@@ -64,11 +62,9 @@ public class AltManagerScreen extends Screen {
 		if (caretIndex > inputBuffer.length()) caretIndex = inputBuffer.length();
         if (searchCaretIndex > searchBuffer.length()) searchCaretIndex = searchBuffer.length();
 
-         
         listScroll = 0f;
         listScrollTarget = 0f;
 
-         
         String active = AltManager.getLastUsedNickname();
         if (active != null) {
             for (int i = 0; i < filteredAlts.size(); i++) {
@@ -87,7 +83,6 @@ public class AltManagerScreen extends Screen {
         float groupWidth = buttonWidth * 2f + groupMargin;
         float groupStartX = this.width / 2f - groupWidth / 2f;
 
-         
         buttons.add(new MainMenu.AnimatedButton(groupStartX, centerY, buttonWidth, buttonHeight, I18n.translate("darkvisuals.alt.add"), b -> {
             if (!inputBuffer.isEmpty()) {
                 if (AltManager.addNickname(inputBuffer)) {
@@ -99,7 +94,6 @@ public class AltManagerScreen extends Screen {
             }
         }));
 
-         
         buttons.add(new MainMenu.AnimatedButton(groupStartX + buttonWidth + groupMargin, centerY, buttonWidth, buttonHeight, I18n.translate("darkvisuals.alt.delete"), b -> {
             if (selectedIndex >= 0 && selectedIndex < filteredAlts.size()) {
                 String target = filteredAlts.get(selectedIndex);
@@ -110,7 +104,6 @@ public class AltManagerScreen extends Screen {
             }
         }));
 
-         
         float backX = this.width / 2f - buttonWidth / 2f;
         buttons.add(new MainMenu.AnimatedButton(backX, centerY + buttonHeight + groupMargin * 2f, buttonWidth, buttonHeight, I18n.translate("darkvisuals.alt.back"), b -> {
             this.client.setScreen(parent);
@@ -129,18 +122,17 @@ public class AltManagerScreen extends Screen {
 		boolean ctrl = hasControlDown();
 		boolean shift = hasShiftDown();
 
-		 
-		if (ctrl && keyCode == GLFW.GLFW_KEY_V) {  
+		if (ctrl && keyCode == GLFW.GLFW_KEY_V) {
 			String clip = this.client != null && this.client.keyboard != null ? this.client.keyboard.getClipboard() : null;
 			if (clip != null && !clip.isEmpty()) insertText(clip);
 			return true;
 		}
-		if (ctrl && keyCode == GLFW.GLFW_KEY_C) {  
+		if (ctrl && keyCode == GLFW.GLFW_KEY_C) {
 			String sel = getSelectedText();
 			if (sel != null && this.client != null && this.client.keyboard != null) this.client.keyboard.setClipboard(sel);
 			return true;
 		}
-		if (ctrl && keyCode == GLFW.GLFW_KEY_X) {  
+		if (ctrl && keyCode == GLFW.GLFW_KEY_X) {
 			String sel = getSelectedText();
 			if (sel != null && this.client != null && this.client.keyboard != null) {
 				this.client.keyboard.setClipboard(sel);
@@ -148,13 +140,12 @@ public class AltManagerScreen extends Screen {
 			}
 			return true;
 		}
-		if (ctrl && keyCode == GLFW.GLFW_KEY_A) {  
+		if (ctrl && keyCode == GLFW.GLFW_KEY_A) {
 			selectionStart = 0;
 			caretIndex = inputBuffer.length();
 			return true;
 		}
 
-		 
 		if (keyCode == GLFW.GLFW_KEY_BACKSPACE) {
 			if (!deleteSelection()) {
 				if (caretIndex > 0 && !inputBuffer.isEmpty()) {
@@ -181,7 +172,6 @@ public class AltManagerScreen extends Screen {
 			return true;
 		}
 
-		 
 		if (keyCode == GLFW.GLFW_KEY_ENTER) {
 			if (!inputBuffer.isEmpty()) {
 				if (AltManager.addNickname(inputBuffer)) {
@@ -229,7 +219,7 @@ public class AltManagerScreen extends Screen {
 
 	@Override
 	public boolean mouseClicked(double mouseX, double mouseY, int button) {
-         
+
         float listWidth = 220f;
         float listHeight = 120f;
         float listX = this.width / 2f - listWidth / 2f;
@@ -240,7 +230,7 @@ public class AltManagerScreen extends Screen {
 			if (index >= 0 && index < filteredAlts.size()) {
 				if (selectedIndex == index) {
 					AltManager.applyNickname(filteredAlts.get(index));
-					 
+
 					init();
 				} else {
 					selectedIndex = index;
@@ -248,14 +238,13 @@ public class AltManagerScreen extends Screen {
 			}
         }
 
-		 
 		float inputWidth = 220f;
 		float inputHeight = 18f;
 		float inputX = this.width / 2f - inputWidth / 2f;
 		float inputY = this.height / 2f + 20f;
 		if (mouseX >= inputX && mouseX <= inputX + inputWidth && mouseY >= inputY && mouseY <= inputY + inputHeight) {
 			int newIndex = getCaretIndexByMouse((float) mouseX, inputX);
-			if (button == 0) {  
+			if (button == 0) {
 				if (hasShiftDown()) {
 					if (selectionStart == -1) selectionStart = caretIndex;
 					caretIndex = newIndex;
@@ -298,7 +287,6 @@ public class AltManagerScreen extends Screen {
     public void render(DrawContext drawContext, int mouseX, int mouseY, float delta) {
         Matrix4f matrix = drawContext.getMatrices().peek().getPositionMatrix();
 
-         
         new RectangleBuilder()
                 .size(new SizeState(this.width, this.height))
                 .radius(new QuadRadiusState(0))
@@ -332,7 +320,6 @@ public class AltManagerScreen extends Screen {
                 .build()
                 .render(matrix, titleX, titleY, 0f);
 
-         
         String status = String.format("%d/%d alts", AltManager.getAltCount(), AltManager.getMaxAlts());
         float statusX = this.width / 2f - Fonts.REGULAR.getWidth(status, 6f) / 2f;
         float statusY = titleY + 27f;
@@ -345,7 +332,6 @@ public class AltManagerScreen extends Screen {
                 .build()
                 .render(matrix, statusX, statusY, 0f);
 
-         
         float inputWidth = 220f;
         float inputHeight = 18f;
         float inputX = this.width / 2f - inputWidth / 2f;
@@ -357,7 +343,6 @@ public class AltManagerScreen extends Screen {
                 .build()
                 .render(matrix, inputX, inputY, 0f);
 
-         
         if (inputBuffer.isEmpty() && !inputFocused) {
             String placeholder = I18n.translate("darkvisuals.alt.placeholder");
             new TextBuilder()
@@ -379,7 +364,6 @@ public class AltManagerScreen extends Screen {
                     .render(matrix, inputX + 6, inputY + 5, 0f);
         }
 
-         
         if (selectionStart != -1 && selectionStart != caretIndex && !inputBuffer.isEmpty()) {
             int a = Math.min(selectionStart, caretIndex);
             int b = Math.max(selectionStart, caretIndex);
@@ -392,7 +376,7 @@ public class AltManagerScreen extends Screen {
                     .build()
                     .render(matrix, ax, inputY + 5, 0f);
         }
-         
+
         if (!inputBuffer.isEmpty() || selectionStart == -1) {
             float caretX = inputX + 6 + Fonts.REGULAR.getWidth(inputBuffer.substring(0, Math.min(caretIndex, inputBuffer.length())), 7f);
             new RectangleBuilder()
@@ -403,7 +387,6 @@ public class AltManagerScreen extends Screen {
                     .render(matrix, caretX, inputY + 5, 0f);
         }
 
-         
         float listWidth = 220f;
         float listHeight = 120f;
         float listX = this.width / 2f - listWidth / 2f;
@@ -416,7 +399,7 @@ public class AltManagerScreen extends Screen {
                 .render(matrix, listX, listY, 0f);
 
         int rowHeight = 16;
-         
+
         float scrollSmooth = 0.18f;
         listScroll += (listScrollTarget - listScroll) * scrollSmooth;
         listScroll = clamp(listScroll, 0f, listMaxScroll);
@@ -433,7 +416,6 @@ public class AltManagerScreen extends Screen {
 
         float visibleBottom = listY + listHeight;
 
-         
         int sx1 = Math.round(listX) + 1;
         int sy1 = Math.round(listY) + 1;
         int sx2 = Math.round(listX + listWidth) - 1;
@@ -452,7 +434,7 @@ public class AltManagerScreen extends Screen {
                         .build()
                         .render(matrix, listX + 4, rowY, 0f);
             }
-             
+
             if (i == hoveredRowIndex && !sel) {
                 int ha = (int) (80 + 70 * hoverT);
                 new RectangleBuilder()
@@ -473,7 +455,7 @@ public class AltManagerScreen extends Screen {
                     .render(matrix, listX + 6, rowY + 4, 0f);
         }
         drawContext.disableScissor();
-         
+
         new RectangleBuilder()
                 .size(new SizeState(inputWidth, inputHeight))
                 .radius(new QuadRadiusState(8))
@@ -533,7 +515,6 @@ public class AltManagerScreen extends Screen {
     @Override
     public boolean shouldCloseOnEsc() { return true; }
 
-     
     private void moveCaret(int delta, boolean keepSelection) {
         int newIndex = Math.max(0, Math.min(inputBuffer.length(), caretIndex + delta));
         if (keepSelection) {
@@ -547,7 +528,7 @@ public class AltManagerScreen extends Screen {
 
     private void insertText(String text) {
         if (text == null || text.isEmpty()) return;
-         
+
         StringBuilder sb = new StringBuilder(text.length());
         for (int i = 0; i < text.length(); i++) {
             char c = text.charAt(i);
@@ -590,7 +571,7 @@ public class AltManagerScreen extends Screen {
     }
 
     private int getCaretIndexByMouse(float mouseX, float inputX) {
-         
+
         int idx = 0;
         float target = mouseX - (inputX + 6);
         if (target <= 0) return 0;
@@ -598,7 +579,7 @@ public class AltManagerScreen extends Screen {
         for (int i = 1; i <= inputBuffer.length(); i++) {
             float w = Fonts.REGULAR.getWidth(inputBuffer.substring(0, i), 7f);
             if (w >= target) {
-                 
+
                 return (target - lastWidth) < (w - target) ? i - 1 : i;
             }
             lastWidth = w;
@@ -625,6 +606,4 @@ public class AltManagerScreen extends Screen {
         }
     }
 }
-
-
 

@@ -150,7 +150,6 @@ public class CubeTrails extends Module {
             }
             if (snapshot.isEmpty()) return;
 
-            // полупрозрачный цвет фона темы с примесью акцентного — кубы читаются и не спорят с темой
             Color bg = themeManager.getCurrentTheme().getBackgroundColor();
             Color ac = themeManager.getCurrentTheme().getAccentColor();
             int tr = (bg.getRed() + ac.getRed()) / 2;

@@ -22,7 +22,7 @@ import java.util.List;
     private static final Identifier GIF_ID = Identifier.of("darkvisuals", "gif/startgif.gif");
 
     private static final List<Identifier> frames = new ArrayList<>();
-    private static final List<Integer> durations = new ArrayList<>();  
+    private static final List<Integer> durations = new ArrayList<>();
 
     private static long startTime = -1L;
     private static boolean loaded = false;
@@ -30,7 +30,6 @@ import java.util.List;
 
     private IntroManager() {}
 
-      
     public static synchronized void init(net.minecraft.resource.ResourceManager resourceManager) {
         if (loaded) return;
         loaded = true;
@@ -55,20 +54,16 @@ import java.util.List;
             Iterator<ImageReader> readers = ImageIO.getImageReaders(iis);
             if (!readers.hasNext()) { iis.close(); return; }
             ImageReader reader = readers.next();
-             
-             
-             
+
             reader.setInput(iis, true, false);
 
-             
-             
             int i = 0;
             while (true) {
                 BufferedImage frame;
                 try {
                     frame = reader.read(i);
                 } catch (IndexOutOfBoundsException e) {
-                    break;  
+                    break;
                 }
                 Identifier id = registerFrame(frame, i);
                 if (id != null) {
@@ -130,12 +125,10 @@ import java.util.List;
         return null;
     }
 
-      
     public static boolean isActive() {
         return loaded && frames.size() > 0 && !finished && startTime >= 0;
     }
 
-      
     public static Identifier currentFrame() {
         if (!isActive()) return null;
         long elapsed = System.currentTimeMillis() - startTime;
@@ -155,14 +148,12 @@ import java.util.List;
         return idx < frames.size() ? frames.get(idx) : null;
     }
 
-      
     public static float gifAspect() {
         return 1920f / 1012f;
     }
 
     private static void finish() {
         finished = true;
-         
-         
+
     }
 }

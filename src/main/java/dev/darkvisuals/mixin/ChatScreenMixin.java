@@ -21,11 +21,10 @@ public abstract class ChatScreenMixin {
 	@Inject(method = "sendMessage", at = @At("HEAD"), cancellable = true)
 	private void onSendMessage(String message, boolean addToHistory, CallbackInfo ci) {
 		if (message != null) {
-			 
+
 			String currentPrefix = darkvisuals.getInstance().getCommandManager().getPrefix();
 			System.out.println("[DarkVisuals] chat mixin fired. msg='" + message + "' prefix='" + currentPrefix + "'");
 
-			 
 			if (message.startsWith(".reset")) {
 				CommandDispatcher<CommandSource> dispatcher = darkvisuals.getInstance().getCommandManager().getDispatcher();
 				StringReader reader = new StringReader("reset");
@@ -53,7 +52,6 @@ public abstract class ChatScreenMixin {
 				return;
 			}
 
-			 
 			RWHelper rwHelper = RWHelper.getInstance();
 			if (rwHelper != null && rwHelper.isToggled() && rwHelper.getBlockBadWords().getValue()) {
 				String blocked = rwHelper.findBlockedWord(message);

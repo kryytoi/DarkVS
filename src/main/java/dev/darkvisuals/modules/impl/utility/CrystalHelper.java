@@ -18,7 +18,6 @@ import java.awt.Color;
 
 public class CrystalHelper extends Module {
 
-     
     private static final float EXPLOSION_POWER = 6.0f;
     private static final float EXPLOSION_RADIUS = EXPLOSION_POWER * 2.0f;
 
@@ -68,7 +67,6 @@ public class CrystalHelper extends Module {
                     double impact = (1.0 - distance / EXPLOSION_RADIUS) * exposure;
                     damage = (impact * impact + impact) / 2.0 * 7.0 * EXPLOSION_RADIUS + 1.0;
 
-                     
                     int armor = mc.player.getArmor();
                     double reduction = Math.min(0.8, armor * 0.04);
                     damage *= (1.0 - reduction);
@@ -96,7 +94,6 @@ public class CrystalHelper extends Module {
         }
     }
 
- 
     private double getExposure(Vec3d from, Vec3d to) {
         HitResult hit = mc.world.raycast(new RaycastContext(
                 from, to,

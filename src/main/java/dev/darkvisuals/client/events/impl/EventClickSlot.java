@@ -19,4 +19,4 @@ public class EventClickSlot extends Event {
 		this.button = button;
 		this.id = id;
 	}
-} 
+}

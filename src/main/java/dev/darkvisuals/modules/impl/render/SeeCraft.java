@@ -25,11 +25,10 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 
- 
 public class SeeCraft extends Module {
 
-    private static final int SLOT = 18;       
-    private static final int CELL = 16;       
+    private static final int SLOT = 18;
+    private static final int CELL = 16;
 
     private final NumberSetting maxRecipes = new NumberSetting("setting.maxRecipes", 1f, 1f, 3f, 1f);
 
@@ -62,7 +61,6 @@ public class SeeCraft extends Module {
             ClientRecipeBook book = mc.player.getRecipeBook();
             if (book == null) return result;
 
-             
             for (RecipeResultCollection col : book.getOrderedResults()) {
                 for (RecipeDisplayEntry entry : col.getAllRecipes()) {
                     Item output = getRecipeOutputItem(entry);
@@ -87,7 +85,6 @@ public class SeeCraft extends Module {
         return null;
     }
 
-      
     private List<ItemStack> getIngredientIcons(RecipeDisplayEntry entry) {
         List<ItemStack> icons = new ArrayList<>();
         try {
@@ -103,7 +100,7 @@ public class SeeCraft extends Module {
                 }
                 filled = icons.stream().anyMatch(s -> !s.isEmpty());
             }
-             
+
             if (!filled) {
                 icons.clear();
                 for (Ingredient ing : getIngredients(entry)) {
@@ -121,8 +118,7 @@ public class SeeCraft extends Module {
             } else if (slotDisp instanceof SlotDisplay.StackSlotDisplay stackDisp) {
                 return stackDisp.stack();
             } else if (slotDisp instanceof SlotDisplay.TagSlotDisplay tagDisp) {
-                 
-                 
+
                 var entryList = net.minecraft.registry.Registries.ITEM.getOptional(tagDisp.tag());
                 if (entryList.isPresent()) {
                     var first = entryList.get().stream().findFirst();
@@ -160,15 +156,14 @@ public class SeeCraft extends Module {
         int bgW = event.getBackgroundWidth();
 
         int recipeCount = recipes.size();
-         
+
         int gridW = 3 * SLOT;
         int panelW = gridW + 30 + SLOT + 12;
         int panelH = recipeCount > 1 ? 3 * SLOT + 8 * recipeCount : 3 * SLOT + 4;
 
-        float panelX = guiX + bgW + 10;  
+        float panelX = guiX + bgW + 10;
         float panelY = guiY + 10;
 
-         
         Render2D.drawRoundedRect(ctx.getMatrices(), panelX, panelY, panelW, panelH, 8,
                 new Color(20, 20, 26, 230));
 
@@ -183,27 +178,24 @@ public class SeeCraft extends Module {
     private void drawOneRecipe(DrawContext ctx, RecipeDisplayEntry entry, float panelX, float panelY) {
         List<ItemStack> ingredients = getIngredientIcons(entry);
 
-         
         int gw = 3, gh = 3;
         if (entry.display() instanceof ShapedCraftingRecipeDisplay shaped) {
             gw = shaped.width();
             gh = shaped.height();
         } else if (entry.display() instanceof ShapelessCraftingRecipeDisplay shapeless) {
-             
+
             int count = ingredients.size();
             if (count <= 3) { gw = count; gh = 1; }
             else if (count <= 6) { gw = 3; gh = 2; }
             else { gw = 3; gh = 3; }
         }
 
-         
         for (int i = 0; i < gw * gh; i++) {
             int col = i % gw;
             int row = i / gw;
             float sx = panelX + 6 + col * SLOT;
             float sy = panelY + 6 + row * SLOT;
 
-             
             Render2D.drawRoundedRect(ctx.getMatrices(), sx, sy, CELL, CELL, 3,
                     new Color(0, 0, 0, 90));
 
@@ -215,13 +207,11 @@ public class SeeCraft extends Module {
             }
         }
 
-         
         float gridW = gw * SLOT;
         float arrowX = panelX + 6 + gridW + 6;
         float arrowY = panelY + 6 + (gh / 2f) * SLOT;
         Render2D.drawFont(ctx.getMatrices(), Fonts.BOLD.getFont(6f), "→", arrowX, arrowY, Color.WHITE);
 
-         
         float resX = panelX + 6 + gridW + 26;
         float resY = panelY + 6 + (gh / 2f) * SLOT;
         Render2D.drawRoundedRect(ctx.getMatrices(), resX, resY, CELL, CELL, 3,

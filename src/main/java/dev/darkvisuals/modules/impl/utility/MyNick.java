@@ -6,13 +6,11 @@ import dev.darkvisuals.modules.settings.impl.BooleanSetting;
 import lombok.Getter;
 import net.minecraft.entity.LivingEntity;
 
- 
 public class MyNick extends Module {
 
     @Getter
     private static MyNick instance;
 
-      
     @Getter
     private final BooleanSetting onlyThirdPerson = new BooleanSetting("Только от третьего лица", true);
 
@@ -22,7 +20,6 @@ public class MyNick extends Module {
         getSettings().add(onlyThirdPerson);
     }
 
- 
     public boolean shouldForceOwnLabel(LivingEntity entity) {
         if (!isToggled()) return false;
         if (mc.player == null || entity != mc.player) return false;

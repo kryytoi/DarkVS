@@ -21,56 +21,43 @@ import org.lwjgl.glfw.GLFW;
 
 import java.util.*;
 
-/**
- * Стиль «New» — компактный чёрный фрейм с сильным скруглением,
- * карточки модулей с описанием-тултипом, pill-навбар из 6 иконок
- * и строка поиска под фреймом.
- */
 public class NewClickGuiRenderer {
 
-    // ─── Главный фрейм ────────────────────────────────────────────────
     public static final float FRAME_W  = 460f;
     public static final float FRAME_H  = 320f;
-    public static final float FRAME_R  = 30f;   // сильное скругление
+    public static final float FRAME_R  = 30f;
 
-    // ─── Шапка ───────────────────────────────────────────────────────
     private static final float HEADER_H = 38f;
 
-    // ─── Карточки модулей (сетка из двух колонок) ──────────────────────
     private static final int   GRID_COLS    =  2;
-    private static final float CARD_MARGIN  = 14f;  // отступ от боковых краёв фрейма
+    private static final float CARD_MARGIN  = 14f;
     private static final float CARD_GAP     =  8f;
     private static final float CARD_W       = (FRAME_W - CARD_MARGIN * 2f - CARD_GAP * (GRID_COLS - 1)) / GRID_COLS;
-    private static final float CARD_H       = 64f;  // высота карточки-заголовка модуля (всегда фиксирована)
+    private static final float CARD_H       = 64f;
     private static final float CARD_R       = 12f;
     private static final float CARD_LIST_TOP_PAD = 8f;
-    private static final float EXPAND_GAP      =  6f;  // отступ между карточкой и панелью настроек
+    private static final float EXPAND_GAP      =  6f;
     private static final float SUB_PAD_TOP     = 11f;
     private static final float SUB_PAD_BOT     = 11f;
     private static final float SUB_PAD_X       = 12f;
 
-    // ─── Навбар: единая вытянутая по горизонтали плашка со скруглёнными
-    //     углами, внутри которой ряд из 6 иконок.
     private static final int   NAV_COUNT    =  6;
-    private static final float NAV_PAD      =  4f;  // внутренний отступ плашки
-    private static final float NAV_SLOT_W   = 42f;  // широкие слоты — плашка вытянута по X
-    private static final float NAV_H        = 24f;  // низкая плашка
+    private static final float NAV_PAD      =  4f;
+    private static final float NAV_SLOT_W   = 42f;
+    private static final float NAV_H        = 24f;
     private static final float NAV_PILL_R   = 16f;
-    private static final float NAV_ICON_R   =  7f;  // скругление активного squircle
-    private static final float NAV_ICON     = 12f;  // размер PNG-иконки
+    private static final float NAV_ICON_R   =  7f;
+    private static final float NAV_ICON     = 12f;
     private static final float NAV_BOTTOM   = 14f;
 
-    // ─── Боковые квадратные кнопки навбара (искры слева, сетка справа от пилюли) ─
-    private static final float NAV_SIDE_GAP = 8f;   // отступ между боковой кнопкой и пилюлей
-    private static final float NAV_SIDE_R   = 12f;  // скругление боковой кнопки (совпадает с высотой пилюли)
+    private static final float NAV_SIDE_GAP = 8f;
+    private static final float NAV_SIDE_R   = 12f;
 
-    // ─── Строка поиска ────────────────────────────────────────────────
     private static final float SEARCH_W     = 180f;
     private static final float SEARCH_H     = 28f;
     private static final float SEARCH_R     = 14f;
     private static final float SEARCH_GAP   = 10f;
 
-    // ─── Строки ввода (Friends/Markers/Config) ─────────────────────────
     private static final float INPUT_H      = 22f;
     private static final float INPUT_R      =  9f;
     private static final float BTN_W        = 40f;
@@ -78,7 +65,6 @@ public class NewClickGuiRenderer {
     private static final float LIST_ROW_GAP =  6f;
     private static final float ROWSET_GAP   = 10f;
 
-    // ─── PNG-иконки навбара (те же текстуры, что в ClickGuiRenderer) ───
     private static final Identifier ICON_RENDER  = Identifier.of("darkvisuals", "textures/clickgui/render.png");
     private static final Identifier ICON_UTILITY = Identifier.of("darkvisuals", "textures/clickgui/utilities.png");
     private static final Identifier ICON_THEME   = Identifier.of("darkvisuals", "hud/theme.png");
@@ -86,89 +72,67 @@ public class NewClickGuiRenderer {
     private static final Identifier ICON_FRIENDS = Identifier.of("darkvisuals", "hud/friends.png");
     private static final Identifier ICON_MARKERS = Identifier.of("darkvisuals", "textures/tags.png");
 
-    // ─── Настройки ───────────────────────────────────────────────────
     private static final float SET_R        =  5f;
     private static final float SET_GAP      =  5f;
 
-    // ─── Цвета ───────────────────────────────────────────────────────
-    private static final int C_BG       = 0xFF161619;   // #161619 — фон главного окна
-    private static final int C_CARD     = 0xFF232328;   // #232328 — фон карточки
-    private static final int C_CARD_HOV = 0xFF26262B;   // #26262b — ховер карточки
+    private static final int C_BG       = 0xFF161619;
+    private static final int C_CARD     = 0xFF232328;
+    private static final int C_CARD_HOV = 0xFF26262B;
     private static final int C_NAV      = 0xFF232328;
-    private static final int C_LINE     = 0x12FFFFFF;   // white/[0.07]
+    private static final int C_LINE     = 0x12FFFFFF;
     private static final int C_DIV      = 0x33FFFFFF;
-    private static final int C_BORDER   = 0x1AFFFFFF;   // white/10 — обводка фрейма и карточек
+    private static final int C_BORDER   = 0x1AFFFFFF;
     private static final int C_TEXT     = 0xFFFFFFFF;
-    private static final int C_TEXT_DIM = 0xFF8E8E95;   // #8e8e95
+    private static final int C_TEXT_DIM = 0xFF8E8E95;
     private static final int C_ICON_DIM = 0xFF8E8E93;
 
-    /** #7c3aed — активная вкладка навбара. */
     private static final int C_ACCENT   = 0xFF7C3AED;
-    /** #8b5cf6 — бегунок тогла со свечением. */
+
     private static final int C_THUMB    = 0xFF8B5CF6;
 
-    // ─── Категории в навбаре ──────────────────────────────────────────
     public static final Category[] NAV_CATS = {
         Category.Render, Category.Utility, Category.Friends,
         Category.Markers, Category.Theme, Category.Config
     };
 
-    // ─── Анимации ────────────────────────────────────────────────────
     private final Map<String, SmoothAnimation> anims = new HashMap<>();
     private final SmoothAnimation openFade = new SmoothAnimation(0f, 10f);
 
-    // Моменты последних событий — для пружинящих/затухающих импульсов
     private final Map<String, Long> cardPressTimes = new HashMap<>();
     private final Map<String, Long> toggleTimes    = new HashMap<>();
 
-    // Модуль, на карточке которого сейчас курсор (для тултипа)
     private Module hoveredModule;
 
-    // Имя модуля, чья карточка сейчас развёрнута (показывает дочерние тоглы), как на референсе
     private String expandedModule;
 
-    /** Режим правой части: список модулей / чат DARKA / настройки. */
     public enum ViewMode { MODULES, DARKA, SETTINGS }
     private ViewMode viewMode = ViewMode.MODULES;
 
-    /** Открыто ли всплывающее окно инструкции Hugging Face. */
     private boolean hfWindowOpen;
 
-    // ── Ввод чата DARKA-0.1 ─────────────────────────────────────────────
     private final StringBuilder darkaInput = new StringBuilder();
     private boolean darkaInputFocused;
     private float darkaScroll = 0f;
 
-    // Плавный скролл: значение, смягчённое анимацией на текущем кадре (кэш —
-    // считается один раз за кадр в рендере и переиспользуется в клик-тестах)
     private float frameScroll = 0f;
 
-    // ─── Singleton ───────────────────────────────────────────────────
     private static NewClickGuiRenderer instance;
     public static NewClickGuiRenderer getInstance() {
         if (instance == null) instance = new NewClickGuiRenderer();
         return instance;
     }
 
-    // ═════════════════════════════════════════════════════════════════
-    //  Координатные хелперы
-    // ═════════════════════════════════════════════════════════════════
-
     public static float frameX(Window w) { return (w.getScaledWidth()  - FRAME_W) / 2f; }
     public static float frameY(Window w) { return (w.getScaledHeight() - FRAME_H) / 2f; }
 
-    /** X левой колонки карточек */
     private static float cardX(float fx) { return fx + CARD_MARGIN; }
 
-    /** X колонки col (0..GRID_COLS-1) */
     private static float cardX(float fx, int col) {
         return fx + CARD_MARGIN + col * (CARD_W + CARD_GAP);
     }
 
-    /** Высота одной строки сетки (все карточки-заголовки фиксированной высоты) */
     private static float gridRowH() { return CARD_H + CARD_GAP; }
 
-    /** Высота карточки настроек — рамка + сумма высот всех видимых настроек. */
     private float expandPanelContentH(Module m) {
         float h = SUB_PAD_TOP + SUB_PAD_BOT;
         for (Setting<?> s : m.getSettings()) {
@@ -178,7 +142,6 @@ public class NewClickGuiRenderer {
         return Math.max(h - SET_GAP, SUB_PAD_TOP + SUB_PAD_BOT);
     }
 
-    /** Индекс развёрнутого модуля в текущем видимом списке, либо -1. */
     private int indexOfExpanded(List<Module> mods) {
         if (expandedModule == null) return -1;
         for (int i = 0; i < mods.size(); i++)
@@ -186,18 +149,14 @@ public class NewClickGuiRenderer {
         return -1;
     }
 
-    /** Верхняя граница прокручиваемой зоны модулей */
     private static float listTop(float fy) { return fy + HEADER_H + 2f; }
 
-    /** Высота плашки навбара */
     private static float navPillH() { return NAV_H + NAV_PAD * 2f; }
 
-    /** Нижняя граница прокручиваемой зоны (выше навбара) */
     private static float listBottom(float fy) {
         return fy + FRAME_H - NAV_BOTTOM - navPillH() - 4f;
     }
 
-    /** Верхний Y плашки навбара */
     private static float navPillY(float fy) {
         return fy + FRAME_H - NAV_BOTTOM - navPillH();
     }
@@ -207,8 +166,6 @@ public class NewClickGuiRenderer {
     }
 
     private static long now() { return System.currentTimeMillis(); }
-
-    // ── Звук вкл/выкл функции в клик-гуй ───────────────────────────────
 
     private static final Map<String, SoundEvent> SOUND_CACHE = new HashMap<>();
 
@@ -223,17 +180,13 @@ public class NewClickGuiRenderer {
             MinecraftClient.getInstance().getSoundManager()
                     .play(PositionedSoundInstance.master(sound, 1.0f, 0.7f));
         } catch (Throwable ignored) {
-            // Звука ещё нет в ресурсах — тишина, без вылетов
+
         }
     }
 
     private static float pulse(long t, long period) {
         return (float) (Math.sin(t * Math.PI * 2d / period) + 1d) / 2f;
     }
-
-    // ═════════════════════════════════════════════════════════════════
-    //  Главный рендер
-    // ═════════════════════════════════════════════════════════════════
 
     public void render(DrawContext context, int mouseX, int mouseY, float delta,
                        Window window, ClickGuiState state, float openProgress) {
@@ -249,10 +202,8 @@ public class NewClickGuiRenderer {
         float sw = window.getScaledWidth(), sh = window.getScaledHeight();
         float fx = frameX(window), fy = frameY(window);
 
-        // Затемнение фона
         rect(context, 0, 0, sw, sh, 0f, withAlpha(0xFF000000, (int)(160f * fade)));
 
-        // Лёгкий scale-in с пружинным овершутом при открытии
         float pop = aval("openpop", openProgress, 8f);
         float scale = 0.94f + 0.06f * easeOutBack(pop);
 
@@ -262,46 +213,33 @@ public class NewClickGuiRenderer {
         ms.scale(scale, scale, 1f);
         ms.translate(-sw / 2f, -sh / 2f, 0f);
 
-        // Мягкое свечение по краю фрейма, «дышащее» поверх открытого GUI
         float glow = aval("frglow", pulse(now(), 2000L) * openProgress, 6f);
         if (glow > 0.02f) {
             rect(context, fx - 3f, fy - 3f, FRAME_W + 6f, FRAME_H + 6f, FRAME_R + 3f,
                     themeA((int)(26f * fade * glow)));
         }
 
-        // ── Главный фрейм: обводка снизу, заливка сверху — видна только тонкая рамка ──
         rect(context, fx - 1f, fy - 1f, FRAME_W + 2f, FRAME_H + 2f, FRAME_R + 1f,
                 withAlpha(C_BORDER, (int)(255f * fade)));
         rect(context, fx, fy, FRAME_W, FRAME_H, FRAME_R, withAlpha(C_BG, (int)(255f * fade)));
 
-        // ── Шапка: название категории по центру + анимированное подчёркивание ─
         renderHeader(context, fx, fy, fade);
 
-        // ── Тонкий разделитель под шапкой ──────────────────────────
         rect(context, fx + FRAME_R, fy + HEADER_H - 1f,
                 FRAME_W - FRAME_R * 2f, 1f, 0f, withAlpha(C_LINE, (int)(255f * fade)));
 
-        // ── Список модулей с раскрывающимися карточками настроек ────
         renderModuleList(context, fx, fy, mouseX, mouseY, state, fade);
 
-        // ── Тултип с описанием модуля (поверх списка, не обрезается ножницами)
         renderTooltip(context, fx, fy, fade);
 
-        // ── Скроллбар ─────────────────────────────────────────────
         renderScrollBar(context, fx, fy, state, fade);
 
-        // ── Навбар ─────────────────────────────────────────────────
         renderNavBar(context, fx, fy, mouseX, mouseY, fade);
 
-        // ── Строка поиска (ниже фрейма) ────────────────────────────
         renderSearchBar(context, fx, fy, fade);
 
         ms.pop();
     }
-
-    // ═════════════════════════════════════════════════════════════════
-    //  Шапка
-    // ═════════════════════════════════════════════════════════════════
 
     private static final float HEADER_TEXT_SIZE = 11f;
 
@@ -312,7 +250,6 @@ public class NewClickGuiRenderer {
         float ty = fy + (HEADER_H - HEADER_TEXT_SIZE) / 2f + 1f;
         text(ctx, Fonts.SEMIBOLD, label, tx, ty, withAlpha(C_TEXT, (int)(255f * fade)), HEADER_TEXT_SIZE);
 
-        // Анимированное подчёркивание: вырастает от центра при смене категории
         float uT = aval("headerunderline", 1f, 12f);
         if (uT > 0.02f) {
             float uw = lw * uT;
@@ -320,10 +257,6 @@ public class NewClickGuiRenderer {
                     themeA((int)(220f * fade * uT)));
         }
     }
-
-    // ═════════════════════════════════════════════════════════════════
-    //  Тултип с описанием модуля
-    // ═════════════════════════════════════════════════════════════════
 
     private void renderTooltip(DrawContext ctx, float fx, float fy, float fade) {
         boolean show = hoveredModule != null;
@@ -360,10 +293,6 @@ public class NewClickGuiRenderer {
         return out;
     }
 
-    // ═════════════════════════════════════════════════════════════════
-    //  Скроллбар
-    // ═════════════════════════════════════════════════════════════════
-
     private void renderScrollBar(DrawContext ctx, float fx, float fy, ClickGuiState state, float fade) {
         Category cat = ClickGuiRenderer.currentCategory;
         float max = maxScroll(state, cat);
@@ -381,10 +310,6 @@ public class NewClickGuiRenderer {
                 withAlpha(C_TEXT, (int)(70f * fade * sT)));
     }
 
-    // ═════════════════════════════════════════════════════════════════
-    //  Список модулей
-    // ═════════════════════════════════════════════════════════════════
-
     private void renderModuleList(DrawContext ctx, float fx, float fy, int mx, int my,
                                   ClickGuiState state, float fade) {
         Category cat = ClickGuiRenderer.currentCategory;
@@ -393,13 +318,10 @@ public class NewClickGuiRenderer {
         float lTop  = listTop(fy);
         float lBot  = listBottom(fy);
 
-        // Плавное появление содержимого при смене категории
         float catT = aval("catfade", 1f, 12f);
 
-        // Плавный скролл: смягчаем целевое значение из state один раз за кадр
         frameScroll = aval("scroll:" + cat.name(), state.getScroll(cat), 16f);
 
-        // ── Спец-режимы: чат DARKA-0.1 и настройки ──
         if (viewMode == ViewMode.DARKA) {
             renderDarkaChat(ctx, fx, fy, mx, my, fade);
             return;
@@ -409,7 +331,6 @@ public class NewClickGuiRenderer {
             return;
         }
 
-        // Не-модульные вкладки
         if (!ClickGuiRenderer.isModuleTab(cat)) {
             ctx.enableScissor((int)cx, (int)lTop, (int)(cx + cw), (int)lBot);
             float y = lTop + CARD_LIST_TOP_PAD - frameScroll;
@@ -460,23 +381,19 @@ public class NewClickGuiRenderer {
                         withAlpha(C_THUMB, (int)(30f * fade * glowT)));
             }
 
-            // Фон карточки-заголовка (обводка снизу, чтобы заливка перекрыла внутреннюю часть)
             rect(ctx, cardX - 0.5f, y - 0.5f, CARD_W + 1f, CARD_H + 1f, CARD_R + 0.5f,
                     withAlpha(0x0DFFFFFF, (int)(255f * fade * catT)));
             rect(ctx, cardX, y, CARD_W, CARD_H, CARD_R,
                     lerpColor(withAlpha(C_CARD, (int)(255f * fade * catT)),
                               withAlpha(C_CARD_HOV, (int)(255f * fade * catT)), hovT));
 
-            // Название — сверху слева
             String name = net.minecraft.client.resource.language.I18n.translate(m.getName());
             text(ctx, Fonts.BOLD, name, cardX + 14f, y + 11f,
                     withAlpha(C_TEXT, (int)(255f * fade * catT)), 11.5f);
 
-            // Тонкая разделительная линия между названием и описанием
             rect(ctx, cardX + 12f, y + 34f, CARD_W - 24f, 1f, 0f,
                     withAlpha(C_LINE, (int)(220f * fade * catT)));
 
-            // Описание — снизу слева, ближе к нижнему краю карточки
             String desc = net.minecraft.client.resource.language.I18n.translate(m.getDescription());
             if (desc != null && !desc.isBlank()) {
                 String line = desc;
@@ -486,24 +403,19 @@ public class NewClickGuiRenderer {
                         withAlpha(C_TEXT_DIM, (int)(220f * fade * catT)), 8.5f);
             }
 
-            // Шеврон разворота — крайний правый верхний угол
             drawChevron(ctx, cardX + CARD_W - 18f, y + 15f, expT, fade * catT);
 
-            // Кольцо-импульс вокруг тогла при переключении
             if (ringT > 0.02f) {
                 float r = 8f + ringT * 16f;
                 rect(ctx, cardX + CARD_W - 56f + 12f - r / 2f, y + 12f + 10f - r / 2f, r, r, r / 2f,
                         withAlpha(C_THUMB, (int)(180f * fade * (1f - ringT))));
             }
 
-            // iOS-тогл справа сверху, левее шеврона
             drawToggle(ctx, cardX + CARD_W - 58f, y + 11f, togT, fade * catT);
 
             ms.pop();
         }
 
-        // ── Карточка настроек развёрнутого модуля: такая же, как карточка функции,
-        //    но размер строго под количество настроек ──
         if (expIdx >= 0) {
             Module em = mods.get(expIdx);
             float expFade = aval("exp:" + em.getName(), 1f, 12f);
@@ -551,10 +463,6 @@ public class NewClickGuiRenderer {
         ctx.disableScissor();
     }
 
-    // ═════════════════════════════════════════════════════════════════
-    //  Чат с DARKA-0.1
-    // ═════════════════════════════════════════════════════════════════
-
     private static final float CHAT_PAD_X    = 14f;
     private static final float CHAT_BUBBLE_R = 10f;
     private static final float CHAT_INPUT_H  = 26f;
@@ -563,11 +471,10 @@ public class NewClickGuiRenderer {
 
     private void renderDarkaChat(DrawContext ctx, float fx, float fy, int mx, int my, float fade) {
         float cx = cardX(fx);
-        float cw = (CARD_W + CARD_GAP) * GRID_COLS - CARD_GAP;  // чат на всю ширину сетки
+        float cw = (CARD_W + CARD_GAP) * GRID_COLS - CARD_GAP;
         float lTop = listTop(fy) + 4f;
         float lBot = listBottom(fy);
 
-        // Заголовок чата
         text(ctx, Fonts.BOLD, "DARKA-0.1", cx, lTop, withAlpha(C_TEXT, (int)(255f * fade)), 13f);
         float subW = Fonts.MEDIUM.getWidth("ИИ-ассистент на базе Hugging Face", 8f);
         text(ctx, Fonts.MEDIUM, "ИИ-ассистент на базе Hugging Face", cx + cw - subW,
@@ -577,14 +484,12 @@ public class NewClickGuiRenderer {
         float bodyBot = lBot - CHAT_INPUT_H - CHAT_GAP;
         float bodyH = bodyBot - bodyTop;
 
-        // Фон области сообщений
         rect(ctx, cx, bodyTop, cw, bodyH, CARD_R, withAlpha(0xFF141417, (int)(235f * fade)));
 
         ctx.enableScissor((int)cx, (int)bodyTop, (int)(cx + cw), (int)bodyBot);
 
         var history = dev.darkvisuals.client.managers.DarkaManager.getHistory();
 
-        // Сначала считаем высоту всех пузырей, чтобы выровнять снизу-вверх
         List<float[]> layouts = new ArrayList<>();
         float totalH = 0f;
         for (var msg : history) {
@@ -596,7 +501,6 @@ public class NewClickGuiRenderer {
         }
         if (dev.darkvisuals.client.managers.DarkaManager.isBusy()) totalH += 20f;
 
-        // Целевой скролл: показываем последний кусок диалога
         float maxScroll = Math.max(0f, totalH - bodyH + 8f);
         darkaScroll = aval("darkascroll", maxScroll, 14f);
         float scroll = Math.min(darkaScroll, maxScroll);
@@ -615,11 +519,10 @@ public class NewClickGuiRenderer {
 
             float bx = msg.user ? cx + cw - CHAT_PAD_X - bw : cx + CHAT_PAD_X;
 
-            // пузырь
             rect(ctx, bx, y, bw, bh, CHAT_BUBBLE_R,
                     msg.user ? withAlpha(0xFF2A2340, (int)(255f * fade))
                              : withAlpha(0xFF232328, (int)(255f * fade)));
-            // текст
+
             float ty = y + 5f;
             for (String ln : linesList) {
                 float lw = Fonts.MEDIUM.getWidth(ln, 8.5f);
@@ -631,7 +534,6 @@ public class NewClickGuiRenderer {
             y += bh + 6f;
         }
 
-        // Индикатор "печатает..."
         if (dev.darkvisuals.client.managers.DarkaManager.isBusy()) {
             float p = pulse(now(), 800L);
             String dots = ".".repeat(1 + (int)(p * 2));
@@ -641,7 +543,6 @@ public class NewClickGuiRenderer {
 
         ctx.disableScissor();
 
-        // Пустое состояние
         if (history.isEmpty()) {
             String hint = "Напиши сообщение ниже, чтобы начать";
             float hw = Fonts.MEDIUM.getWidth(hint, 8.5f);
@@ -649,7 +550,6 @@ public class NewClickGuiRenderer {
                     withAlpha(C_TEXT_DIM, (int)(160f * fade)), 8.5f);
         }
 
-        // ── Поле ввода + кнопка отправки ──
         float inY = lBot - CHAT_INPUT_H;
         boolean sendHov = hit(mx, my, cx + cw - CHAT_SEND_W, inY, CHAT_SEND_W, CHAT_INPUT_H);
         float sendT = aval("sendhov", sendHov ? 1f : 0f, 12f);
@@ -665,7 +565,7 @@ public class NewClickGuiRenderer {
             text(ctx, Fonts.MEDIUM, "Сообщение для DARKA...", cx + 10f, inY + 9f,
                     withAlpha(C_TEXT_DIM, (int)(170f * fade)), 8.5f);
         } else {
-            // прокрутка длинного ввода
+
             while (Fonts.MEDIUM.getWidth(shown, 8.5f) > cw - CHAT_SEND_W - CHAT_GAP - 24f && shown.length() > 1)
                 shown = shown.substring(1);
             float blink = aval("darkablink", (now() / 500L) % 2L == 0L ? 1f : 0f, 6f);
@@ -697,7 +597,6 @@ public class NewClickGuiRenderer {
         return darkaKeyFocused || darkaInputFocused;
     }
 
-    /** Обработка ввода текста для полей New-стиля: чат DARKA и API-ключ. */
     public boolean handleCharTyped(char c) {
         if (Character.isISOControl(c)) return darkaInputFocused || darkaKeyFocused;
         if (darkaInputFocused) {
@@ -766,10 +665,6 @@ public class NewClickGuiRenderer {
         return false;
     }
 
-    // ═════════════════════════════════════════════════════════════════
-    //  Настройки ClickGUI + DARKA-0.1
-    // ═════════════════════════════════════════════════════════════════
-
     private static final float SET_VIEW_PAD = 14f;
 
     private void renderSettingsView(DrawContext ctx, float fx, float fy, int mx, int my, float fade) {
@@ -783,12 +678,11 @@ public class NewClickGuiRenderer {
 
         float y = lTop;
 
-        // ── Раздел: Настройки ClickGUI ──
         text(ctx, Fonts.BOLD, "Настройки ClickGUI", cx, y, withAlpha(C_TEXT, (int)(255f * fade)), 10f);
         y += 20f;
 
         if (ui != null) {
-            // Звук вкл/выкл функций
+
             boolean soundOn = ui.isGuiSound();
             float soundT = aval("setguisound", soundOn ? 1f : 0f, 12f);
             float rowH = 30f;
@@ -803,18 +697,15 @@ public class NewClickGuiRenderer {
             y += rowH + 8f;
         }
 
-        // ── Раздел: Настройки DARKA-0.1 ──
         y += 6f;
         text(ctx, Fonts.BOLD, "Настройки DARKA-0.1", cx, y, withAlpha(C_TEXT, (int)(255f * fade)), 10f);
         y += 20f;
 
-        // API-ключ + кнопка "i"
         float inputW = cw - 30f - 26f;
         boolean keyFocused = darkaKeyFocused;
         drawInput(ctx, cx, y, inputW, keyFocused,
                 ui == null ? "" : ui.getDarkaApiKey(), "Вставьте API-ключ...", fade);
 
-        // круглая кнопка "i"
         float iX = cx + inputW + 6f;
         float iSize = 22f;
         boolean iHov = hit(mx, my, iX, y, iSize, iSize);
@@ -827,21 +718,15 @@ public class NewClickGuiRenderer {
         text(ctx, Fonts.BOLD, iSym, iX + iSize / 2f - iw / 2f, y + 6f,
                 withAlpha(C_TEXT, (int)(255f * fade)), 9f);
 
-        // подсказка под полем
         String hint = ui != null && ui.getDarkaApiKey().isEmpty()
                 ? "Ключ не задан — DARKA-0.1 недоступна" : "Ключ сохранён";
         text(ctx, Fonts.MEDIUM, hint, cx + 2f, y + 26f,
                 withAlpha(C_TEXT_DIM, (int)(190f * fade)), 7.5f);
 
-        // Окно инструкции Hugging Face (правее ClickGUI)
         if (hfWindowOpen) {
             renderHfWindow(ctx, fx, fy, mx, my, fade);
         }
     }
-
-    // ═════════════════════════════════════════════════════════════════
-    //  Окно инструкции Hugging Face
-    // ═════════════════════════════════════════════════════════════════
 
     private static final float HF_W = 250f;
     private static final float HF_H = 300f;
@@ -854,17 +739,14 @@ public class NewClickGuiRenderer {
         float hx = fx + FRAME_W + 12f;
         float hy = fy;
 
-        // фон + обводка
         rect(ctx, hx - 1f, hy - 1f, HF_W + 2f, HF_H + 2f, HF_R + 1f,
                 withAlpha(C_BORDER, (int)(255f * fade)));
         rect(ctx, hx, hy, HF_W, HF_H, HF_R, withAlpha(C_BG, (int)(250f * fade)));
 
-        // шапка
         rect(ctx, hx, hy, HF_W, HF_TITLE_H, HF_R, withAlpha(0xFF1E1E23, (int)(255f * fade)));
         text(ctx, Fonts.BOLD, "Hugging Face", hx + 14f, hy + 11f,
                 withAlpha(C_TEXT, (int)(255f * fade)), 10f);
 
-        // крестик
         float closeX = hx + HF_W - 24f, closeY = hy + 8f, closeS = 18f;
         boolean closeHov = hit(mx, my, closeX, closeY, closeS, closeS);
         float closeT = aval("hfclose", closeHov ? 1f : 0f, 12f);
@@ -877,13 +759,12 @@ public class NewClickGuiRenderer {
         rect(ctx, closeX + closeS / 2f - cs / 2f, closeY + closeS / 2f - 0.8f, cs, 1.6f, 0.8f,
                 withAlpha(C_TEXT, (int)(230f * fade)));
 
-        // тело с прокруткой
         float bodyTop = hy + HF_TITLE_H + 6f;
         float bodyBot = hy + HF_H - 8f;
         float bodyH = bodyBot - bodyTop;
 
         String[] blocks = HF_INSTRUCTIONS;
-        // считаем суммарную высоту
+
         List<String[]> wrapped = new ArrayList<>();
         float totalH = 0f;
         for (String blk : blocks) {
@@ -893,7 +774,7 @@ public class NewClickGuiRenderer {
         }
         float maxScroll = Math.max(0f, totalH - bodyH + 4f);
         hfScroll = Math.min(hfScroll, maxScroll);
-        float scroll = aval("hfscroll", maxScroll, 1f); // мягко доводим до низа
+        float scroll = aval("hfscroll", maxScroll, 1f);
 
         ctx.enableScissor((int)hx, (int)bodyTop, (int)(hx + HF_W), (int)bodyBot);
         float y = bodyTop - scroll;
@@ -906,7 +787,6 @@ public class NewClickGuiRenderer {
         }
         ctx.disableScissor();
 
-        // тонкий скроллбар
         if (maxScroll > 0.5f) {
             float thumbH = Math.max(10f, bodyH * bodyH / totalH);
             float thumbY = bodyTop + (bodyH - thumbH) * (hfScroll / maxScroll);
@@ -924,8 +804,6 @@ public class NewClickGuiRenderer {
         "4. Скопируйте и сохраните токен\nСразу же после создания скопируйте полученный токен. По соображениям безопасности он больше не будет отображаться на сайте."
     };
 
-    // ─── Иконка-«ползунки» (три горизонтальные черты с кружочками) ───
-
     private void drawSliderIcon(DrawContext ctx, float x, float y, float fade) {
         int c = withAlpha(C_TEXT, (int)(200f * fade));
         float lh = 1.5f;
@@ -937,17 +815,14 @@ public class NewClickGuiRenderer {
         rect(ctx, x + 5.5f, y + 7f, 3.5f, 3.5f, 1f, c);
     }
 
-    // ─── iOS-style тогл ───────────────────────────────────────────────
-
     private void drawToggle(DrawContext ctx, float x, float y, float togT, float fade) {
         float tw = 36f, th = 20f, tr = 10f;
-        // Трек всегда тёмный: #18181c выкл → #212126 вкл (как на референсе)
+
         int track = lerpColor(
                 withAlpha(0xFF18181C, (int)(255f * fade)),
                 withAlpha(0xFF212126, (int)(255f * fade)), togT);
         rect(ctx, x, y, tw, th, tr, track);
 
-        // Свечение бегунка при вкл (box-shadow 0 0 10px rgba(139,92,246,0.6))
         if (togT > 0.05f) {
             float g = 5f * togT;
             float tcx = x + 3f + (tw - th) * togT + (th - 6f) / 2f;
@@ -956,7 +831,6 @@ public class NewClickGuiRenderer {
                     withAlpha(C_THUMB, (int)(90f * fade * togT)));
         }
 
-        // Бегунок: #4a4a52 выкл → #8b5cf6 вкл, с пружинящим овершутом
         float knobPop = aval("knobpop:" + x + ":" + y, togT, 9f);
         float overshoot = 1f + 0.22f * (float) Math.sin(Math.min(1f, Math.max(0f, knobPop)) * Math.PI) * togT;
         float knobSize = (th - 6f) * overshoot;
@@ -967,7 +841,6 @@ public class NewClickGuiRenderer {
                           withAlpha(C_THUMB,   (int)(255f * fade)), togT));
     }
 
-    /** V-образная стрелка-шеврон, разворачивающаяся на 180° при экспандинге карточки. */
     private void drawChevron(DrawContext ctx, float cx, float cy, float expT, float fade) {
         int col = withAlpha(C_TEXT_DIM, (int)(220f * fade));
         var ms = ctx.getMatrices();
@@ -988,7 +861,6 @@ public class NewClickGuiRenderer {
         ms.pop();
     }
 
-    /** Простая векторная иконка-«искра» (4-лучевая звезда) для левой боковой кнопки навбара. */
     private void drawSparkleIcon(DrawContext ctx, float cx, float cy, float r, int color) {
         var ms = ctx.getMatrices();
         ms.push();
@@ -999,7 +871,6 @@ public class NewClickGuiRenderer {
         ms.pop();
     }
 
-    /** Иконка-лупа для строки поиска: кольцо + ручка. */
     private void drawSearchIcon(DrawContext ctx, float cx, float cy, float r, int color) {
         if (((color >>> 24) & 0xFF) == 0) return;
         float lw = 1.7f;
@@ -1015,7 +886,6 @@ public class NewClickGuiRenderer {
         ms.pop();
     }
 
-    /** Простая векторная иконка-«сетка» (2×2 квадрата) для правой боковой кнопки навбара. */
     private void drawGridIcon(DrawContext ctx, float cx, float cy, float size, int color) {        float cell = size * 0.42f, gap = size * 0.16f;
         float x0 = cx - cell - gap / 2f, y0 = cy - cell - gap / 2f;
         rect(ctx, x0, y0, cell, cell, 1.5f, color);
@@ -1054,7 +924,7 @@ public class NewClickGuiRenderer {
                     withAlpha(C_TEXT, (int)(255f * fade)), 7.5f);
             float p  = clamp01((n.getValue() - n.getMin()) / (n.getMax() - n.getMin()));
             float sp = aval("set:" + System.identityHashCode(s), p, 16f);
-            // пульсация заполнения слайдера при наведении
+
             float slP = aval("sliderpulse:" + System.identityHashCode(s),
                     hit(lastMouseX, lastMouseY, sx, y + 11f, sw, 9f) ? pulse(now(), 700L) : 0f, 8f);
             rect(ctx, sx, y + 13f, sw, 3f, 1.5f, withAlpha(0xFF2A2A2A, (int)(255f * fade)));
@@ -1067,7 +937,7 @@ public class NewClickGuiRenderer {
             String bt = binding ? "..." : keyName(bs.getValue().getKey());
             float bw = Math.max(28f, Fonts.MEDIUM.getWidth(bt, 7f) + 10f);
             text(ctx, Fonts.MEDIUM, name, sx, y + 2f, withAlpha(C_TEXT, (int)(255f * fade)), 7.5f);
-            // вспышка на кнопке бинда, пока ждём нажатия
+
             float bP = aval("bindpulse:" + System.identityHashCode(s),
                     binding ? pulse(now(), 500L) : 0f, 8f);
             rect(ctx, sx + sw - bw, y, bw, 12f, SET_R,
@@ -1095,7 +965,7 @@ public class NewClickGuiRenderer {
             String val = ss.getValue() == null ? "" : ss.getValue();
             String shown = val;
             while (Fonts.MEDIUM.getWidth(shown, 7f) > sw - 14f && shown.length() > 1) shown = shown.substring(1);
-            // плавное мигание каретки
+
             float blink = aval("strblink", (now() / 500L) % 2L == 0L ? 1f : 0f, 6f);
             text(ctx, Fonts.MEDIUM, shown + (editing && blink > 0.5f ? "|" : ""), sx + 4f, y + 13f,
                     withAlpha(C_TEXT, (int)(255f * fade)), 7f);
@@ -1120,10 +990,6 @@ public class NewClickGuiRenderer {
         return 16f;
     }
 
-    // ═════════════════════════════════════════════════════════════════
-    //  Навбар
-    // ═════════════════════════════════════════════════════════════════
-
     private static float navRowW()  { return NAV_SLOT_W * NAV_COUNT; }
     private static float navPillW() { return navRowW() + NAV_PAD * 2f; }
 
@@ -1131,11 +997,10 @@ public class NewClickGuiRenderer {
         float pillW = navPillW();
         float pillH = navPillH();
         float pillX = fx + (FRAME_W - pillW) / 2f;
-        // плашка плавно выезжает снизу при открытии
+
         float railT = aval("navrail", 1f, 10f);
         float pillY = navPillY(fy) + (1f - railT) * 10f;
 
-        // ── Боковые квадратные кнопки (слева искра, справа сетка) ───────
         float sideW = pillH;
         float sparkleX = pillX - NAV_SIDE_GAP - sideW;
         float gridX    = pillX + pillW + NAV_SIDE_GAP;
@@ -1155,15 +1020,13 @@ public class NewClickGuiRenderer {
         drawGridIcon(ctx, gridX + sideW / 2f, pillY + pillH / 2f, 9f,
                 withAlpha(C_TEXT, (int)(255f * fade)));
 
-        // единая тёмная плашка-подложка со скруглёнными углами
         rect(ctx, pillX, pillY, pillW, pillH, NAV_PILL_R, withAlpha(C_NAV, (int)(235f * fade)));
 
-        // разделители между боковыми кнопками и пилюлей разделов
         rect(ctx, pillX - NAV_SIDE_GAP / 2f - 0.5f, pillY + NAV_PAD + 2f, 1f, NAV_H - 4f, 0.5f,
                 withAlpha(C_DIV, (int)(220f * fade)));
         rect(ctx, pillX + pillW + NAV_SIDE_GAP / 2f - 0.5f, pillY + NAV_PAD + 2f, 1f, NAV_H - 4f, 0.5f,
                 withAlpha(C_DIV, (int)(220f * fade)));
-        // разделители между самими разделами
+
         for (int i = 1; i < NAV_COUNT; i++) {
             float dx = pillX + NAV_PAD + i * NAV_SLOT_W;
             rect(ctx, dx - 0.5f, pillY + NAV_PAD + 3f, 1f, NAV_H - 6f, 0.5f,
@@ -1181,32 +1044,30 @@ public class NewClickGuiRenderer {
             float hovT = aval("navhov:" + c.name(), hov ? 1f : 0f, 10f);
             float pop  = aval("navpop:" + c.name(), active ? 1f : 0f, 8f);
             float overshoot = 1f + 0.18f * (float) Math.sin(Math.min(1f, Math.max(0f, pop)) * Math.PI) * selT;
-            // «дышащее» свечение активной вкладки
+
             float glw = aval("navglow:" + c.name(), active ? pulse(now(), 900L) : 0f, 6f);
-            // маленький бейдж-точка сверху активной вкладки
+
             float badgeT = aval("navbadge:" + c.name(), active ? 1f : 0f, 12f);
 
             float slotMin = Math.min(NAV_SLOT_W - 4f, NAV_H - 4f);
 
-            // свечение позади активной вкладки (box-shadow 0 0 12px rgba(124,58,237,0.5))
             if (glw > 0.02f) {
                 float g = 3f * glw;
                 rect(ctx, ix + 2f - g, slotY + 2f - g, NAV_SLOT_W - 4f + g * 2f, NAV_H - 4f + g * 2f,
                         NAV_ICON_R + g, themeA((int)(110f * fade * glw)));
             }
-            // фиолетовый squircle активной вкладки (морф круг → скруглённый квадрат)
+
             if (selT > 0.02f) {
                 float r = lerpFloat(slotMin / 2f, NAV_ICON_R, selT);
                 rect(ctx, ix + 2f, slotY + 2f, NAV_SLOT_W - 4f, NAV_H - 4f, r,
                         withAlpha(theme(), (int)(255f * fade * selT)));
             }
-            // лёгкая подсветка при наведении на неактивную иконку
+
             if (hovT > 0.02f && selT < 0.5f) {
                 rect(ctx, ix + 2f, slotY + 2f, NAV_SLOT_W - 4f, NAV_H - 4f, NAV_ICON_R,
                         withAlpha(C_CARD_HOV, (int)(160f * fade * hovT)));
             }
 
-            // бейдж-точка
             if (badgeT > 0.02f) {
                 rect(ctx, ix + NAV_SLOT_W / 2f - 2f, slotY - 1f - (1f - badgeT) * 4f, 4f, 4f, 2f,
                         withAlpha(C_TEXT, (int)(255f * fade * badgeT)));
@@ -1214,7 +1075,7 @@ public class NewClickGuiRenderer {
 
             Identifier icon = navIcon(i);
             float isz = NAV_ICON * overshoot;
-            // неактивные иконки — серые, активная — белая
+
             int tint = active ? withAlpha(C_TEXT, (int)(255f * fade))
                              : lerpColor(withAlpha(C_ICON_DIM, (int)(230f * fade)),
                                          withAlpha(C_TEXT, (int)(255f * fade)), hovT);
@@ -1225,10 +1086,6 @@ public class NewClickGuiRenderer {
             ix += NAV_SLOT_W;
         }
     }
-
-    // ═════════════════════════════════════════════════════════════════
-    //  Строка поиска
-    // ═════════════════════════════════════════════════════════════════
 
     private void renderSearchBar(DrawContext ctx, float fx, float fy, float fade) {
         float barX = fx + (FRAME_W - SEARCH_W) / 2f;
@@ -1246,7 +1103,7 @@ public class NewClickGuiRenderer {
 
         String query  = ClickGuiRenderer.searchBuffer.toString();
         String display = query.isEmpty() ? "Поиск" : query;
-        // «дышащий» плейсхолдер
+
         float phP = query.isEmpty() ? aval("searchpulse", pulse(now(), 1200L), 5f) : 0f;
         int tcol = query.isEmpty()
                 ? withAlpha(C_TEXT_DIM, (int)((170f + 60f * phP) * fade))
@@ -1258,10 +1115,6 @@ public class NewClickGuiRenderer {
                 withAlpha(C_TEXT_DIM, (int)(200f * fade)));
     }
 
-    // ═════════════════════════════════════════════════════════════════
-    //  Не-модульные вкладки
-    // ═════════════════════════════════════════════════════════════════
-
     private void renderThemes(DrawContext ctx, float cx, float cw, float y, float fade) {
         boolean addHov = hit(lastMouseX, lastMouseY, cx, y, cw, 24f);
         float addT = aval("customtheme:hov", addHov ? 1f : 0f, 12f);
@@ -1269,7 +1122,6 @@ public class NewClickGuiRenderer {
         text(ctx, Fonts.BOLD, "+ Своя тема", cx + 10f, y + 8f, withAlpha(C_TEXT, (int)(255f * fade)), 8f);
         y += 24f + CARD_GAP;
 
-        // карточки тем — по две в ряд
         float thW = CARD_W;
         float thH = CARD_H * 0.75f;
         var themes = ClickGuiRenderer.getThemes();
@@ -1282,7 +1134,7 @@ public class NewClickGuiRenderer {
                     .getCurrentTheme().getName().equals(t.getName());
             boolean hov = hit(lastMouseX, lastMouseY, tx, ty, thW, thH);
             float selT = aval("thsel:" + t.getName(), sel ? 1f : 0f, 12f);
-            // пульсация выбранной темы
+
             float thP = aval("thpulse:" + t.getName(), sel ? pulse(now(), 800L) : 0f, 6f);
             float hovT = aval("thhov:" + t.getName(), hov ? 1f : 0f, 12f);
             int bg = lerpColor(lerpColor(withAlpha(C_CARD, (int)(255f * fade)), withAlpha(C_CARD_HOV, (int)(255f * fade)), hovT),
@@ -1379,7 +1231,7 @@ public class NewClickGuiRenderer {
     }
 
     private void renderConfigs(DrawContext ctx, float cx, float cw, float y, float fade) {
-        // Контент вкладки — по центру фрейма
+
         float centerX = cx + cw / 2f;
 
         float inputW = Math.min(cw - BTN_W - 6f, 240f);
@@ -1421,8 +1273,6 @@ public class NewClickGuiRenderer {
         }
     }
 
-    // ─── Мини-инпут и мини-кнопка для Friends/Markers/Config ────────────
-
     private void drawInput(DrawContext ctx, float x, float y, float w, boolean focused, String value, String placeholder, float fade) {
         float focusT = aval("inputfocus:" + x + ":" + y, focused ? 1f : 0f, 14f);
         if (focusT > 0.02f) {
@@ -1443,7 +1293,7 @@ public class NewClickGuiRenderer {
     private void drawButton(DrawContext ctx, float x, float y, float w, String label, String animKey, float fade) {
         boolean hov = hit(lastMouseX, lastMouseY, x, y, w, INPUT_H);
         float hovT = aval("btn:" + animKey, hov ? 1f : 0f, 14f);
-        // блеск, проезжающий по кнопке при наведении
+
         float shine = aval("btnshine:" + animKey, hov ? pulse(now(), 900L) : 0f, 6f);
         rect(ctx, x, y, w, INPUT_H, SET_R, lerpColor(themeA((int)(190f * fade)), withAlpha(theme(), (int)(255f * fade)), hovT));
         if (shine > 0.02f) {
@@ -1454,7 +1304,6 @@ public class NewClickGuiRenderer {
         text(ctx, Fonts.BOLD, label, x + w / 2f - lw / 2f, y + 7f, withAlpha(C_TEXT, (int)(255f * fade)), 7.5f);
     }
 
-    /** Снимает фокус со всех текстовых полей New-стиля (кроме поиска, который управляется отдельно). */
     private void unfocusAllInputs() {
         ClickGuiRenderer.friendInputFocused = false;
         ClickGuiRenderer.markerFocusedField = 0;
@@ -1462,19 +1311,13 @@ public class NewClickGuiRenderer {
         ClickGuiRenderer.editingStringSetting = null;
     }
 
-    /** Сбросить «одноразовые» анимации появления при смене категории. */
     private void resetEntryAnimations() {
         anims.remove("catfade");
         anims.remove("headerunderline");
         anims.keySet().removeIf(k -> k.startsWith("rowin:"));
     }
 
-    // Последняя известная позиция курсора — нужна рендеру не-модульных вкладок
     private int lastMouseX, lastMouseY;
-
-    // ═════════════════════════════════════════════════════════════════
-    //  Ввод: клики
-    // ═════════════════════════════════════════════════════════════════
 
     public boolean mouseClicked(double mx, double my, int button, Window window, ClickGuiState state) {
         float fx = frameX(window), fy = frameY(window);
@@ -1488,18 +1331,15 @@ public class NewClickGuiRenderer {
         }
         ClickGuiRenderer.searchInputFocused = false;
 
-        // Окно инструкции Hugging Face (перекрывает всё, клик по крестику или внутри)
         if (hfWindowOpen && handleHfWindowClick(mx, my, fx, fy)) return true;
 
         if (!hit(mx, my, fx, fy, FRAME_W, FRAME_H)) { unfocusAllInputs(); return false; }
 
-        // ── Навбар ──────────────────────────────────────────────────
         float pillW = navPillW();
         float pillH = navPillH();
         float pillX = fx + (FRAME_W - pillW) / 2f;
         float pillY = navPillY(fy);
 
-        // Боковые кнопки: слева — чат DARKA-0.1, справа — настройки
         float sideW = pillH;
         float sparkleX = pillX - NAV_SIDE_GAP - sideW;
         float gridX    = pillX + pillW + NAV_SIDE_GAP;
@@ -1546,18 +1386,15 @@ public class NewClickGuiRenderer {
             return true;
         }
 
-        // ── Клик по списку модулей ───────────────────────────────────
         Category cat = ClickGuiRenderer.currentCategory;
         float cx   = cardX(fx);
         float cw   = CARD_W;
         float lTop = listTop(fy);
         float lBot = listBottom(fy);
 
-        // ── Спец-режимы обрабатываются отдельно ──
         if (viewMode == ViewMode.DARKA)  return handleDarkaClick(mx, my, fx, fy);
         if (viewMode == ViewMode.SETTINGS) return handleSettingsClick(mx, my, fx, fy);
 
-        // Окно инструкции Hugging Face (перекрывает всё, клик по крестику)
         if (hfWindowOpen && handleHfWindowClick(mx, my, fx, fy)) return true;
 
         if (hit(mx, my, cx, lTop, (CARD_W + CARD_GAP) * GRID_COLS - CARD_GAP, lBot - lTop)) {
@@ -1567,7 +1404,6 @@ public class NewClickGuiRenderer {
             float scroll = frameScroll;
             List<Module> mods = ClickGuiRenderer.visibleModules(state);
 
-            // ── Сначала проверяем клик по панели настроек развёрнутого модуля ──
             int expIdx = indexOfExpanded(mods);
             if (expIdx >= 0) {
                 Module em = mods.get(expIdx);
@@ -1588,7 +1424,7 @@ public class NewClickGuiRenderer {
                         }
                         sy += sh + SET_GAP;
                     }
-                    return true; // клик внутри панели, но мимо строк — просто поглощаем
+                    return true;
                 }
             }
 
@@ -1602,7 +1438,6 @@ public class NewClickGuiRenderer {
 
                 cardPressTimes.put(m.getName(), now());
 
-                // Основной тогл модуля (правый верхний угол, левее шеврона)
                 if (hit(mx, my, cardX + CARD_W - 58f, y + 11f, 36f, 20f)) {
                     m.setToggled(!m.isToggled());
                     playToggleSound(m.isToggled());
@@ -1610,13 +1445,11 @@ public class NewClickGuiRenderer {
                     return true;
                 }
 
-                // Шеврон — разворачивает/сворачивает панель настроек прямо под карточкой
                 if (hit(mx, my, cardX + CARD_W - 24f, y + 4f, 20f, 22f)) {
                     expandedModule = m.getName().equals(expandedModule) ? null : m.getName();
                     return true;
                 }
 
-                // Остальная часть карточки — тоже разворачивает панель настроек
                 expandedModule = m.getName().equals(expandedModule) ? null : m.getName();
                 return true;
             }
@@ -1625,10 +1458,6 @@ public class NewClickGuiRenderer {
 
         return true;
     }
-
-    // ═════════════════════════════════════════════════════════════════
-    //  Действия: Friends / Markers / Config
-    // ═════════════════════════════════════════════════════════════════
 
     private void addCurrentFriend() {
         String name = ClickGuiRenderer.friendNameBuffer.toString().trim();
@@ -1825,22 +1654,17 @@ public class NewClickGuiRenderer {
         return true;
     }
 
-    // ═════════════════════════════════════════════════════════════════
-    //  Клики: чат DARKA-0.1
-    // ═════════════════════════════════════════════════════════════════
-
     private boolean handleDarkaClick(double mx, double my, float fx, float fy) {
         float cx = cardX(fx);
         float cw = (CARD_W + CARD_GAP) * GRID_COLS - CARD_GAP;
         float lBot = listBottom(fy);
         float inY = lBot - CHAT_INPUT_H;
 
-        // Кнопка отправки
         if (hit(mx, my, cx + cw - CHAT_SEND_W, inY, CHAT_SEND_W, CHAT_INPUT_H)) {
             sendDarkaMessage();
             return true;
         }
-        // Поле ввода
+
         if (hit(mx, my, cx, inY, cw - CHAT_SEND_W - CHAT_GAP, CHAT_INPUT_H)) {
             darkaInputFocused = true;
             unfocusAllInputs();
@@ -1850,10 +1674,6 @@ public class NewClickGuiRenderer {
         return true;
     }
 
-    // ═════════════════════════════════════════════════════════════════
-    //  Клики: настройки ClickGUI + DARKA-0.1
-    // ═════════════════════════════════════════════════════════════════
-
     private boolean handleSettingsClick(double mx, double my, float fx, float fy) {
         var ui = dev.darkvisuals.darkvisuals.getInstance().getModuleManager()
                 .getModule(dev.darkvisuals.modules.impl.render.UI.class);
@@ -1862,19 +1682,16 @@ public class NewClickGuiRenderer {
         float cw = (CARD_W + CARD_GAP) * GRID_COLS - CARD_GAP;
         float lTop = listTop(fy) + 4f;
 
-        // Окно инструкции перекрывает — обрабатываем первым
         if (hfWindowOpen && handleHfWindowClick(mx, my, fx, fy)) return true;
 
-        // ── Строка "Звук при включении функции" ──
         float soundRowY = lTop + 20f;
         if (ui != null && hit(mx, my, cx, soundRowY, cw, 30f)) {
-            // клик по тоглу — переключаем, по строке — тоже
+
             ui.setGuiSoundInverted();
             playToggleSound(ui.isGuiSound());
             return true;
         }
 
-        // ── API-ключ + кнопка "i" ──
         float keyRowY = soundRowY + 30f + 8f + 6f + 20f;
         float inputW = cw - 30f - 26f;
         if (hit(mx, my, cx, keyRowY, inputW, INPUT_H)) {
@@ -1882,7 +1699,7 @@ public class NewClickGuiRenderer {
             unfocusAllInputs();
             return true;
         }
-        // круглая кнопка "i"
+
         float iX = cx + inputW + 6f;
         if (hit(mx, my, iX, keyRowY, 22f, 22f)) {
             hfWindowOpen = true;
@@ -1894,27 +1711,18 @@ public class NewClickGuiRenderer {
         return true;
     }
 
-    // ═════════════════════════════════════════════════════════════════
-    //  Клики: окно инструкции Hugging Face
-    // ═════════════════════════════════════════════════════════════════
-
     private boolean handleHfWindowClick(double mx, double my, float fx, float fy) {
         float hx = fx + FRAME_W + 12f;
         float hy = fy;
         if (!hit(mx, my, hx, hy, HF_W, HF_H)) return false;
 
-        // крестик
         float closeX = hx + HF_W - 24f, closeY = hy + 8f;
         if (hit(mx, my, closeX, closeY, 18f, 18f)) {
             hfWindowOpen = false;
             return true;
         }
-        return true; // клик внутри окна — просто поглощаем
+        return true;
     }
-
-    // ═════════════════════════════════════════════════════════════════
-    //  Скролл
-    // ═════════════════════════════════════════════════════════════════
 
     public boolean scroll(double mx, double my, double amount, Window window, ClickGuiState state) {
         float fx = frameX(window), fy = frameY(window);
@@ -1949,7 +1757,7 @@ public class NewClickGuiRenderer {
             List<Module> mods = ClickGuiRenderer.visibleModules(state);
             int rows = (mods.size() + GRID_COLS - 1) / GRID_COLS;
             content = rows * gridRowH();
-            // Если развёрнута карточка в последней строке — панель тоглов добавляет высоту сетке
+
             int expIdx = indexOfExpanded(mods);
             if (expIdx >= 0 && expIdx / GRID_COLS == rows - 1) {
                 content += EXPAND_GAP + expandPanelContentH(mods.get(expIdx));
@@ -1958,17 +1766,12 @@ public class NewClickGuiRenderer {
         return Math.max(0f, content - visible);
     }
 
-    // ═════════════════════════════════════════════════════════════════
-    //  Утилиты
-    // ═════════════════════════════════════════════════════════════════
-
     private float aval(String key, float target, float speed) {
         SmoothAnimation a = anims.computeIfAbsent(key, k -> new SmoothAnimation(0f, speed));
         a.setTarget(target);
         return a.update();
     }
 
-    /** New-стиль всегда использует фиксированный фиолетовый акцент, а не пользовательскую тему. */
     static int theme() {
         return C_ACCENT;
     }
@@ -2049,8 +1852,6 @@ public class NewClickGuiRenderer {
         s.setValue(Math.max(s.getMin(), Math.min(s.getMax(), val)));
     }
 
-    // ─── Низкоуровневый рендеринг ─────────────────────────────────────
-
     private void rect(DrawContext ctx, float x, float y, float w, float h, float r, int color) {
         if (((color >>> 24) & 0xFF) == 0 || w <= 0 || h <= 0) return;
         Render2D.drawRoundedRect(ctx.getMatrices(), x, y, w, h,
@@ -2068,7 +1869,6 @@ public class NewClickGuiRenderer {
         ms.pop();
     }
 
-    /** Рисует PNG-иконку (те же текстуры, что использует ClickGuiRenderer) с тинтом. */
     private void tex(DrawContext ctx, Identifier id, float x, float y, float size, int tint) {
         RenderSystem.setShaderColor(((tint >> 16) & 0xFF) / 255f, ((tint >> 8) & 0xFF) / 255f,
                 (tint & 0xFF) / 255f, ((tint >>> 24) & 0xFF) / 255f);

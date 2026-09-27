@@ -10,11 +10,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-/**
- * В режиме стройки:
- *  — ESC (меню игры) сохраняет дом и выходит из пространства стройки;
- *  — остальные экраны (инвентарь, чат и т.д.) не открываются, чтобы не слать пакеты.
- */
 @Mixin(MinecraftClient.class)
 public abstract class BuildSpaceScreenMixin {
 
@@ -24,7 +19,7 @@ public abstract class BuildSpaceScreenMixin {
         if (!buildSpace.isActive()) return;
 
         if (screen instanceof GameMenuScreen) {
-            // ESC — сохранить дом и выйти
+
             ci.cancel();
             buildSpace.exit(true);
         } else if (screen != null && !(screen instanceof StructureEditorScreen)) {

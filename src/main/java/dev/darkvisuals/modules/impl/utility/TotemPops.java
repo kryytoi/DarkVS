@@ -13,9 +13,6 @@ import net.minecraft.client.util.math.MatrixStack;
 
 import java.awt.*;
 
-/**
- * TotemPops — счётчик сломанных тотемов за текущую жизнь.
- */
 public class TotemPops extends Module {
 
     private final NumberSetting x = new NumberSetting("X", 60f, 0f, 3840f, 1f);

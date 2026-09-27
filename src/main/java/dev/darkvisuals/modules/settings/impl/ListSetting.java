@@ -18,13 +18,11 @@ public class ListSetting extends Setting<List<BooleanSetting>> {
 		super(name, Arrays.asList(values), visible);
 	}
 
-	 
 	public ListSetting(String name, boolean singleSelect, BooleanSetting... values) {
 		super(name, Arrays.asList(values));
 		this.singleSelect = singleSelect;
 	}
 
-	 
 	public ListSetting(String name, Supplier<Boolean> visible, boolean singleSelect, BooleanSetting... values) {
 		super(name, Arrays.asList(values), visible);
 		this.singleSelect = singleSelect;

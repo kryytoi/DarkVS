@@ -19,7 +19,6 @@ public class ClickGuiInputHandler {
 
     private ClickGuiRenderer r() { return ClickGuiRenderer.getInstance(); }
 
-    /** New стиль включается настройкой GUI Style в модуле UI. */
     private boolean isNewStyle() {
         var ui = dev.darkvisuals.darkvisuals.getInstance().getModuleManager()
                 .getModule(dev.darkvisuals.modules.impl.render.UI.class);
@@ -28,9 +27,6 @@ public class ClickGuiInputHandler {
 
     private NewClickGuiRenderer newR() { return NewClickGuiRenderer.getInstance(); }
 
-     
-     
-     
     public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
         Window window = MinecraftClient.getInstance().getWindow();
         if (isNewStyle()) return newR().scroll(mouseX, mouseY, amount, window, state);
@@ -54,15 +50,11 @@ public class ClickGuiInputHandler {
         return Math.max(0, content - contentVisibleH());
     }
 
-     
-     
-     
     public boolean mouseClicked(double mouseX, double mouseY, int button, Window window) {
         if (isNewStyle()) return newR().mouseClicked(mouseX, mouseY, button, window, state);
 
         float px = panelX(window), py = panelY(window);
 
-         
         if (hit(mouseX, mouseY, SEARCH_X, SEARCH_Y, SEARCH_W, SEARCH_H)) {
             searchInputFocused = true;
             unfocusAllExcept(1);
@@ -70,7 +62,6 @@ public class ClickGuiInputHandler {
         }
         searchInputFocused = false;
 
-         
         for (int i = 0; i < SIDEBAR_CATS.length; i++) {
             if (hit(mouseX, mouseY, pillX(px), pillY(py, i), PILL_W, PILL_H)) {
                 Category c = SIDEBAR_CATS[i];
@@ -104,7 +95,6 @@ public class ClickGuiInputHandler {
         return true;
     }
 
-      
     private void unfocusAllExcept(int keep) {
         if (keep != 1) searchInputFocused = false;
         if (keep != 2) friendInputFocused = false;
@@ -288,9 +278,6 @@ public class ClickGuiInputHandler {
         return true;
     }
 
-     
-     
-     
     public boolean mouseDragged(double mx, double my, int b) {
         if (draggingSlider != null) { applySlider(draggingSlider, mx); return true; }
         return false;
@@ -305,9 +292,6 @@ public class ClickGuiInputHandler {
 
     public boolean mouseReleased(int b) { draggingSlider = null; return false; }
 
-     
-     
-     
     public static String getClipboard() {
         try {
             var client = MinecraftClient.getInstance();
@@ -423,9 +407,6 @@ public class ClickGuiInputHandler {
         return false;
     }
 
-     
-     
-     
     private void addCurrentFriend() {
         String name = friendNameBuffer.toString().trim();
         if (name.isEmpty()) { setFriendStatus("Введите ник игрока"); return; }

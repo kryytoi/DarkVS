@@ -5,9 +5,8 @@ import net.minecraft.client.MinecraftClient;
  public final class PerformanceManager {
 
     private boolean globalThrottleEnabled = true;
-    private int targetFps = 1000;  
+    private int targetFps = 1000;
 
-     
     private int maxCollectionsPerPass = 4096;
 
     public boolean isGlobalThrottleEnabled() {
@@ -46,5 +45,4 @@ import net.minecraft.client.MinecraftClient;
         return 6;
     }
 }
-
 

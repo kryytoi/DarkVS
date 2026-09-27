@@ -23,9 +23,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-/**
- * SpiralAura — двойная светящаяся спираль, обвивающая игрока.
- */
 public class SpiralAura extends Module {
 
     private final NumberSetting turns = new NumberSetting("Витков", 3f, 1f, 8f, 0.5f);

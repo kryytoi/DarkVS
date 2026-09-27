@@ -13,12 +13,11 @@ import dev.darkvisuals.darkvisuals;
     public static Font GEISTMONO;
 
     private static volatile boolean loaded = false;
-      
+
     private static volatile boolean loggedError = false;
 
     private Fonts() {}
 
-      
     public static boolean isLoaded() {
         return loaded;
     }
@@ -33,9 +32,7 @@ import dev.darkvisuals.darkvisuals;
         if (loaded) return true;
 
         try {
-             
-             
-             
+
             Font bold      = new Font(MsdfFont.builder().atlas("sf_bold").data("sf_bold").build());
             Font medium    = new Font(MsdfFont.builder().atlas("sf_medium").data("sf_medium").build());
             Font regular   = new Font(MsdfFont.builder().atlas("sf_regular").data("sf_regular").build());
@@ -54,11 +51,9 @@ import dev.darkvisuals.darkvisuals;
             darkvisuals.LOGGER.info("[DarkVisuals] Fonts loaded successfully.");
             return true;
         } catch (Throwable t) {
-             
-             
+
             if (!loggedError) {
-                 
-                 
+
                 loggedError = true;
                 darkvisuals.LOGGER.error("[DarkVisuals] Не удалось собрать шрифты (реальная причина ниже):", t);
             } else {

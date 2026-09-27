@@ -27,9 +27,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
-/**
- * FallImpact — пыльное кольцо и облачка пыли при жёстком приземлении.
- */
 public class FallImpact extends Module {
 
     private static final long RING_TTL_MS = 600L;
@@ -114,7 +111,7 @@ public class FallImpact extends Module {
             }
             puff.prevPos = puff.pos;
             puff.pos = puff.pos.add(puff.velocity);
-            // пыль замедляется и оседает
+
             puff.velocity = puff.velocity.multiply(0.86).add(0.0, -0.012, 0.0);
         }
 
@@ -122,7 +119,7 @@ public class FallImpact extends Module {
         if (!onGround) {
             pendingFall = mc.player.fallDistance;
         } else if (!wasOnGround) {
-            // только что приземлились
+
             if (pendingFall >= minFall.getValue()) {
                 Vec3d pos = mc.player.getPos();
                 rings.add(new ImpactRing(pos));
@@ -163,7 +160,6 @@ public class FallImpact extends Module {
         RenderSystem.disableCull();
         RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR);
 
-        // расширяющиеся кольца на земле
         for (ImpactRing ring : rings) {
             float t = (now - ring.birth) / (float) RING_TTL_MS;
             float grow = (float) dev.darkvisuals.client.util.animations.Easing.EASE_OUT_CIRC.apply(t);
@@ -192,7 +188,6 @@ public class FallImpact extends Module {
             matrices.pop();
         }
 
-        // облачка пыли
         for (DustPuff puff : puffs) {
             float lifeT = (now - puff.birth) / 900f;
             float fadeIn = MathHelper.clamp(lifeT / 0.15f, 0f, 1f);

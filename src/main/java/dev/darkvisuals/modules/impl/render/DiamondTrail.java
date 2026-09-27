@@ -23,9 +23,6 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Random;
 
-/**
- * DiamondTrail — дорожка из вращающихся алмазов за игроком.
- */
 public class DiamondTrail extends Module {
 
     private final NumberSetting density = new NumberSetting("Плотность", 10f, 2f, 30f, 2f);
@@ -113,7 +110,7 @@ public class DiamondTrail extends Module {
             Matrix4f m = matrices.peek().getPositionMatrix();
             BufferBuilder buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
             int alpha = (int) (230 * fade);
-            // ромб из 3 квадов: верхняя половина, нижняя половина и блик
+
             buffer.vertex(m, 0, -sz, 0).color(100, 220, 255, alpha);
             buffer.vertex(m, -sz * 0.5f, 0, 0).color(100, 220, 255, alpha);
             buffer.vertex(m, 0, sz, 0).color(100, 220, 255, alpha);

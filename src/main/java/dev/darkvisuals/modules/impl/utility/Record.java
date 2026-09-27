@@ -14,7 +14,6 @@ import meteordevelopment.orbit.EventHandler;
 import net.minecraft.client.gui.DrawContext;
 import org.lwjgl.glfw.GLFW;
 
-
 public class Record extends Module {
 
     private final RecordManager recordManager = new RecordManager();
@@ -23,7 +22,6 @@ public class Record extends Module {
     private final BindSetting pauseResumeBind = new BindSetting("Пауза / Продолжить", new Bind(-1, false));
     private final BindSetting stopBind = new BindSetting("Завершить запись", new Bind(-1, false));
 
-     
     private boolean startLatch, pauseLatch, stopLatch;
 
     public Record() {
@@ -36,7 +34,7 @@ public class Record extends Module {
     @Override
     public void onDisable() {
         super.onDisable();
-         
+
         if (recordManager.isActive()) recordManager.stop();
     }
 
@@ -82,7 +80,7 @@ public class Record extends Module {
     }
 
     private void handleStart() {
-        if (recordManager.isActive()) return;  
+        if (recordManager.isActive()) return;
         boolean ok = recordManager.start();
         String msg = ok ? "Запись начата" : "Не удалось начать запись (проверь, установлен ли FFmpeg)";
         darkvisuals.getInstance().getNotifyManager().add(new Notify(
@@ -109,14 +107,13 @@ public class Record extends Module {
     public void onRender2D(EventRender2D e) {
         if (!isToggled()) return;
 
-         
         recordManager.captureFrame();
 
-        if (!recordManager.isActive()) return;  
+        if (!recordManager.isActive()) return;
 
         DrawContext context = e.getContext();
         boolean recording = recordManager.isRecording();
-        int color = recording ? 0xFF00FF00 : 0xFFFF3333;  
+        int color = recording ? 0xFF00FF00 : 0xFFFF3333;
         String label = recording ? "● ЗАПИСЬ" : "● ПАУЗА";
         String time = formatTime(recordManager.getElapsedMs());
         String text = label + "  " + time;

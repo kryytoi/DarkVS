@@ -17,7 +17,7 @@ import net.minecraft.client.resource.language.I18n;
 import dev.darkvisuals.darkvisuals;
 
 public class ListComponent extends WindowComponent {
-	
+
 	private final ListSetting setting;
 	private final Map<BooleanSetting, Animation> pickAnimations = new HashMap<>();
 
@@ -39,7 +39,7 @@ public class ListComponent extends WindowComponent {
 				y + 3.5f,
 				new Color(255, 255, 255, (int) (255 * ga))
 		);
-		
+
 		Render2D.drawFont(context.getMatrices(),
 				Fonts.REGULAR.getFont(7.5f),
 		            "(" + setting.getToggled().size() + "/" + setting.getValue().size() + ")",
@@ -47,7 +47,7 @@ public class ListComponent extends WindowComponent {
 				y + 3.5f,
 				new Color(255, 255, 255, (int) (255 * ga))
 		);
-		
+
 		float yOffset = height;
 		for (BooleanSetting setting : setting.getValue()) {
 			Animation anim = pickAnimations.get(setting);
@@ -63,7 +63,7 @@ public class ListComponent extends WindowComponent {
 			yOffset += 14f;
 		}
 	}
-	
+
 	@Override
 	public void mouseClicked(double mouseX, double mouseY, int button) {
 		if (button == 0) {
@@ -76,7 +76,7 @@ public class ListComponent extends WindowComponent {
 					} else {
 						s.setValue(!s.getValue());
 					}
-					 
+
 					try {
 						darkvisuals.getInstance().getAutoSaveManager().forceSave();
 					} catch (Throwable ignored) {}
@@ -86,24 +86,24 @@ public class ListComponent extends WindowComponent {
 			}
 		}
 	}
-	
+
 	@Override
 	public void mouseReleased(double mouseX, double mouseY, int button) {
-		
+
 	}
-	
+
 	@Override
 	public void keyPressed(int keyCode, int scanCode, int modifiers) {
-		
+
 	}
-	
+
 	@Override
 	public void keyReleased(int keyCode, int scanCode, int modifiers) {
-		
+
 	}
-	
+
 	@Override
 	public void charTyped(char chr, int modifiers) {
-		
+
 	}
 }

@@ -42,7 +42,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
-
 public class Particles extends Module {
 
     private static final Identifier GLOW_TEXTURE = darkvisuals.id("hud/glow.png");
@@ -162,10 +161,6 @@ public class Particles extends Module {
         screenFlashes.removeIf(f -> now - f.birth >= f.life);
     }
 
-    // ------------------------------------------------------------------
-    // Спавн
-    // ------------------------------------------------------------------
-
     private Vec3d randomGroundPos() {
         double angle = rnd.nextDouble() * Math.PI * 2;
         double dist = radius.getValue() * (0.25 + 0.75 * rnd.nextDouble());
@@ -215,10 +210,6 @@ public class Particles extends Module {
         }
     }
 
-    // ------------------------------------------------------------------
-    // Физика
-    // ------------------------------------------------------------------
-
     private void updateMeteors() {
         Iterator<Meteor> it = meteors.iterator();
         while (it.hasNext()) {
@@ -229,7 +220,6 @@ public class Particles extends Module {
             meteor.trail.addFirst(meteor.pos);
             while (meteor.trail.size() > 14) meteor.trail.removeLast();
 
-            // огненные искры вдоль полёта
             if (sparks.size() < MAX_SPARKS && rnd.nextInt(2) == 0) {
                 Vec3d v = new Vec3d(
                         (rnd.nextDouble() - 0.5) * 0.08,
@@ -263,13 +253,11 @@ public class Particles extends Module {
     private void triggerExplosion(Vec3d pos, BlockPos hitBlock, float strengthScale) {
         float size = explosionSize.getValue() * strengthScale;
 
-        // ванильная вспышка взрыва
         mc.world.addParticle(ParticleTypes.EXPLOSION_EMITTER, pos.x, pos.y + 0.3, pos.z, 0, 0, 0);
 
         flashes.add(new ImpactFlash(pos, size));
         rings.add(new ShockRing(pos.add(0, 0.1, 0), size));
 
-        // искры и дым
         int emberCount = Math.round(24 * size);
         for (int i = 0; i < emberCount && sparks.size() < MAX_SPARKS; i++) {
             double ang = rnd.nextDouble() * Math.PI * 2;
@@ -285,7 +273,6 @@ public class Particles extends Module {
                     v, new Color(80, 75, 70, 200), 1.0f + rnd.nextFloat() * 0.6f, 900 + rnd.nextInt(600)));
         }
 
-        // 3D обломки цвета блока, в который попали
         if (debris.getValue() && debrisCount.getValue() > 0) {
             Color blockColor = blockTint(hitBlock);
             int count = Math.round(debrisCount.getValue());
@@ -319,7 +306,7 @@ public class Particles extends Module {
             if (!state.isAir()) {
                 int rgb = state.getMapColor(mc.world, pos).color;
                 Color c = new Color(rgb, false);
-                // осветляем тёмные цвета, чтобы обломки читались
+
                 float[] hsb = Color.RGBtoHSB(c.getRed(), c.getGreen(), c.getBlue(), null);
                 return new Color(Color.HSBtoRGB(hsb[0], Math.min(1f, hsb[1] * 1.15f), Math.max(0.45f, hsb[2] * 1.2f)));
             }
@@ -343,7 +330,6 @@ public class Particles extends Module {
             d.rotY += d.rotSpeedY;
             d.rotZ += d.rotSpeedZ;
 
-            // отскок от земли
             BlockPos below = BlockPos.ofFloored(d.pos.x, d.pos.y - d.size * 0.5, d.pos.z);
             if (!mc.world.getBlockState(below).isAir() && d.pos.y - d.size * 0.5 < below.up().getY()) {
                 d.pos = new Vec3d(d.pos.x, below.up().getY() + d.size * 0.5, d.pos.z);
@@ -382,10 +368,6 @@ public class Particles extends Module {
             }
         }
     }
-
-    // ------------------------------------------------------------------
-    // Рендер
-    // ------------------------------------------------------------------
 
     @EventHandler
     public void onRender3D(EventRender3D.Game event) {
@@ -450,7 +432,7 @@ public class Particles extends Module {
         Color hot = new Color(255, 230, 180, 255);
 
         for (Meteor meteor : meteors) {
-            // хвост из затухающих свечений
+
             int i = 0;
             for (Vec3d p : meteor.trail) {
                 float f = 1f - i / (float) meteor.trail.size();
@@ -467,7 +449,6 @@ public class Particles extends Module {
                 i++;
             }
 
-            // ядро с пульсацией
             float pulse = 0.85f + 0.15f * MathHelper.sin(now / 60f + meteor.seed);
             matrices.push();
             matrices.translate((float) (meteor.pos.x - cam.x), (float) (meteor.pos.y - cam.y), (float) (meteor.pos.z - cam.z));
@@ -501,7 +482,7 @@ public class Particles extends Module {
         for (Bolt bolt : bolts) {
             float t = (now - bolt.birth) / (float) bolt.life;
             float fade = t < 0.7f ? 1f : 1f - (t - 0.7f) / 0.3f;
-            // мерцание
+
             float flicker = MathHelper.clamp(0.7f + 0.3f * MathHelper.sin(now / 25f + bolt.seed * 10f)
                     * MathHelper.sin(now / 61f + bolt.seed * 3f), 0f, 1f);
 
@@ -510,7 +491,6 @@ public class Particles extends Module {
                 drawBoltPath(matrices, cam, branch.points, bolt.width * branch.widthScale, color, white, fade * flicker * 0.75f);
             }
 
-            // свечение в точке удара
             RenderSystem.setShaderTexture(0, GLOW_TEXTURE);
             RenderSystem.setShader(ShaderProgramKeys.POSITION_TEX_COLOR);
             matrices.push();
@@ -533,7 +513,6 @@ public class Particles extends Module {
                               Color color, Color core, float alphaScale) {
         if (points.size() < 2 || alphaScale <= 0.02f) return;
 
-        // два прохода: широкое цветное свечение + яркое белое ядро
         for (int pass = 0; pass < 2; pass++) {
             float halfWidth = pass == 0 ? width * 0.55f : width * 0.18f;
             Color c = pass == 0 ? color : core;
@@ -689,7 +668,6 @@ public class Particles extends Module {
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
 
-        // верх / низ
         buffer.vertex(matrix, -h, h, -h).color(top.getRGB());
         buffer.vertex(matrix, -h, h, h).color(top.getRGB());
         buffer.vertex(matrix, h, h, h).color(top.getRGB());
@@ -699,7 +677,6 @@ public class Particles extends Module {
         buffer.vertex(matrix, h, -h, h).color(bottom.getRGB());
         buffer.vertex(matrix, -h, -h, h).color(bottom.getRGB());
 
-        // север / юг
         buffer.vertex(matrix, -h, -h, h).color(side.getRGB());
         buffer.vertex(matrix, h, -h, h).color(side.getRGB());
         buffer.vertex(matrix, h, h, h).color(mid.getRGB());
@@ -709,7 +686,6 @@ public class Particles extends Module {
         buffer.vertex(matrix, h, h, -h).color(mid.getRGB());
         buffer.vertex(matrix, h, -h, -h).color(side.getRGB());
 
-        // восток / запад
         buffer.vertex(matrix, h, -h, -h).color(side.getRGB());
         buffer.vertex(matrix, h, h, -h).color(mid.getRGB());
         buffer.vertex(matrix, h, h, h).color(mid.getRGB());
@@ -763,10 +739,6 @@ public class Particles extends Module {
         event.getContext().fill(0, 0, width, height, (alpha << 24) | 0xF4F8FF);
     }
 
-    // ------------------------------------------------------------------
-    // Внутренние состояния
-    // ------------------------------------------------------------------
-
     private static final class Meteor {
         Vec3d pos, prevPos, velocity;
         final Deque<Vec3d> trail = new ArrayDeque<>();
@@ -801,7 +773,6 @@ public class Particles extends Module {
             double topY = target.y + 45 + random.nextDouble() * 15;
             Vec3d start = new Vec3d(target.x + (random.nextDouble() - 0.5) * 8, topY, target.z + (random.nextDouble() - 0.5) * 8);
 
-            // ломаная от неба к земле
             Vec3d current = start;
             mainPath.add(current);
             Vec3d step = target.subtract(start).normalize();
@@ -818,7 +789,6 @@ public class Particles extends Module {
             }
             mainPath.add(target);
 
-            // ветвления
             for (int i = 0; i < branchCount && mainPath.size() > 4; i++) {
                 int anchorIdx = 1 + random.nextInt(mainPath.size() - 3);
                 Vec3d anchor = mainPath.get(anchorIdx);

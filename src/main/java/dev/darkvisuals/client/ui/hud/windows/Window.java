@@ -21,9 +21,9 @@ public class Window {
 	private final List<Setting<?>> settings;
 	private final List<WindowComponent> components = new ArrayList<>();
 	private final Animation animation = new Animation(300, 1f, true, Easing.BOTH_SINE);
-	 
+
 	private final Color bgColor = new Color(30, 30, 30, 240);
-	
+
 	public Window(float x, float y, float width, float height, List<Setting<?>> settings) {
 		this.x = x;
 		this.y = y;
@@ -35,7 +35,7 @@ public class Window {
 			else if (setting instanceof ListSetting) components.add(new ListComponent(setting.getName(), ((ListSetting) setting)));
 		}
 	}
-	
+
 	public void render(DrawContext context, int mouseX, int mouseY) {
 		Render2D.startScissor(
 				context,
@@ -45,7 +45,6 @@ public class Window {
 				getFinalHeight() * animation.getValue()
 		);
 
-		 
 		Render2D.drawRoundedRect(
 				context.getMatrices(),
 				getX() + (getWidth() - getWidth() * animation.getValue()) / 2,
@@ -78,18 +77,18 @@ public class Window {
 	public boolean closed() {
 		return animation.finished(false) && animation.getValue() <= 0.01f;
 	}
-	
+
 	public void mouseClicked(double mouseX, double mouseY, int button) {
 		for (WindowComponent component : components) component.mouseClicked(mouseX, mouseY, button);
 	}
-	
+
 	public float getFinalHeight() {
 		float height = 0;
 		for (WindowComponent component : components) {
 			if (!component.getVisible().get()) continue;
 			height += component.getHeight() + component.getAddHeight().get() + 4.5f;
 		}
-		
+
 		return height;
 	}
 }

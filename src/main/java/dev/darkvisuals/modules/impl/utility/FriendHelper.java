@@ -25,7 +25,6 @@ public class FriendHelper extends Module {
         getSettings().add(noFriendDamage);
     }
 
-     
     public BooleanSetting getNoFriendDamage() {
         return noFriendDamage;
     }
@@ -47,7 +46,7 @@ public class FriendHelper extends Module {
     @EventHandler
     public void onMouse(dev.darkvisuals.client.events.impl.EventMouse event) {
         if (!isToggled()) return;
-        if (event.getAction() != 1) return;  
+        if (event.getAction() != 1) return;
         if (friendKey.getValue().isMouse() && friendKey.getValue().getKey() == event.getButton()) {
             handleFriendAction();
         }

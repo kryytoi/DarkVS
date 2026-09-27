@@ -115,8 +115,6 @@ public class MathUtil implements Wrapper {
         float rawPitch = (float) (-Math.toDegrees(Math.atan2(vec.y, Math.sqrt(Math.pow(vec.x, 2) + Math.pow(vec.z, 2)))));
         float yawDelta = MathHelper.wrapDegrees(rawYaw - mc.player.getYaw());
         float pitchDelta = rawPitch - mc.player.getPitch();
-         
-         
 
         return new Vector4f(rawYaw, rawPitch, yawDelta, pitchDelta);
     }

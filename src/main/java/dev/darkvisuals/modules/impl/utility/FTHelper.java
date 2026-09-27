@@ -14,7 +14,7 @@ import org.lwjgl.glfw.GLFW;
 import net.minecraft.client.resource.language.I18n;
 
 public class FTHelper extends Module {
-     
+
     private final BindSetting disorientBind = new BindSetting("setting.disorientBind", new Bind(GLFW.GLFW_KEY_H, false));
     private final BindSetting trapBind = new BindSetting("setting.trapBind", new Bind(GLFW.GLFW_KEY_T, false));
 
@@ -35,17 +35,15 @@ public class FTHelper extends Module {
 
         long window = mc.getWindow().getHandle();
 
-         
         boolean disorientDown = isBindDown(window, disorientBind.getValue());
         if (disorientDown && !disorientLatch) {
-            switchToItem(mc, Items.ENDER_EYE);  
+            switchToItem(mc, Items.ENDER_EYE);
             disorientLatch = true;
         } else if (!disorientDown) disorientLatch = false;
 
-         
         boolean trapDown = isBindDown(window, trapBind.getValue());
         if (trapDown && !trapLatch) {
-            switchToItem(mc, Items.NETHERITE_SCRAP);  
+            switchToItem(mc, Items.NETHERITE_SCRAP);
             trapLatch = true;
         } else if (!trapDown) trapLatch = false;
     }

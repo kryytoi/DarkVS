@@ -7,9 +7,6 @@ import dev.darkvisuals.modules.settings.impl.BooleanSetting;
 import meteordevelopment.orbit.EventHandler;
 import net.minecraft.screen.slot.SlotActionType;
 
-/**
- * SlotLock — блокировка слотов хотбара от перемещения и выбрасывания.
- */
 public class SlotLock extends Module {
 
     private final BooleanSetting slot1 = new BooleanSetting("Слот 1", false);
@@ -45,13 +42,13 @@ public class SlotLock extends Module {
 
         int slot = event.getSlot();
         if (type == SlotActionType.SWAP) {
-            // при обмене числовой клавишей button — целевой слот хотбара
+
             int button = event.getButton();
             if (button >= 0 && button <= 8 && locked[button].getValue()) event.setCancel(true);
             return;
         }
 
-        if (slot < 0 || slot > 8) return; // 0..8 — хотбар в инвентаре игрока
+        if (slot < 0 || slot > 8) return;
 
         if (locked[slot].getValue()) {
             event.setCancel(true);

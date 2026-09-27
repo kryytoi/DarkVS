@@ -14,7 +14,6 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.Vec3d;
 
- 
 public class Kagune extends Module {
 
     @Getter
@@ -47,7 +46,7 @@ public class Kagune extends Module {
         float tickDelta = event.getTickDelta();
         MatrixStack matrices = event.getMatrices();
         Vec3d cameraPos = mc.gameRenderer.getCamera().getPos();
-         
+
         float animatedTime = animTime + 0.18f * speed.getValue() * tickDelta;
 
         for (PlayerEntity player : mc.world.getPlayers()) {

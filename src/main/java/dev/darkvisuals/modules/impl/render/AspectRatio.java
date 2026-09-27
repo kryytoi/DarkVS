@@ -12,10 +12,10 @@ public class AspectRatio extends Module {
 
     private final @NotNull NumberSetting aspectRatio = new NumberSetting(
             "setting.aspectRatio",
-            1.777f,    
-            0.5f,      
-            3.0f,      
-            0.01f      
+            1.777f,
+            0.5f,
+            3.0f,
+            0.01f
     );
 
     public AspectRatio() {

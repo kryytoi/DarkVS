@@ -83,28 +83,30 @@ public final class Cosmetics extends Module implements ThemeManager.ThemeChangeL
     private final NumberSetting classicWingSize = new NumberSetting("Размер 2", 1.0f, 0.65f, 1.8f, 0.05f);
     private final BooleanSetting blackWingAnimation = new BooleanSetting("Анимация чёрных крыльев", true, () -> blackWings.getValue());
     private final NumberSetting blackWingSize = new NumberSetting("Размер чёрных", 1.0f, 0.65f, 1.8f, 0.05f);
-     
+
     private final BooleanSetting cap = new BooleanSetting("Кепка", false, () -> false);
     private final BooleanSetting chinaHat = new BooleanSetting("Шляпа", false, () -> false);
     private final BooleanSetting kagune = new BooleanSetting("Кагуне", false, () -> false);
     private final BooleanSetting mortyPatch = new BooleanSetting("Повязка Морти", false, () -> false);
     private final BooleanSetting nikeCap = new BooleanSetting("Кепка Nike", false, () -> false);
     private final BooleanSetting robotTentacles = new BooleanSetting("Робо-щупальца", false, () -> false);
+    private final BooleanSetting horns = new BooleanSetting("Рожки Дьявола", false, () -> false);
+    private final BooleanSetting katana = new BooleanSetting("Катана", false, () -> false);
+    private final BooleanSetting catEars = new BooleanSetting("Кошачьи ушки", false, () -> false);
+    private final BooleanSetting bandana = new BooleanSetting("Бандана", false, () -> false);
+    private final BooleanSetting crown = new BooleanSetting("Корона", false, () -> false);
 
     private final NumberSetting robotTentacleSize = new NumberSetting("Размер робо-щупалец", 1.0f, 0.5f, 2.0f, 0.05f);
     private final NumberSetting robotTentacleSpeed = new NumberSetting("Скорость робо-щупалец", 1.0f, 0.1f, 3.0f, 0.05f);
     private final BooleanSetting robotTentacleAnimation = new BooleanSetting("Анимация робо-щупалец", true, () -> robotTentacles.getValue());
 
-     
     private final NumberSetting kaguneSize = new NumberSetting("Размер кагуне", 1.0f, 0.5f, 2.0f, 0.05f);
     private final NumberSetting kaguneSpeed = new NumberSetting("Скорость кагуне", 1.0f, 0.1f, 3.0f, 0.05f);
     private final BooleanSetting kaguneAnimation = new BooleanSetting("Анимация кагуне", true, () -> kagune.getValue());
 
-     
     private final NumberSetting chinaBrimRadius = new NumberSetting("Радиус шляпы", 0.7f, 0.3f, 1.4f, 0.05f);
     private final NumberSetting chinaOpacity = new NumberSetting("Прозрачность шляпы", 0.65f, 0.0f, 1.0f, 0.01f);
 
-     
     private final CapModel capModel = new CapModel();
     private float propellerRotation;
     private float propellerSpeed;
@@ -114,18 +116,11 @@ public final class Cosmetics extends Module implements ThemeManager.ThemeChangeL
     private float selfClassicBodyYaw;
     private boolean selfClassicBodyYawInitialized;
 
-     
-     
-     
-     
     private volatile String previewOverrideId;
 
     public void setPreviewOverride(String id) { this.previewOverrideId = id; }
     public void clearPreviewOverride() { this.previewOverrideId = null; }
-     
- 
- 
- 
+
     private boolean guiPreview = false;
     private float guiPreviewYaw = 0f;
 
@@ -138,7 +133,7 @@ public final class Cosmetics extends Module implements ThemeManager.ThemeChangeL
         player.prevBodyYaw = bodyYaw;
         player.bodyYaw = bodyYaw;
 
-        RenderSystem.disableCull();  
+        RenderSystem.disableCull();
         try {
             switch (id) {
                 case "nimbus" -> renderNimbusPreview(matrices, player);
@@ -154,6 +149,11 @@ public final class Cosmetics extends Module implements ThemeManager.ThemeChangeL
                 case "nike" -> renderNikeCap(player, 1.0f, matrices, player.getPos());
                 case "robot_tentacles" -> RobotTentaclesModel.render(player, 1.0f, matrices, player.getPos(),
                         robotTentacleAnimTime, robotTentacleSize.getValue().floatValue(), robotTentacleAnimation.getValue());
+                case "horns" -> renderDevilHorns(player, 1.0f, matrices, player.getPos());
+                case "katana" -> renderKatana(player, 1.0f, matrices, player.getPos());
+                case "cat_ears" -> renderCatEars(player, 1.0f, matrices, player.getPos());
+                case "bandana" -> renderBandana(player, 1.0f, matrices, player.getPos());
+                case "crown" -> renderCrown(player, 1.0f, matrices, player.getPos());
             }
         } finally {
             RenderSystem.enableCull();
@@ -169,7 +169,7 @@ public final class Cosmetics extends Module implements ThemeManager.ThemeChangeL
     public Cosmetics() {
         super("Cosmetics", Category.Render, "Визуальные украшения");
         getSettings().add(openMenu);
-         
+
         getSettings().add(kaguneSize);
         getSettings().add(kaguneSpeed);
         getSettings().add(kaguneAnimation);
@@ -179,7 +179,6 @@ public final class Cosmetics extends Module implements ThemeManager.ThemeChangeL
         getSettings().add(chinaBrimRadius);
         getSettings().add(chinaOpacity);
 
-         
         nimbus.setVisible(() -> false);
         wings.setVisible(() -> false);
         wings2.setVisible(() -> false);
@@ -190,6 +189,11 @@ public final class Cosmetics extends Module implements ThemeManager.ThemeChangeL
         nikeCap.setVisible(() -> false);
         robotTentacles.setVisible(() -> false);
         kagune.setVisible(() -> false);
+        horns.setVisible(() -> false);
+        katana.setVisible(() -> false);
+        catEars.setVisible(() -> false);
+        bandana.setVisible(() -> false);
+        crown.setVisible(() -> false);
         robotTentacleSize.setVisible(() -> robotTentacles.getValue());
         robotTentacleSpeed.setVisible(() -> robotTentacles.getValue());
         butterflyWingSize.setVisible(() -> wings.getValue());
@@ -205,7 +209,6 @@ public final class Cosmetics extends Module implements ThemeManager.ThemeChangeL
         themeManager.addThemeChangeListener(this);
     }
 
-     
     public BooleanSetting getNimbusSetting()     { return nimbus; }
     public BooleanSetting getWingsSetting()      { return wings; }
     public BooleanSetting getWings2Setting()     { return wings2; }
@@ -216,24 +219,15 @@ public final class Cosmetics extends Module implements ThemeManager.ThemeChangeL
     public BooleanSetting getChinaHatSetting() { return chinaHat; }
     public BooleanSetting getKaguneSetting()   { return kagune; }
     public BooleanSetting getRobotTentaclesSetting() { return robotTentacles; }
+    public BooleanSetting getHornsSetting() { return horns; }
+    public BooleanSetting getKatanaSetting() { return katana; }
+    public BooleanSetting getCatEarsSetting() { return catEars; }
+    public BooleanSetting getBandanaSetting() { return bandana; }
+    public BooleanSetting getCrownSetting() { return crown; }
 
     public Color getThemeColor() { return currentColor; }
     public float getBlackWingSize() { return blackWingSize.getValue().floatValue(); }
     public boolean isBlackWingAnimated() { return blackWingAnimation.getValue(); }
-
-     
-     
-     
-     
-     
-     
-     
-     
-     
-     
-     
-     
-     
 
     public void renderButterflyWingsPreview(PlayerEntity player, MatrixStack matrices) {
         renderButterflyWings(player, 1.0f, matrices, player.getPos());
@@ -243,7 +237,6 @@ public final class Cosmetics extends Module implements ThemeManager.ThemeChangeL
         renderClassicWings(player, 1.0f, matrices, player.getPos());
     }
 
- 
     public void renderNimbusPreview(MatrixStack matrices, PlayerEntity player) {
         int baseColor = currentColor.getRGB();
         long nowMs = System.currentTimeMillis();
@@ -274,11 +267,6 @@ public final class Cosmetics extends Module implements ThemeManager.ThemeChangeL
         RenderSystem.defaultBlendFunc();
         RenderSystem.disableBlend();
     }
-
-     
-     
-     
-     
 
     @Override
     public void onThemeChanged(ThemeManager.Theme theme) {
@@ -324,6 +312,11 @@ public final class Cosmetics extends Module implements ThemeManager.ThemeChangeL
         boolean renderMorty = mortyPatch.getValue();
         boolean renderNike = nikeCap.getValue();
         boolean renderRobotTentacles = robotTentacles.getValue();
+        boolean renderHorns = horns.getValue();
+        boolean renderKat = katana.getValue();
+        boolean renderEars = catEars.getValue();
+        boolean renderBand = bandana.getValue();
+        boolean renderCrn = crown.getValue();
 
         String preview = previewOverrideId;
         if (preview != null) {
@@ -337,13 +330,20 @@ public final class Cosmetics extends Module implements ThemeManager.ThemeChangeL
             renderMorty = "morty".equals(preview);
             renderNike = "nike".equals(preview);
             renderRobotTentacles = "robot_tentacles".equals(preview);
+            renderHorns = "horns".equals(preview);
+            renderKat = "katana".equals(preview);
+            renderEars = "cat_ears".equals(preview);
+            renderBand = "bandana".equals(preview);
+            renderCrn = "crown".equals(preview);
         }
 
         if (showNimbus) {
             renderNimbus(event);
         }
 
-        if (!renderButterfly && !renderClassic && !renderBlack && !renderCapH && !renderChina && !renderKag && !renderMorty && !renderNike && !renderRobotTentacles) return;
+        if (!renderButterfly && !renderClassic && !renderBlack && !renderCapH && !renderChina && !renderKag
+                && !renderMorty && !renderNike && !renderRobotTentacles && !renderHorns && !renderKat
+                && !renderEars && !renderBand && !renderCrn) return;
 
         float tickDelta = event.getTickDelta();
         MatrixStack matrices = event.getMatrices();
@@ -351,10 +351,11 @@ public final class Cosmetics extends Module implements ThemeManager.ThemeChangeL
 
         for (PlayerEntity player : mc.world.getPlayers()) {
             if (player == mc.player) {
-                 
+
                 if (player == mc.player && mc.options.getPerspective().isFirstPerson()) continue;
                 if (!renderButterfly && !renderClassic && !renderBlack && !renderCapH
-                        && !renderChina && !renderKag && !renderMorty && !renderNike && !renderRobotTentacles) continue;
+                        && !renderChina && !renderKag && !renderMorty && !renderNike && !renderRobotTentacles
+                        && !renderHorns && !renderKat && !renderEars && !renderBand && !renderCrn) continue;
                 if (renderButterfly) renderButterflyWings(player, tickDelta, matrices, cameraPos);
                 if (renderClassic) renderClassicWings(player, tickDelta, matrices, cameraPos);
                 if (renderBlack) {
@@ -375,10 +376,14 @@ public final class Cosmetics extends Module implements ThemeManager.ThemeChangeL
                     RobotTentaclesModel.render(player, tickDelta, matrices, cameraPos,
                             animatedTime, robotTentacleSize.getValue().floatValue(), robotTentacleAnimation.getValue());
                 }
+                if (renderHorns) renderDevilHorns(player, tickDelta, matrices, cameraPos);
+                if (renderKat) renderKatana(player, tickDelta, matrices, cameraPos);
+                if (renderEars) renderCatEars(player, tickDelta, matrices, cameraPos);
+                if (renderBand) renderBandana(player, tickDelta, matrices, cameraPos);
+                if (renderCrn) renderCrown(player, tickDelta, matrices, cameraPos);
                 continue;
             }
 
-             
             if (!shouldRenderCosmeticForPlayer(player)) continue;
             Set<String> remote = dev.darkvisuals.client.managers.CosmeticsSyncManager.getRemoteCosmetics(player.getUuid());
             if (remote.isEmpty()) continue;
@@ -402,6 +407,11 @@ public final class Cosmetics extends Module implements ThemeManager.ThemeChangeL
                 RobotTentaclesModel.render(player, tickDelta, matrices, cameraPos,
                         animatedTime, robotTentacleSize.getValue().floatValue(), robotTentacleAnimation.getValue());
             }
+            if (remote.contains("horns")) renderDevilHorns(player, tickDelta, matrices, cameraPos);
+            if (remote.contains("katana")) renderKatana(player, tickDelta, matrices, cameraPos);
+            if (remote.contains("cat_ears")) renderCatEars(player, tickDelta, matrices, cameraPos);
+            if (remote.contains("bandana")) renderBandana(player, tickDelta, matrices, cameraPos);
+            if (remote.contains("crown")) renderCrown(player, tickDelta, matrices, cameraPos);
         }
     }
 
@@ -499,7 +509,6 @@ public final class Cosmetics extends Module implements ThemeManager.ThemeChangeL
         matrices.pop();
     }
 
-      
     private void renderCap(PlayerEntity player, float tickDelta, MatrixStack matrices, Vec3d cameraPos) {
         double x = MathHelper.lerp(tickDelta, player.prevX, player.getX());
         double y = MathHelper.lerp(tickDelta, player.prevY, player.getY());
@@ -509,7 +518,6 @@ public final class Cosmetics extends Module implements ThemeManager.ThemeChangeL
         double headOffsetY = player.isSneaking() ? 1.25D : 1.5D;
         matrices.translate(x - cameraPos.x, y + headOffsetY - cameraPos.y, z - cameraPos.z);
 
-         
         float yaw = guiPreview ? guiPreviewYaw + 180.0f
                 : MathHelper.lerp(tickDelta, player.prevHeadYaw, player.headYaw);
         float pitch = guiPreview ? 0.0f : MathHelper.lerp(tickDelta, player.prevPitch, player.getPitch());
@@ -519,7 +527,7 @@ public final class Cosmetics extends Module implements ThemeManager.ThemeChangeL
 
         int light;
         if (guiPreview) {
-            light = LightmapTextureManager.MAX_LIGHT_COORDINATE;  
+            light = LightmapTextureManager.MAX_LIGHT_COORDINATE;
         } else {
             BlockPos lightPos = BlockPos.ofFloored(x, y + headOffsetY, z);
             light = LightmapTextureManager.pack(
@@ -533,7 +541,6 @@ public final class Cosmetics extends Module implements ThemeManager.ThemeChangeL
         matrices.pop();
     }
 
-      
     private void renderChinaHat(PlayerEntity player, float tickDelta, MatrixStack matrices, Vec3d cameraPos) {
         Vec3d pos = guiPreview ? player.getPos() : player.getLerpedPos(tickDelta);
 
@@ -595,7 +602,6 @@ public final class Cosmetics extends Module implements ThemeManager.ThemeChangeL
         GL11.glEnable(GL11.GL_CULL_FACE);
     }
 
- 
     private void renderMortyPatch(PlayerEntity player, float tickDelta, MatrixStack matrices, Vec3d cameraPos) {
         if (!player.isAlive() || player.isInvisible()) return;
 
@@ -605,7 +611,6 @@ public final class Cosmetics extends Module implements ThemeManager.ThemeChangeL
         matrices.push();
         matrices.translate(pos.x - cameraPos.x, pos.y - cameraPos.y, pos.z - cameraPos.z);
 
-         
         float bodyYaw = guiPreview ? guiPreviewYaw : MathHelper.lerp(tickDelta, player.prevBodyYaw, player.bodyYaw);
         matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(-bodyYaw));
         matrices.translate(0.0, eyeHeight, 0.0);
@@ -616,10 +621,8 @@ public final class Cosmetics extends Module implements ThemeManager.ThemeChangeL
         matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(-netHeadYaw));
         matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(headPitch));
 
-         
         matrices.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(18.0f));
 
-         
         Color patchColor = new Color(0x14, 0x14, 0x16);
         Color strapColor = new Color(0x20, 0x20, 0x24);
 
@@ -633,9 +636,8 @@ public final class Cosmetics extends Module implements ThemeManager.ThemeChangeL
 
         Matrix4f m = matrices.peek().getPositionMatrix();
 
-         
-        final float STRAP_R = 0.285f;    
-        final float STRAP_H = 0.028f;     
+        final float STRAP_R = 0.285f;
+        final float STRAP_H = 0.028f;
         final int SEGS = 32;
         float sr = strapColor.getRed() / 255f;
         float sg = strapColor.getGreen() / 255f;
@@ -652,10 +654,9 @@ public final class Cosmetics extends Module implements ThemeManager.ThemeChangeL
         }
         BufferRenderer.drawWithGlobalProgram(strap.end());
 
-         
-        final float PATCH_X = -0.13f;    
+        final float PATCH_X = -0.13f;
         final float PATCH_Y = 0.02f;
-        final float PATCH_Z = 0.285f;    
+        final float PATCH_Z = 0.285f;
         final float PATCH_R = 0.10f;
         float pr = patchColor.getRed() / 255f;
         float pg = patchColor.getGreen() / 255f;
@@ -663,7 +664,7 @@ public final class Cosmetics extends Module implements ThemeManager.ThemeChangeL
 
         BufferBuilder patch = Tessellator.getInstance()
                 .begin(VertexFormat.DrawMode.TRIANGLE_FAN, VertexFormats.POSITION_COLOR);
-        patch.vertex(m, PATCH_X, PATCH_Y, PATCH_Z).color(pr, pg, pb, 1.0f);  
+        patch.vertex(m, PATCH_X, PATCH_Y, PATCH_Z).color(pr, pg, pb, 1.0f);
         for (int i = 0; i <= SEGS; i++) {
             double a = (i / (double) SEGS) * Math.PI * 2.0;
             float vx = PATCH_X + (float) (Math.cos(a) * PATCH_R);
@@ -678,7 +679,6 @@ public final class Cosmetics extends Module implements ThemeManager.ThemeChangeL
         matrices.pop();
     }
 
- 
     private void renderNikeCap(PlayerEntity player, float tickDelta, MatrixStack matrices, Vec3d cameraPos) {
         if (!player.isAlive() || player.isInvisible()) return;
 
@@ -698,13 +698,12 @@ public final class Cosmetics extends Module implements ThemeManager.ThemeChangeL
         matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(-netHeadYaw));
         matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(headPitch));
 
-         
-        final float HW    = 0.29f;    
-        final float BOT   = 0.05f;    
-        final float TOP   = 0.34f;    
-        final float BRIM_HW  = 0.21f;   
-        final float BRIM_LEN = 0.22f;   
-        final float BRIM_TH  = 0.035f;  
+        final float HW    = 0.29f;
+        final float BOT   = 0.05f;
+        final float TOP   = 0.34f;
+        final float BRIM_HW  = 0.21f;
+        final float BRIM_LEN = 0.22f;
+        final float BRIM_TH  = 0.035f;
 
         Color black = new Color(0x0C, 0x0C, 0x0E);
         Color white = new Color(0xF2, 0xF2, 0xF2);
@@ -721,14 +720,12 @@ public final class Cosmetics extends Module implements ThemeManager.ThemeChangeL
         BufferBuilder buf = Tessellator.getInstance()
                 .begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
 
-         
         emitBox(buf, m, -HW, BOT, -HW, HW, TOP, HW, black);
-         
+
         emitBox(buf, m, -0.05f, TOP, -0.05f, 0.05f, TOP + 0.04f, 0.05f, black);
-         
+
         emitBox(buf, m, -BRIM_HW, BOT - BRIM_TH, HW - 0.02f, BRIM_HW, BOT, HW + BRIM_LEN, black);
 
-         
         final String[] SWOOSH = {
                 "..........##",
                 ".........##.",
@@ -736,11 +733,11 @@ public final class Cosmetics extends Module implements ThemeManager.ThemeChangeL
                 ".###..###...",
                 "...####....."
         };
-        final float PX = 0.028f;                        
-        final float SW_W = SWOOSH[0].length() * PX;     
-        final float SW_X0 = -SW_W / 2.0f;               
-        final float SW_Y0 = BOT + 0.16f;                
-        final float SW_Z  = HW + 0.003f;                
+        final float PX = 0.028f;
+        final float SW_W = SWOOSH[0].length() * PX;
+        final float SW_X0 = -SW_W / 2.0f;
+        final float SW_Y0 = BOT + 0.16f;
+        final float SW_Z  = HW + 0.003f;
         float wr = white.getRed() / 255f, wg = white.getGreen() / 255f, wb = white.getBlue() / 255f;
 
         for (int row = 0; row < SWOOSH.length; row++) {
@@ -763,26 +760,343 @@ public final class Cosmetics extends Module implements ThemeManager.ThemeChangeL
         matrices.pop();
     }
 
-      
+    private void renderDevilHorns(PlayerEntity player, float tickDelta, MatrixStack matrices, Vec3d cameraPos) {
+        if (!player.isAlive() || player.isInvisible()) return;
+
+        Vec3d pos = guiPreview ? player.getPos() : player.getLerpedPos(tickDelta);
+        float eyeHeight = player.getEyeHeight(player.getPose());
+
+        matrices.push();
+        matrices.translate(pos.x - cameraPos.x, pos.y - cameraPos.y, pos.z - cameraPos.z);
+
+        float bodyYaw = guiPreview ? guiPreviewYaw : MathHelper.lerp(tickDelta, player.prevBodyYaw, player.bodyYaw);
+        matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(-bodyYaw));
+        matrices.translate(0.0, eyeHeight, 0.0);
+
+        float netHeadYaw = guiPreview ? 0.0f
+                : MathHelper.lerp(tickDelta, player.prevHeadYaw, player.headYaw) - bodyYaw;
+        float headPitch = guiPreview ? 0.0f : MathHelper.lerp(tickDelta, player.prevPitch, player.getPitch());
+        matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(-netHeadYaw));
+        matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(headPitch));
+
+        RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR);
+        RenderSystem.enableDepthTest();
+        RenderSystem.depthFunc(GL11.GL_LEQUAL);
+        RenderSystem.depthMask(true);
+        RenderSystem.enableBlend();
+        RenderSystem.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+        GL11.glDisable(GL11.GL_CULL_FACE);
+
+        Matrix4f m = matrices.peek().getPositionMatrix();
+        BufferBuilder buf = Tessellator.getInstance()
+                .begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
+
+        Color darkRed = new Color(0x3B, 0x08, 0x08);
+        Color midRed  = new Color(0x9E, 0x1B, 0x1B);
+        Color brightRed = new Color(0xE0, 0x2A, 0x2A);
+        Color tipRed = new Color(0xFF, 0x55, 0x55);
+
+        for (float side : new float[]{-1.0f, 1.0f}) {
+            float ox = side * 0.18f;
+            emitBox(buf, m, ox - 0.045f, 0.23f, 0.08f, ox + 0.045f, 0.28f, 0.17f, darkRed);
+            emitBox(buf, m, ox - 0.038f + side * 0.015f, 0.28f, 0.05f, ox + 0.038f + side * 0.015f, 0.35f, 0.13f, midRed);
+            emitBox(buf, m, ox - 0.030f + side * 0.030f, 0.35f, 0.01f, ox + 0.030f + side * 0.030f, 0.42f, 0.08f, brightRed);
+            emitBox(buf, m, ox - 0.020f + side * 0.042f, 0.42f, -0.03f, ox + 0.020f + side * 0.042f, 0.48f, 0.03f, tipRed);
+        }
+
+        BufferRenderer.drawWithGlobalProgram(buf.end());
+
+        GL11.glEnable(GL11.GL_CULL_FACE);
+        RenderSystem.defaultBlendFunc();
+        RenderSystem.disableBlend();
+        matrices.pop();
+    }
+
+    private void renderKatana(PlayerEntity player, float tickDelta, MatrixStack matrices, Vec3d cameraPos) {
+        if (!player.isAlive() || player.isInvisible()) return;
+
+        Vec3d pos = guiPreview ? player.getPos() : player.getLerpedPos(tickDelta);
+
+        matrices.push();
+        matrices.translate(pos.x - cameraPos.x, pos.y - cameraPos.y, pos.z - cameraPos.z);
+
+        float bodyYaw = guiPreview ? guiPreviewYaw : MathHelper.lerp(tickDelta, player.prevBodyYaw, player.bodyYaw);
+        matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(-bodyYaw));
+
+        if (player.isSneaking()) {
+            matrices.translate(0.0f, 0.95f, 0.15f);
+            matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(24.0f));
+        } else {
+            matrices.translate(0.0f, 1.10f, -0.15f);
+        }
+
+        matrices.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(-42.0f));
+        matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(6.0f));
+
+        RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR);
+        RenderSystem.enableDepthTest();
+        RenderSystem.depthFunc(GL11.GL_LEQUAL);
+        RenderSystem.depthMask(true);
+        RenderSystem.enableBlend();
+        RenderSystem.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+        GL11.glDisable(GL11.GL_CULL_FACE);
+
+        Matrix4f m = matrices.peek().getPositionMatrix();
+        BufferBuilder buf = Tessellator.getInstance()
+                .begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
+
+        Color sheathBlack = new Color(0x18, 0x18, 0x1B);
+        Color goldAccent  = new Color(0xE5, 0xB8, 0x34);
+        Color handleWrap  = new Color(0x8B, 0x1A, 0x1A);
+        Color handleCore  = new Color(0x22, 0x22, 0x24);
+        Color bladeSilver = new Color(0xEE, 0xF0, 0xF4);
+
+        emitBox(buf, m, -0.022f, -0.45f, -0.015f, 0.022f, 0.18f, 0.015f, sheathBlack);
+
+        emitBox(buf, m, -0.025f, -0.48f, -0.018f, 0.025f, -0.45f, 0.018f, goldAccent);
+
+        emitBox(buf, m, -0.026f, 0.02f, -0.022f, 0.026f, 0.06f, 0.022f, goldAccent);
+
+        emitBox(buf, m, -0.024f, 0.18f, -0.017f, 0.024f, 0.20f, 0.017f, bladeSilver);
+
+        emitBox(buf, m, -0.065f, 0.20f, -0.055f, 0.065f, 0.224f, 0.055f, goldAccent);
+
+        emitBox(buf, m, -0.020f, 0.224f, -0.014f, 0.020f, 0.46f, 0.014f, handleCore);
+
+        for (int i = 0; i < 4; i++) {
+            float yb = 0.24f + i * 0.052f;
+            emitBox(buf, m, -0.023f, yb, -0.017f, 0.023f, yb + 0.028f, 0.017f, handleWrap);
+        }
+
+        emitBox(buf, m, -0.024f, 0.46f, -0.017f, 0.024f, 0.485f, 0.017f, goldAccent);
+
+        BufferRenderer.drawWithGlobalProgram(buf.end());
+
+        GL11.glEnable(GL11.GL_CULL_FACE);
+        RenderSystem.defaultBlendFunc();
+        RenderSystem.disableBlend();
+        matrices.pop();
+    }
+
+    private void renderCatEars(PlayerEntity player, float tickDelta, MatrixStack matrices, Vec3d cameraPos) {
+        if (!player.isAlive() || player.isInvisible()) return;
+
+        Vec3d pos = guiPreview ? player.getPos() : player.getLerpedPos(tickDelta);
+        float eyeHeight = player.getEyeHeight(player.getPose());
+
+        matrices.push();
+        matrices.translate(pos.x - cameraPos.x, pos.y - cameraPos.y, pos.z - cameraPos.z);
+
+        float bodyYaw = guiPreview ? guiPreviewYaw : MathHelper.lerp(tickDelta, player.prevBodyYaw, player.bodyYaw);
+        matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(-bodyYaw));
+        matrices.translate(0.0, eyeHeight, 0.0);
+
+        float netHeadYaw = guiPreview ? 0.0f
+                : MathHelper.lerp(tickDelta, player.prevHeadYaw, player.headYaw) - bodyYaw;
+        float headPitch = guiPreview ? 0.0f : MathHelper.lerp(tickDelta, player.prevPitch, player.getPitch());
+        matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(-netHeadYaw));
+        matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(headPitch));
+
+        RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR);
+        RenderSystem.enableDepthTest();
+        RenderSystem.depthFunc(GL11.GL_LEQUAL);
+        RenderSystem.depthMask(true);
+        RenderSystem.enableBlend();
+        RenderSystem.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+        GL11.glDisable(GL11.GL_CULL_FACE);
+
+        Matrix4f m = matrices.peek().getPositionMatrix();
+        BufferBuilder buf = Tessellator.getInstance()
+                .begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
+
+        Color outerBlack = new Color(0x1C, 0x1C, 0x22);
+        Color innerPink  = new Color(0xFF, 0x94, 0xB8);
+        Color fluffWhite = new Color(0xFA, 0xFA, 0xFA);
+
+        for (float side : new float[]{-1.0f, 1.0f}) {
+            float ox = side * 0.17f;
+
+            emitBox(buf, m, ox - 0.06f, 0.24f, -0.04f, ox + 0.06f, 0.31f, 0.04f, outerBlack);
+            emitBox(buf, m, ox - 0.04f, 0.25f, 0.025f, ox + 0.04f, 0.30f, 0.045f, innerPink);
+
+            emitBox(buf, m, ox - 0.045f + side * 0.01f, 0.31f, -0.035f, ox + 0.045f + side * 0.01f, 0.37f, 0.035f, outerBlack);
+            emitBox(buf, m, ox - 0.028f + side * 0.01f, 0.31f, 0.020f, ox + 0.028f + side * 0.01f, 0.36f, 0.039f, innerPink);
+
+            emitBox(buf, m, ox - 0.025f + side * 0.02f, 0.37f, -0.025f, ox + 0.025f + side * 0.02f, 0.42f, 0.025f, outerBlack);
+
+            emitBox(buf, m, ox + side * 0.05f - 0.015f, 0.24f, -0.03f, ox + side * 0.05f + 0.015f, 0.28f, 0.04f, fluffWhite);
+        }
+
+        BufferRenderer.drawWithGlobalProgram(buf.end());
+
+        GL11.glEnable(GL11.GL_CULL_FACE);
+        RenderSystem.defaultBlendFunc();
+        RenderSystem.disableBlend();
+        matrices.pop();
+    }
+
+    private void renderBandana(PlayerEntity player, float tickDelta, MatrixStack matrices, Vec3d cameraPos) {
+        if (!player.isAlive() || player.isInvisible()) return;
+
+        Vec3d pos = guiPreview ? player.getPos() : player.getLerpedPos(tickDelta);
+        float eyeHeight = player.getEyeHeight(player.getPose());
+
+        matrices.push();
+        matrices.translate(pos.x - cameraPos.x, pos.y - cameraPos.y, pos.z - cameraPos.z);
+
+        float bodyYaw = guiPreview ? guiPreviewYaw : MathHelper.lerp(tickDelta, player.prevBodyYaw, player.bodyYaw);
+        matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(-bodyYaw));
+        matrices.translate(0.0, eyeHeight, 0.0);
+
+        float netHeadYaw = guiPreview ? 0.0f
+                : MathHelper.lerp(tickDelta, player.prevHeadYaw, player.headYaw) - bodyYaw;
+        float headPitch = guiPreview ? 0.0f : MathHelper.lerp(tickDelta, player.prevPitch, player.getPitch());
+        matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(-netHeadYaw));
+        matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(headPitch));
+
+        RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR);
+        RenderSystem.enableDepthTest();
+        RenderSystem.depthFunc(GL11.GL_LEQUAL);
+        RenderSystem.depthMask(true);
+        RenderSystem.enableBlend();
+        RenderSystem.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+        GL11.glDisable(GL11.GL_CULL_FACE);
+
+        Matrix4f m = matrices.peek().getPositionMatrix();
+        BufferBuilder buf = Tessellator.getInstance()
+                .begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
+
+        Color maskDark = new Color(0x16, 0x17, 0x1A);
+        Color maskTrim = new Color(0x32, 0x34, 0x3B);
+        Color skullPrint = new Color(0xE8, 0xEB, 0xF0);
+
+        emitBox(buf, m, -0.265f, -0.24f, 0.245f, 0.265f, 0.01f, 0.275f, maskDark);
+        emitBox(buf, m, -0.265f, 0.01f, 0.245f, 0.265f, 0.035f, 0.278f, maskTrim);
+
+        emitBox(buf, m, -0.17f, -0.32f, 0.250f, 0.17f, -0.24f, 0.280f, maskDark);
+        emitBox(buf, m, -0.09f, -0.38f, 0.255f, 0.09f, -0.32f, 0.285f, maskDark);
+
+        emitBox(buf, m, 0.245f, -0.24f, -0.12f, 0.275f, 0.01f, 0.26f, maskDark);
+        emitBox(buf, m, -0.275f, -0.24f, -0.12f, -0.245f, 0.01f, 0.26f, maskDark);
+
+        emitBox(buf, m, -0.255f, -0.20f, -0.275f, 0.255f, -0.08f, -0.245f, maskDark);
+        emitBox(buf, m, -0.05f, -0.26f, -0.295f, 0.05f, -0.10f, -0.265f, maskTrim);
+
+        emitBox(buf, m, -0.07f, -0.14f, 0.278f, -0.02f, -0.08f, 0.280f, skullPrint);
+        emitBox(buf, m, 0.02f, -0.14f, 0.278f, 0.07f, -0.08f, 0.280f, skullPrint);
+        emitBox(buf, m, -0.12f, -0.12f, 0.278f, -0.08f, -0.08f, 0.280f, skullPrint);
+        emitBox(buf, m, 0.08f, -0.12f, 0.278f, 0.12f, -0.08f, 0.280f, skullPrint);
+
+        BufferRenderer.drawWithGlobalProgram(buf.end());
+
+        GL11.glEnable(GL11.GL_CULL_FACE);
+        RenderSystem.defaultBlendFunc();
+        RenderSystem.disableBlend();
+        matrices.pop();
+    }
+
+    private void renderCrown(PlayerEntity player, float tickDelta, MatrixStack matrices, Vec3d cameraPos) {
+        if (!player.isAlive() || player.isInvisible()) return;
+
+        Vec3d pos = guiPreview ? player.getPos() : player.getLerpedPos(tickDelta);
+        float eyeHeight = player.getEyeHeight(player.getPose());
+
+        matrices.push();
+        matrices.translate(pos.x - cameraPos.x, pos.y - cameraPos.y, pos.z - cameraPos.z);
+
+        float bodyYaw = guiPreview ? guiPreviewYaw : MathHelper.lerp(tickDelta, player.prevBodyYaw, player.bodyYaw);
+        matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(-bodyYaw));
+        matrices.translate(0.0, eyeHeight, 0.0);
+
+        float netHeadYaw = guiPreview ? 0.0f
+                : MathHelper.lerp(tickDelta, player.prevHeadYaw, player.headYaw) - bodyYaw;
+        float headPitch = guiPreview ? 0.0f : MathHelper.lerp(tickDelta, player.prevPitch, player.getPitch());
+        matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(-netHeadYaw));
+        matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(headPitch));
+
+        RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR);
+        RenderSystem.enableDepthTest();
+        RenderSystem.depthFunc(GL11.GL_LEQUAL);
+        RenderSystem.depthMask(true);
+        RenderSystem.enableBlend();
+        RenderSystem.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+        GL11.glDisable(GL11.GL_CULL_FACE);
+
+        Matrix4f m = matrices.peek().getPositionMatrix();
+        BufferBuilder buf = Tessellator.getInstance()
+                .begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
+
+        Color goldBase   = new Color(0xEE, 0xB6, 0x1B);
+        Color goldLight  = new Color(0xFD, 0xD8, 0x48);
+        Color rubyRed    = new Color(0xE8, 0x1B, 0x38);
+        Color sapphire   = new Color(0x24, 0x7A, 0xEB);
+        Color emerald    = new Color(0x27, 0xAE, 0x60);
+        Color velvetCap  = new Color(0x5E, 0x0E, 0x22);
+
+        float rOut = 0.28f;
+        float rIn  = 0.25f;
+        float bY   = 0.25f;
+        float tY   = 0.32f;
+
+        emitBox(buf, m, -rOut, bY, rIn, rOut, tY, rOut, goldBase);
+        emitBox(buf, m, -rOut, bY, -rOut, rOut, tY, -rIn, goldBase);
+        emitBox(buf, m, -rOut, bY, -rIn, -rIn, tY, rIn, goldBase);
+        emitBox(buf, m, rIn, bY, -rIn, rOut, tY, rIn, goldBase);
+
+        emitBox(buf, m, -rIn + 0.01f, bY, -rIn + 0.01f, rIn - 0.01f, bY + 0.04f, rIn - 0.01f, velvetCap);
+
+        emitBox(buf, m, -0.05f, tY, rIn - 0.005f, 0.05f, tY + 0.08f, rOut + 0.005f, goldLight);
+        emitBox(buf, m, -0.025f, tY + 0.08f, rIn - 0.005f, 0.025f, tY + 0.12f, rOut + 0.005f, goldLight);
+        emitBox(buf, m, -0.03f, tY + 0.02f, rOut, 0.03f, tY + 0.06f, rOut + 0.02f, rubyRed);
+
+        emitBox(buf, m, -0.04f, tY, -rOut - 0.005f, 0.04f, tY + 0.07f, -rIn + 0.005f, goldLight);
+        emitBox(buf, m, -0.025f, tY + 0.015f, -rOut - 0.02f, 0.025f, tY + 0.055f, -rOut, sapphire);
+
+        emitBox(buf, m, -rOut - 0.005f, tY, -0.04f, -rIn + 0.005f, tY + 0.07f, 0.04f, goldLight);
+        emitBox(buf, m, -rOut - 0.02f, tY + 0.015f, -0.025f, -rOut, tY + 0.055f, 0.025f, emerald);
+
+        emitBox(buf, m, rIn - 0.005f, tY, -0.04f, rOut + 0.005f, tY + 0.07f, 0.04f, goldLight);
+        emitBox(buf, m, rOut, tY + 0.015f, -0.025f, rOut + 0.02f, tY + 0.055f, 0.025f, sapphire);
+
+        emitBox(buf, m, -rOut, tY, rOut - 0.06f, -rOut + 0.06f, tY + 0.09f, rOut, goldLight);
+        emitBox(buf, m, -rOut + 0.01f, tY + 0.09f, rOut - 0.05f, -rOut + 0.05f, tY + 0.13f, rOut - 0.01f, goldLight);
+
+        emitBox(buf, m, rOut - 0.06f, tY, rOut - 0.06f, rOut, tY + 0.09f, rOut, goldLight);
+        emitBox(buf, m, rOut - 0.05f, tY + 0.09f, rOut - 0.05f, rOut - 0.01f, tY + 0.13f, rOut - 0.01f, goldLight);
+
+        emitBox(buf, m, -rOut, tY, -rOut, -rOut + 0.06f, tY + 0.09f, -rOut + 0.06f, goldLight);
+        emitBox(buf, m, -rOut + 0.01f, tY + 0.09f, -rOut + 0.01f, -rOut + 0.05f, tY + 0.13f, -rOut + 0.05f, goldLight);
+
+        emitBox(buf, m, rOut - 0.06f, tY, -rOut, rOut, tY + 0.09f, -rOut + 0.06f, goldLight);
+        emitBox(buf, m, rOut - 0.05f, tY + 0.09f, -rOut + 0.01f, rOut - 0.01f, tY + 0.13f, -rOut + 0.05f, goldLight);
+
+        BufferRenderer.drawWithGlobalProgram(buf.end());
+
+        GL11.glEnable(GL11.GL_CULL_FACE);
+        RenderSystem.defaultBlendFunc();
+        RenderSystem.disableBlend();
+        matrices.pop();
+    }
+
     private void emitBox(BufferBuilder buf, Matrix4f m,
                          float x0, float y0, float z0, float x1, float y1, float z1, Color c) {
         float r = c.getRed() / 255f, g = c.getGreen() / 255f, b = c.getBlue() / 255f;
-         
+
         buf.vertex(m, x0, y0, z0).color(r, g, b, 1f); buf.vertex(m, x1, y0, z0).color(r, g, b, 1f);
         buf.vertex(m, x1, y0, z1).color(r, g, b, 1f); buf.vertex(m, x0, y0, z1).color(r, g, b, 1f);
-         
+
         buf.vertex(m, x0, y1, z0).color(r, g, b, 1f); buf.vertex(m, x1, y1, z0).color(r, g, b, 1f);
         buf.vertex(m, x1, y1, z1).color(r, g, b, 1f); buf.vertex(m, x0, y1, z1).color(r, g, b, 1f);
-         
+
         buf.vertex(m, x0, y0, z0).color(r, g, b, 1f); buf.vertex(m, x1, y0, z0).color(r, g, b, 1f);
         buf.vertex(m, x1, y1, z0).color(r, g, b, 1f); buf.vertex(m, x0, y1, z0).color(r, g, b, 1f);
-         
+
         buf.vertex(m, x0, y0, z1).color(r, g, b, 1f); buf.vertex(m, x1, y0, z1).color(r, g, b, 1f);
         buf.vertex(m, x1, y1, z1).color(r, g, b, 1f); buf.vertex(m, x0, y1, z1).color(r, g, b, 1f);
-         
+
         buf.vertex(m, x0, y0, z0).color(r, g, b, 1f); buf.vertex(m, x0, y0, z1).color(r, g, b, 1f);
         buf.vertex(m, x0, y1, z1).color(r, g, b, 1f); buf.vertex(m, x0, y1, z0).color(r, g, b, 1f);
-         
+
         buf.vertex(m, x1, y0, z0).color(r, g, b, 1f); buf.vertex(m, x1, y0, z1).color(r, g, b, 1f);
         buf.vertex(m, x1, y1, z1).color(r, g, b, 1f); buf.vertex(m, x1, y1, z0).color(r, g, b, 1f);
     }
@@ -971,8 +1285,7 @@ public final class Cosmetics extends Module implements ThemeManager.ThemeChangeL
     private boolean shouldRenderCosmeticForPlayer(PlayerEntity player) {
         if (mc.player == null) return false;
         if (player == mc.player) return true;
-         
-         
+
         if (FriendsManager.checkFriend(player.getGameProfile().getName())) return true;
         return !dev.darkvisuals.client.managers.CosmeticsSyncManager
                 .getRemoteCosmetics(player.getUuid()).isEmpty();
@@ -1009,7 +1322,7 @@ public final class Cosmetics extends Module implements ThemeManager.ThemeChangeL
     }
 
     private float resolveClassicBodyYaw(PlayerEntity player, float tickDelta) {
-        if (guiPreview) return guiPreviewYaw;  
+        if (guiPreview) return guiPreviewYaw;
         float targetBodyYaw = MathHelper.lerpAngleDegrees(tickDelta, player.prevBodyYaw, player.bodyYaw);
         if (player != mc.player) {
             return targetBodyYaw;

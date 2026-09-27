@@ -1,6 +1,5 @@
 package dev.darkvisuals.modules.impl.render;
 
-
 import dev.darkvisuals.darkvisuals;
 import dev.darkvisuals.modules.api.Category;
 import dev.darkvisuals.modules.api.Module;
@@ -15,7 +14,6 @@ import net.minecraft.client.resource.language.I18n;
         instance = this;
     }
 
-      
     public static ItemPhysic get() {
         if (instance == null) {
             instance = darkvisuals.getInstance().getModuleManager().getModule(ItemPhysic.class);

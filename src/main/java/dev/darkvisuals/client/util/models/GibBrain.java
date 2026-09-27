@@ -8,7 +8,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 
- 
 @Environment(EnvType.CLIENT)
 public class GibBrain {
 
@@ -50,7 +49,6 @@ public class GibBrain {
 
         double distToPlayer = pos.distanceTo(playerPos);
 
-         
         if (distToPlayer > 20.0) {
             pos = getAnchor(playerPos);
             prevPos = pos;
@@ -70,7 +68,6 @@ public class GibBrain {
 
         boolean playerStill = entity.getVelocity().horizontalLengthSquared() < 9.0E-6 && entity.isOnGround();
 
-         
         Vec3d anchor = getAnchor(playerPos);
 
         double distToAnchor = Math.sqrt(
@@ -94,11 +91,9 @@ public class GibBrain {
         limbTick();
     }
 
-      
     private Vec3d getAnchor(Vec3d playerPos) {
         float yawRad = (float) Math.toRadians(entity.getYaw());
-         
-         
+
         double rx = -Math.cos(yawRad);
         double rz = -Math.sin(yawRad);
         double bx =  Math.sin(yawRad);
@@ -166,7 +161,7 @@ public class GibBrain {
 
     private void handleRotation(boolean standingBesidePlayer) {
         if (standingBesidePlayer && entity != null) {
-             
+
             float targetBody = entity.getYaw();
             smoothBody = smoothBody + wrapDegrees(targetBody - smoothBody) * 0.10F;
         } else if (motion.x != 0.0 || motion.z != 0.0) {

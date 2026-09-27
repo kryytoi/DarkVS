@@ -23,9 +23,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-/**
- * LightBeams — вертикальные лучи света, падающие с неба вокруг игрока.
- */
 public class LightBeams extends Module {
 
     private final NumberSetting count = new NumberSetting("Количество", 6f, 2f, 20f, 1f);

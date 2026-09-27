@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
- 
 public final class EmoteManager implements Wrapper {
 
     private static final long BLEND_MS = 300L;
@@ -28,27 +27,24 @@ public final class EmoteManager implements Wrapper {
             return elapsedMs() >= emote.durationMs();
         }
 
-          
         public float blend() {
             long elapsed = elapsedMs();
             float in = MathHelper.clamp(elapsed / (float) BLEND_MS, 0f, 1f);
             float out = MathHelper.clamp((emote.durationMs() - elapsed) / (float) BLEND_MS, 0f, 1f);
             float t = Math.min(in, out);
-             
+
             return t * t * (3f - 2f * t);
         }
     }
 
     private static final Map<UUID, ActiveEmote> ACTIVE = new ConcurrentHashMap<>();
 
-      
     public static void playLocal(Emote emote) {
         if (mc.player == null) return;
         ACTIVE.put(mc.player.getUuid(), new ActiveEmote(emote, System.currentTimeMillis()));
         sendToServer(emote.id());
     }
 
-      
     public static void stopLocal() {
         if (mc.player == null) return;
         ACTIVE.remove(mc.player.getUuid());
@@ -56,21 +52,18 @@ public final class EmoteManager implements Wrapper {
     }
 
     private static void sendToServer(String emoteId) {
-         
+
         try {
             if (mc.getNetworkHandler() != null && ClientPlayNetworking.canSend(EmoteC2SPayload.ID)) {
                 ClientPlayNetworking.send(new EmoteC2SPayload(emoteId));
             }
         } catch (Throwable ignored) {
-             
+
         }
 
-         
-         
         dev.darkvisuals.client.managers.CosmeticsSyncManager.sendEmote(emoteId);
     }
 
-      
     public static void playRemote(UUID player, String emoteId) {
         Emote emote = EmoteRegistry.byId(emoteId);
         if (emote == null) return;
@@ -85,7 +78,6 @@ public final class EmoteManager implements Wrapper {
         ACTIVE.clear();
     }
 
-      
     public static ActiveEmote getActive(UUID player) {
         if (player == null) return null;
         ActiveEmote active = ACTIVE.get(player);

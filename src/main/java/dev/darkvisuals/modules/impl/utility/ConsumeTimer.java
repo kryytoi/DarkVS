@@ -14,9 +14,6 @@ import net.minecraft.item.ItemStack;
 
 import java.awt.*;
 
-/**
- * ConsumeTimer — прогресс использования предмета (еда, зелья) в стеклянной панели.
- */
 public class ConsumeTimer extends Module {
 
     private final NumberSetting x = new NumberSetting("X", 20f, 0f, 3840f, 1f);

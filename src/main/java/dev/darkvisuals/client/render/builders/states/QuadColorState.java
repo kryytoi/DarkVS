@@ -14,7 +14,7 @@ public record QuadColorState(int color1, int color2, int color3, int color4) {
     public QuadColorState(Color color) {
 		this(color, color, color, color);
 	}
-	
+
 	public QuadColorState(int color) {
 		this(color, color, color, color);
 	}

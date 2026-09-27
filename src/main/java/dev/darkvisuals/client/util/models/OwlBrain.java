@@ -8,7 +8,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 
- 
 @Environment(EnvType.CLIENT)
 public class OwlBrain {
 
@@ -23,11 +22,10 @@ public class OwlBrain {
     private float smoothHeadPitch;
     private double leashVelY = 0.0;
 
-     
     private int playerIdleTicks = 0;
     private boolean ropeActive = false;
-    private float ropePhase, prevRopePhase;        
-    private float ropeAmount, prevRopeAmount;      
+    private float ropePhase, prevRopePhase;
+    private float ropeAmount, prevRopeAmount;
 
     public float prevLimbSwingAmount;
     public float limbSwingAmount;
@@ -58,7 +56,6 @@ public class OwlBrain {
 
         double distToPlayer = pos.distanceTo(playerPos);
 
-         
         if (distToPlayer > 20.0) {
             float angle = (float) Math.toRadians(entity.getYaw() + 180.0F);
             pos = new Vec3d(playerPos.x - Math.sin(angle) * -1.4, playerPos.y, playerPos.z + Math.cos(angle) * -1.4);
@@ -77,7 +74,6 @@ public class OwlBrain {
             motion = new Vec3d(motion.x, 0.0, motion.z);
         }
 
-         
         boolean playerStill = entity.getVelocity().horizontalLengthSquared() < 9.0E-6 && entity.isOnGround();
         if (playerStill) {
             playerIdleTicks++;
@@ -85,7 +81,6 @@ public class OwlBrain {
             playerIdleTicks = 0;
         }
 
-         
         float yawRad = (float) Math.toRadians(entity.getYaw());
         Vec3d behind = new Vec3d(
                 playerPos.x + Math.sin(yawRad) * 1.4,
@@ -99,11 +94,10 @@ public class OwlBrain {
 
         boolean owlSettled = distToAnchor < 1.2 && motion.horizontalLengthSquared() < 2.0E-4;
 
-         
         ropeActive = playerIdleTicks > 20 && owlSettled && onGround;
 
         if (ropeActive) {
-             
+
             smoothVel = lerpVec(smoothVel, Vec3d.ZERO, 0.3);
             motion = new Vec3d(smoothVel.x, motion.y, smoothVel.z);
             ropeAmount = Math.min(1.0F, ropeAmount + 0.07F);
@@ -116,7 +110,6 @@ public class OwlBrain {
             }
         }
 
-         
         if (ropeAmount > 0.4F) {
             ropePhase += 0.42F;
         }
@@ -186,7 +179,7 @@ public class OwlBrain {
 
     private void handleRotation(boolean playerStill) {
         if (ropeActive && entity != null) {
-             
+
             Vec3d toPlayer = entity.getPos().subtract(pos);
             if (toPlayer.horizontalLength() > 0.01) {
                 float targetBody = (float) Math.toDegrees(Math.atan2(-toPlayer.x, toPlayer.z));

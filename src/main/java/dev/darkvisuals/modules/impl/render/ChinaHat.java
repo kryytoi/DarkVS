@@ -44,7 +44,6 @@ public class ChinaHat extends Module implements ThemeManager.ThemeChangeListener
         themeManager.addThemeChangeListener(this);
     }
 
-      
     public BooleanSetting getShowFriends() {
         return showFriends;
     }
@@ -72,16 +71,14 @@ public class ChinaHat extends Module implements ThemeManager.ThemeChangeListener
 
         MatrixStack matrices = e.getMatrices();
         for (PlayerEntity p : mc.world.getPlayers()) {
-             
+
             if (p == mc.player && mc.options.getPerspective().isFirstPerson()) continue;
 
-             
             if (p == mc.player) {
                 renderHatForPlayer(matrices, p, tickDelta);
                 continue;
             }
 
-             
             if (FriendsManager.checkFriend(p.getGameProfile().getName()) && showFriends.getValue()) {
                 renderHatForPlayer(matrices, p, tickDelta);
             }
@@ -104,14 +101,14 @@ public class ChinaHat extends Module implements ThemeManager.ThemeChangeListener
         float headYawAbs = MathHelper.lerp(tickDelta, player.prevHeadYaw, player.headYaw);
         float netHeadYaw = headYawAbs - bodyYaw;
         float headPitch = MathHelper.lerp(tickDelta, player.prevPitch, player.getPitch());
-         
+
         matrices.multiply(net.minecraft.util.math.RotationAxis.POSITIVE_Y.rotationDegrees(-netHeadYaw));
         matrices.multiply(net.minecraft.util.math.RotationAxis.POSITIVE_X.rotationDegrees(headPitch));
         float baseToCrown = player.isInSneakingPose() ? 0.305f : 0.265f;
         float pitchRad = (float) Math.toRadians(MathHelper.clamp(headPitch, -90.0f, 90.0f));
         float cosPitch = MathHelper.clamp((float) Math.cos(pitchRad), 0.0f, 1.0f);
-        float tiltFactor = 1.0f - cosPitch;  
-        float upMul = headPitch < 0.0f ? 1.6f : 1.0f;  
+        float tiltFactor = 1.0f - cosPitch;
+        float upMul = headPitch < 0.0f ? 1.6f : 1.0f;
 
         float clearance = 0.03f * cosPitch + (headPitch < 0.0f ? 0.008f * tiltFactor : 0.0f);
         float dynamicOffset = -0.05f + 0.04f + 0.08f * tiltFactor * upMul;

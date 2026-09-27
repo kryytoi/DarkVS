@@ -40,8 +40,6 @@ public abstract class PlayerEmoteModelMixin extends BipedEntityModel<PlayerEntit
 
         active.emote().pose().apply((PlayerEntityModel) (Object) this, active.blend(), active.seconds());
 
-         
-         
         this.rightSleeve.copyTransform(this.rightArm);
         this.leftSleeve.copyTransform(this.leftArm);
         this.rightPants.copyTransform(this.rightLeg);

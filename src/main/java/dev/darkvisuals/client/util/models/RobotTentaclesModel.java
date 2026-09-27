@@ -16,10 +16,6 @@ import net.minecraft.util.math.Vec3d;
 import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL11;
 
-/**
- * Роботизированные щупальца за спиной: тёмные металлические сегменты,
- * светящиеся сервоприводы в цвет темы и клешни на концах.
- */
 public final class RobotTentaclesModel {
 
     private RobotTentaclesModel() {
@@ -29,7 +25,6 @@ public final class RobotTentaclesModel {
     private static final float PIXEL = 0.0625f;
     private static final float SERVO_STEP = 1.2f;
 
-    // { yaw, backX, rollZ, bendZ, lenMul, phase, widthMul }
     private static final float[][] TENTACLES = {
             { -16f, -20f, +34f, +3.4f, 1.05f, 0.0f, 1.00f },
             { +16f, -20f, -34f, -3.4f, 1.05f, 1.6f, 1.00f },
@@ -63,7 +58,6 @@ public final class RobotTentaclesModel {
         RenderSystem.enableDepthTest();
         RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR);
 
-        // Светящийся проход: ядро крепления и сервоприводы
         RenderSystem.depthMask(false);
         RenderSystem.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE);
         BufferBuilder glow = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
@@ -73,7 +67,6 @@ public final class RobotTentaclesModel {
         }
         BufferRenderer.drawWithGlobalProgram(glow.end());
 
-        // Основной проход: металл
         RenderSystem.depthMask(true);
         RenderSystem.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
         BufferBuilder buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
@@ -124,7 +117,7 @@ public final class RobotTentaclesModel {
             float pitch = 0.0f;
 
             if (animated) {
-                // Ступенчатое движение сервоприводов вместо плавной волны
+
                 float amp = 0.5f + t * 2.0f;
                 float wave = MathHelper.sin(animTime * 0.8f + phase + seg * 0.55f) * amp;
                 bend += Math.round(wave / SERVO_STEP) * SERVO_STEP;
@@ -140,13 +133,13 @@ public final class RobotTentaclesModel {
             Matrix4f matrix = matrices.peek().getPositionMatrix();
 
             if (glowPass) {
-                // светящееся кольцо сервопривода между сегментами
+
                 float jw = w * 2.4f;
                 cube(buffer, matrix, -jw * PIXEL, 0.0f, -jw * PIXEL, jw * PIXEL, lenBlocks * 0.35f, jw * PIXEL, jointColor);
             } else {
                 cube(buffer, matrix, -w * PIXEL, 0.0f, -w * PIXEL, w * PIXEL, lenBlocks * 0.92f, w * PIXEL,
                         seg % 2 == 0 ? metal(0) : metal(1));
-                // сам сервопривод
+
                 float jw = w * 1.05f;
                 cube(buffer, matrix, -jw * PIXEL, lenBlocks * 0.92f, -jw * PIXEL, jw * PIXEL, lenBlocks, jw * PIXEL, jointColor);
             }
@@ -155,7 +148,7 @@ public final class RobotTentaclesModel {
         }
 
         if (!glowPass) {
-            // клешня: два шипа-захвата
+
             float w = MathHelper.lerp(1.0f, widthStart, widthEnd) * 0.5f;
             float clawLen = 4.2f * size * lenMul * PIXEL;
             matrices.push();
@@ -181,7 +174,7 @@ public final class RobotTentaclesModel {
     }
 
     private static int metal(int variant) {
-        // два оттенка тёмного металла для чередования сегментов
+
         return variant == 0 ? 0xFF363B44 : 0xFF4A505C;
     }
 

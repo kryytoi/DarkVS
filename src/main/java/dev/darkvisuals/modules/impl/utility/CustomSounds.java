@@ -40,7 +40,6 @@ import java.util.concurrent.TimeUnit;
 
 public class CustomSounds extends Module {
 
-
     private static final ThreadPoolExecutor AUDIO_POOL = new ThreadPoolExecutor(
             1, 3, 5L, TimeUnit.SECONDS, new SynchronousQueue<>(),
             r -> {
@@ -50,13 +49,11 @@ public class CustomSounds extends Module {
             },
             new ThreadPoolExecutor.DiscardPolicy());
 
-
     private static final long KILL_WINDOW_MS = 4_000L;
 
     private static final long REMOVAL_WINDOW_MS = 1_200L;
 
     private static final long HIT_COOLDOWN_MS = 60L;
-
 
     private final StringSetting killPath = new StringSetting("kill.path", "", () -> false, false);
     private final BooleanSetting killEnabled = new BooleanSetting("Звук убийства", true);
@@ -64,13 +61,11 @@ public class CustomSounds extends Module {
     private final ButtonSetting killPick = new ButtonSetting("Выбрать mp3 убийства", () -> pickSound("kill", killPath));
     private final ButtonSetting killTest = new ButtonSetting("Тест убийства", () -> play(killPath.getValue(), killVolume.getValue()));
 
-
     private final StringSetting hitPath = new StringSetting("hit.path", "", () -> false, false);
     private final BooleanSetting hitEnabled = new BooleanSetting("Звук удара", true);
     private final NumberSetting hitVolume = new NumberSetting("Громкость удара", 1.00f, 0.1f, 2.0f, 0.01f);
     private final ButtonSetting hitPick = new ButtonSetting("Выбрать mp3 удара", () -> pickSound("hit", hitPath));
     private final ButtonSetting hitTest = new ButtonSetting("Тест удара", () -> play(hitPath.getValue(), hitVolume.getValue()));
-
 
     private final Map<Integer, Long> attacked = new ConcurrentHashMap<>();
     private volatile long lastHitSound = 0L;
@@ -95,8 +90,6 @@ public class CustomSounds extends Module {
         super.onDisable();
     }
 
-
-
     @EventHandler
     private void onAttackEntity(EventAttackEntity e) {
         if (fullNullCheck()) return;
@@ -105,9 +98,7 @@ public class CustomSounds extends Module {
         if (target == mc.player) return;
         if (!(target instanceof LivingEntity living)) return;
 
-
         attacked.put(target.getId(), System.currentTimeMillis());
-
 
         if (!hitEnabled.getValue()) return;
         if (!e.isEffectsAllowed()) return;
@@ -170,14 +161,11 @@ public class CustomSounds extends Module {
         }
     }
 
-
     private void triggerKill(int id) {
         if (attacked.remove(id) == null) return;
         if (!killEnabled.getValue()) return;
         play(killPath.getValue(), killVolume.getValue());
     }
-
-
 
     private void pickSound(String slot, StringSetting target) {
         try {
@@ -243,8 +231,6 @@ public class CustomSounds extends Module {
         if (file == null) return;
         AUDIO_POOL.submit(() -> decodeAndPlay(file, volume));
     }
-
-
 
     private static void decodeAndPlay(File file, float volume) {
         Bitstream bitstream = null;

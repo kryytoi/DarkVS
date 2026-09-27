@@ -139,7 +139,7 @@ public class ModuleManager implements Wrapper {
                 new LowHealthFX(),
                 new HitMarker(),
                 new Souls(),
-                // Эффекты красоты
+
                 new Fireworks(),
                 new Rainbow(),
                 new CherryBlossom(),
@@ -166,7 +166,14 @@ public class ModuleManager implements Wrapper {
                 new FriendGlow(),
                 new Portal(),
                 new HitEffect(),
-                new NoFluid()
+                new NoFluid(),
+                new CriticalHitVFX(),
+                new KillStreakTitle(),
+                new JoJoStand(),
+                new CrosshairHitNotice(),
+                new LootBeam(),
+                new TotemHoldEffect(),
+                new MaceEffect()
         );
 
         for (Module module : modules) {
@@ -178,7 +185,7 @@ public class ModuleManager implements Wrapper {
                     if (setting != null && !module.getSettings().contains(setting)) module.getSettings().add(setting);
                 }
             } catch (Exception ignored) {}
-             
+
             defaultBinds.put(module, module.getBind());
         }
     }
@@ -189,9 +196,9 @@ public class ModuleManager implements Wrapper {
 
     @EventHandler
     public void onKey(EventKey e) {
-         
+
         if (mc.currentScreen != null) return;
-         
+
         if (e.getKey() < 0) return;
         for (Module module : modules) {
             if (module.getBind().isMouse()) continue;
@@ -211,7 +218,7 @@ public class ModuleManager implements Wrapper {
 
     @EventHandler
     public void onMouse(EventMouse e) {
-         
+
         if (mc.currentScreen != null) return;
         if (e.getButton() < 0) return;
         for (Module module : modules) {

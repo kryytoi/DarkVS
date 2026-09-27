@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-
 public class WaterRipples extends Module {
 
     private static final int SEGMENTS = 28;
@@ -68,7 +67,6 @@ public class WaterRipples extends Module {
         return mc.player.getVelocity().horizontalLength() > 0.06;
     }
 
-    // возвращает Y поверхности воды под игроком, или -1, если воды нет
     private double getWaterSurfaceY() {
         Vec3d pos = mc.player.getPos();
         BlockPos floor = BlockPos.ofFloored(pos);
@@ -86,7 +84,6 @@ public class WaterRipples extends Module {
     public void onTick(EventTick event) {
         if (fullNullCheck()) return;
 
-        // удаляем старые круги и следим за лимитом
         long now = System.currentTimeMillis();
         Iterator<Ripple> it = ripples.iterator();
         while (it.hasNext()) {
@@ -100,13 +97,11 @@ public class WaterRipples extends Module {
             ripples.remove(0);
         }
 
-        // стоим ли на воде
         double surfaceY = getWaterSurfaceY();
         if (surfaceY < 0) return;
         if (Math.abs(mc.player.getY() - surfaceY) > 1.2) return;
         if (onlyMoving.getValue() && !isMoving()) return;
 
-        // новый круг раз в 350 мс
         if (now - lastSpawn < 350L) return;
         lastSpawn = now;
         ripples.add(new Ripple(mc.player.getX(), mc.player.getZ(), surfaceY, now));
@@ -133,7 +128,7 @@ public class WaterRipples extends Module {
         for (Ripple r : ripples) {
             float ageSec = (now - r.birth) / 1000.0f;
             float ringR = ageSec * expandSpeed.getValue();
-            // плавное появление и затухание
+
             float fadeIn = MathHelper.clamp(ageSec / 0.3f, 0f, 1f);
             float fadeOut = MathHelper.clamp((radius.getValue() - ringR) / radius.getValue(), 0f, 1f);
             int alpha = (int) (255 * alphaSetting.getValue() * fadeIn * fadeOut);

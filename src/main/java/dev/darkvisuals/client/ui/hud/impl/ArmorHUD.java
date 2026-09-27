@@ -27,19 +27,16 @@ public class ArmorHUD extends HudElement implements ThemeManager.ThemeChangeList
 
     private final InfinityAnimation fadeAnimation = new InfinityAnimation(Easing.BOTH_SINE);
 
-     
     private final ThemeManager themeManager;
     private Color bgColor;
     private Color textColor;
     private Color lowDurabilityColor;
     private Color headerTextColor;
 
-     
     private final Map<Integer, InfinityAnimation> slotAlpha = new HashMap<>();
-     
+
     private final Map<Integer, ItemStack> lastSlotItem = new HashMap<>();
 
-     
     private final ListSetting layoutModes = new ListSetting(
             "setting.layout",
             new BooleanSetting("setting.horizontal", true),
@@ -53,7 +50,6 @@ public class ArmorHUD extends HudElement implements ThemeManager.ThemeChangeList
         applyTheme(themeManager.getCurrentTheme());
         themeManager.addThemeChangeListener(this);
 
-         
         for (int i = 0; i < 4; i++) {
             slotAlpha.put(i, new InfinityAnimation(Easing.OUT_QUAD));
             lastSlotItem.put(i, ItemStack.EMPTY);
@@ -75,10 +71,9 @@ public class ArmorHUD extends HudElement implements ThemeManager.ThemeChangeList
     }
 
     private void applyTheme(ThemeManager.Theme theme) {
-         
+
         this.bgColor = new Color(30, 30, 30, 240);
 
-         
         int brightness = (int) (0.299 * bgColor.getRed() + 0.587 * bgColor.getGreen() + 0.114 * bgColor.getBlue());
         if (brightness > 200 && bgColor.getAlpha() <= 150) {
             this.textColor = new Color(0, 0, 0, 255);
@@ -86,7 +81,7 @@ public class ArmorHUD extends HudElement implements ThemeManager.ThemeChangeList
             this.textColor = Color.WHITE;
         }
 
-        this.headerTextColor = this.textColor;  
+        this.headerTextColor = this.textColor;
         this.lowDurabilityColor = new Color(200, 80, 80, 220);
     }
 
@@ -110,7 +105,6 @@ public class ArmorHUD extends HudElement implements ThemeManager.ThemeChangeList
             boolean allEmpty = armorItems.stream().allMatch(ItemStack::isEmpty);
             boolean previewMode = chatOpen && allEmpty;
 
-             
             if (chatOpen) {
                 fadeAnimation.animate(1f, 160);
                 previewMode = true;
@@ -121,7 +115,6 @@ public class ArmorHUD extends HudElement implements ThemeManager.ThemeChangeList
                 fadeAnimation.animate(1f, 160);
             }
 
-             
             for (int i = 0; i < 4; i++) {
                 ItemStack presentStack = (i < armorItems.size() ? armorItems.get(i) : ItemStack.EMPTY);
                 boolean present = previewMode || !presentStack.isEmpty();
@@ -154,7 +147,6 @@ public class ArmorHUD extends HudElement implements ThemeManager.ThemeChangeList
             boolean drawHorizontal = layoutModes.getName("setting.horizontal") != null && layoutModes.getName("setting.horizontal").getValue();
             boolean drawVertical = layoutModes.getName("setting.vertical") != null && layoutModes.getName("setting.vertical").getValue();
 
-             
             if (!drawHorizontal && !drawVertical) drawHorizontal = true;
 
             boolean rightAnchored = getX() > mc.getWindow().getScaledWidth() / 2f;
@@ -233,7 +225,7 @@ public class ArmorHUD extends HudElement implements ThemeManager.ThemeChangeList
                     widthH += iconSize + padding;
                 }
                 totalWidth = Math.max(totalWidth, widthH - padding);
-                totalHeight += heightH + padding;  
+                totalHeight += heightH + padding;
                 cursorY += heightH + padding;
             }
 
@@ -324,10 +316,9 @@ public class ArmorHUD extends HudElement implements ThemeManager.ThemeChangeList
 
     @Override
     public void onMouse(dev.darkvisuals.client.events.impl.EventMouse e) {
-         
+
         if (!(mc.currentScreen instanceof net.minecraft.client.gui.screen.ChatScreen) || fullNullCheck()) return;
 
-         
         super.onMouse(e);
     }
 

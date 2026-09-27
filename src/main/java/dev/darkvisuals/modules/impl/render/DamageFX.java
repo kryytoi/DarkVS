@@ -28,9 +28,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
-/**
- * DamageFX — красная вспышка и искры при получении урона.
- */
 public class DamageFX extends Module {
 
     private static final long SPARK_TTL_MS = 600L;
@@ -152,7 +149,7 @@ public class DamageFX extends Module {
 
             matrices.push();
             matrices.translate((float) (impact.pos.x - cam.x), (float) (impact.pos.y - cam.y + 1), (float) (impact.pos.z - cam.z));
-            // вертикальное кольцо, повёрнутое к камере по горизонтали
+
             matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(-mc.gameRenderer.getCamera().getYaw()));
 
             Matrix4f matrix = matrices.peek().getPositionMatrix();

@@ -11,14 +11,13 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.LightType;
 import dev.darkvisuals.client.events.impl.EventRender3D;
 
- 
 import dev.darkvisuals.client.events.impl.EventTick;
 
 import dev.darkvisuals.modules.api.Category;
 import dev.darkvisuals.modules.api.Module;
 import dev.darkvisuals.client.util.models.DogBrain;
 import dev.darkvisuals.client.util.models.DogModel;
-import meteordevelopment.orbit.EventHandler;  
+import meteordevelopment.orbit.EventHandler;
 
 public class Dog extends Module {
 
@@ -26,12 +25,12 @@ public class Dog extends Module {
     private final DogModel model = new DogModel();
 
     public Dog() {
-         
+
         super("Taksa", Category.Render, "Таксааа :3");
     }
 
     @EventHandler
-    public void onTick(EventTick event) {  
+    public void onTick(EventTick event) {
         if (mc.player == null) return;
 
         brain.setEntity(mc.player);
@@ -46,16 +45,16 @@ public class Dog extends Module {
     }
 
     @EventHandler
-    public void onRender3D(EventRender3D.Game event) {  
+    public void onRender3D(EventRender3D.Game event) {
         if (mc.player == null || mc.world == null) return;
 
-        float tickDelta = event.getTickDelta();  
+        float tickDelta = event.getTickDelta();
         Vec3d dogWorldPos = brain.getPos(tickDelta);
 
         Camera camera = mc.gameRenderer.getCamera();
         Vec3d cam = camera.getPos();
 
-        MatrixStack ms = event.getMatrices();  
+        MatrixStack ms = event.getMatrices();
         ms.push();
         ms.translate(dogWorldPos.x - cam.x, dogWorldPos.y - cam.y, dogWorldPos.z - cam.z);
 

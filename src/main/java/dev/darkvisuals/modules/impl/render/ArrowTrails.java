@@ -30,10 +30,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-/**
- * ArrowTrails — светящийся след за летящими стрелами (и трезубцами).
- * История позиций хранится по сущности и рисуется затухающими billboard-квадами.
- */
 public class ArrowTrails extends Module {
 
     private final NumberSetting length =
@@ -69,14 +65,13 @@ public class ArrowTrails extends Module {
 
         int maxPoints = (int) (float) length.getValue();
 
-        // удаляем следы сущностей, которых больше нет рядом
         trails.keySet().removeIf(e -> e.isRemoved() || e.age > 600
                 || e.getPos().distanceTo(mc.player.getPos()) > range.getValue() * 1.5);
 
         for (Entity entity : mc.world.getEntities()) {
             if (!(entity instanceof PersistentProjectileEntity)) continue;
             if (entity.getPos().distanceTo(mc.player.getPos()) > range.getValue()) continue;
-            // летящая стрела двигается; застрявшая — нет
+
             if (entity.getVelocity().lengthSquared() < 0.04) continue;
 
             ArrayDeque<Vec3d> trail = trails.computeIfAbsent(entity, k -> new ArrayDeque<>());
@@ -112,7 +107,7 @@ public class ArrowTrails extends Module {
             int count = trail.size();
             int idx = 0;
             for (Vec3d point : trail) {
-                // самая свежая точка — ярче и крупнее
+
                 float t = count <= 1 ? 1f : (float) idx / (float) (count - 1);
                 float fade = 1f - t;
 

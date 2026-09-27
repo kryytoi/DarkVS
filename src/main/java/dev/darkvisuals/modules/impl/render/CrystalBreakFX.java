@@ -37,10 +37,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-/**
- * CrystalBreakFX — визуальный эффект при взрыве эндер-кристаллов:
- * кристаллическая ударная волна, разлёт острых осколков обсидиана и неоновая вспышка.
- */
 public class CrystalBreakFX extends Module {
 
     public enum ColorMode implements Nameable {
@@ -95,7 +91,6 @@ public class CrystalBreakFX extends Module {
     public void onTick(EventTick event) {
         if (fullNullCheck()) return;
 
-        // Отслеживаем кристаллы в мире и их исчезновение / взрыв
         Map<Integer, Vec3d> currentCrystals = new HashMap<>();
         for (net.minecraft.entity.Entity e : mc.world.getEntities()) {
             if (e instanceof EndCrystalEntity && e.isAlive()) {
@@ -103,7 +98,6 @@ public class CrystalBreakFX extends Module {
             }
         }
 
-        // Если кристалл пропал и игрок рядом — вызываем эффект взрыва
         for (Map.Entry<Integer, Vec3d> entry : knownCrystals.entrySet()) {
             if (!currentCrystals.containsKey(entry.getKey())) {
                 Vec3d pos = entry.getValue();
@@ -116,7 +110,6 @@ public class CrystalBreakFX extends Module {
         knownCrystals.clear();
         knownCrystals.putAll(currentCrystals);
 
-        // Обновление состояния волн
         Iterator<CrystalShockwave> wIt = waveList.iterator();
         while (wIt.hasNext()) {
             CrystalShockwave w = wIt.next();
@@ -124,7 +117,6 @@ public class CrystalBreakFX extends Module {
             if (w.progress >= w.maxLife) wIt.remove();
         }
 
-        // Обновление состояния вспышек
         Iterator<CoreFlash> fIt = flashList.iterator();
         while (fIt.hasNext()) {
             CoreFlash f = fIt.next();
@@ -132,7 +124,6 @@ public class CrystalBreakFX extends Module {
             if (f.progress >= f.maxLife) fIt.remove();
         }
 
-        // Обновление физики осколков
         Iterator<CrystalShard> sIt = shardList.iterator();
         while (sIt.hasNext()) {
             CrystalShard s = sIt.next();
@@ -148,12 +139,11 @@ public class CrystalBreakFX extends Module {
     public void onPacketReceive(EventPacket.Receive event) {
         if (fullNullCheck()) return;
 
-        // Взрыв по пакету
         if (event.getPacket() instanceof ExplosionS2CPacket explosion) {
             Vec3d expPos = explosion.center();
             mc.execute(() -> {
                 if (mc.world == null || mc.player == null) return;
-                // Проверяем, был ли рядом кристалл
+
                 for (Vec3d cPos : knownCrystals.values()) {
                     if (cPos.distanceTo(expPos) < 2.5) {
                         triggerBreak(cPos.add(0, 1.0, 0));
@@ -196,7 +186,7 @@ public class CrystalBreakFX extends Module {
                         (rnd.nextFloat() - 0.5f) * 50f
                 );
                 float sz = (0.07f + rnd.nextFloat() * 0.14f) * sc;
-                // Чередуем основной цвет и тёмный обсидиановый оттенок
+
                 Color shardCol = rnd.nextBoolean() ? col : new Color(35, 20, 50, 240);
                 shardList.add(new CrystalShard(pos, vel, rot, rotSpeed, shardCol, sz, 26 + rnd.nextInt(18)));
             }
@@ -218,7 +208,6 @@ public class CrystalBreakFX extends Module {
         RenderSystem.disableCull();
         RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR);
 
-        // 1. Вспышка ядра
         if (!flashList.isEmpty()) {
             BufferBuilder buf = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
             for (CoreFlash f : flashList) {
@@ -244,7 +233,6 @@ public class CrystalBreakFX extends Module {
             BufferRenderer.drawWithGlobalProgram(buf.end());
         }
 
-        // 2. Ударные волны (кольца)
         if (!waveList.isEmpty()) {
             BufferBuilder buf = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
             for (CrystalShockwave w : waveList) {
@@ -283,7 +271,6 @@ public class CrystalBreakFX extends Module {
             BufferRenderer.drawWithGlobalProgram(buf.end());
         }
 
-        // 3. Осколки кристалла
         if (!shardList.isEmpty()) {
             BufferBuilder buf = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
             for (CrystalShard sh : shardList) {
@@ -301,7 +288,6 @@ public class CrystalBreakFX extends Module {
                 float s = sh.size;
                 float cr = sh.color.getRed() / 255f, cg = sh.color.getGreen() / 255f, cb = sh.color.getBlue() / 255f;
 
-                // Острый кристаллический ромб
                 buf.vertex(m, 0f, s * 1.6f, 0f).color(cr * 1.2f, cg * 1.2f, cb * 1.2f, a);
                 buf.vertex(m, s * 0.7f, 0f, 0f).color(cr, cg, cb, a);
                 buf.vertex(m, 0f, -s * 1.6f, 0f).color(cr * 0.7f, cg * 0.7f, cb * 0.7f, a);

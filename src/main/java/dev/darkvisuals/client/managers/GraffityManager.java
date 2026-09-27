@@ -13,19 +13,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-/**
- * GraffityManager — подгружает все PNG-граффити из assets/darkvisuals/grafi.
- *
- * Каждая картинка — это отдельное граффити. Квадратные PNG складываются в папку
- * src/main/resources/assets/darkvisuals/grafi/*.png и подхватываются при
- * перезагрузке ресурсов (F3+T или запуск).
- *
- * Граффити рендерятся как биллборды в мире (см. Graffity), поэтому нам нужны
- * только идентификаторы текстур — Minecraft сам загрузит PNG по Identifier.
- */
 public final class GraffityManager {
 
-    /** Папка внутри assets/darkvisuals/, где лежат граффити. */
     private static final String GRAFI_DIR = "grafi";
 
     private static final List<Identifier> textures = new ArrayList<>();
@@ -34,7 +23,6 @@ public final class GraffityManager {
 
     private GraffityManager() {}
 
-    /** Перечитать граффити из ресурсов. Вызывается из reload-листенера. */
     public static synchronized void reload(ResourceManager manager) {
         textures.clear();
         names.clear();
@@ -43,8 +31,7 @@ public final class GraffityManager {
         if (manager == null) return;
 
         try {
-            // findResources возвращает все ресурсы, подходящие под предикат —
-            // так мы берём каждый .png из папки grafi без жёсткого списка.
+
             Map<Identifier, Resource> found = manager.findResources(
                     GRAFI_DIR,
                     id -> id.getPath().endsWith(".png")
@@ -55,7 +42,7 @@ public final class GraffityManager {
 
             for (Identifier id : sorted) {
                 String path = id.getPath();
-                // из пути "grafi/my_tag.png" берём имя файла без расширения
+
                 String name = path.substring(GRAFI_DIR.length() + 1);
                 int dot = name.lastIndexOf('.');
                 if (dot > 0) name = name.substring(0, dot);
@@ -64,10 +51,8 @@ public final class GraffityManager {
                 names.add(name);
             }
 
-            // Custom user-made sprays from {gameDir}/darkvisuals/grafi/*.png
             loadCustomTextures();
 
-            // Custom user-made sprays from {gameDir}/darkvisuals/grafi/*.png
             loadCustomTextures();
 
             loaded = true;
@@ -77,12 +62,10 @@ public final class GraffityManager {
         }
     }
 
-    /** Все загруженные текстуры граффити (порядок стабильный — по имени файла). */
     public static List<Identifier> getTextures() {
         return Collections.unmodifiableList(textures);
     }
 
-    /** Имена граффити, параллельные списку текстур. */
     public static List<String> getNames() {
         return Collections.unmodifiableList(names);
     }
@@ -105,8 +88,6 @@ public final class GraffityManager {
         return loaded;
     }
 
-    /** Квадратная ли текстура (по метаданным PNG). Граффити должны быть квадратными —
-     *  неквадратные всё равно рисуются, но рамка колеса режет их по квадрату. */
     public static boolean isSquare(Identifier id) {
         try {
             MinecraftClient mc = MinecraftClient.getInstance();
@@ -119,9 +100,6 @@ public final class GraffityManager {
         }
     }
 
-    /** Зарегистрировать граффити во время игры (для теста/аддонов) —
-     *  принимает уже готовую NativeImage, регистрирует её в менеджере текстур. */
-    /** Loads user-made PNGs from {gameDir}/darkvisuals/grafi into the texture list. */
     private static void loadCustomTextures() {
         try {
             java.nio.file.Path dir = dev.darkvisuals.darkvisuals.getInstance().getGlobalsDir().toPath().resolve(GRAFI_DIR);

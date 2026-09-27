@@ -3,7 +3,6 @@ package dev.darkvisuals.client.ui.hud;
 import dev.darkvisuals.modules.impl.render.HUD;
 import dev.darkvisuals.modules.settings.api.Nameable;
 
- 
 public enum HudStyle implements Nameable {
     GLOWING("Glowing"),
     MINIMALISTIC("Minimalistic"),
@@ -19,7 +18,6 @@ public enum HudStyle implements Nameable {
     public String getName() {
         return displayName;
     }
-
 
     public static HudStyle current() {
         HUD hud = HUD.getInstance();

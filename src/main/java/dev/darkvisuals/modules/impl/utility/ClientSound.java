@@ -36,13 +36,13 @@ public class ClientSound extends Module {
     public String getEnableSoundId() {
         if (pair2.getValue()) return "darkvisuals:enable2";
         if (legacy.getValue()) return "darkvisuals:enable";
-        return "darkvisuals:enable1";  
+        return "darkvisuals:enable1";
     }
 
     public String getDisableSoundId() {
         if (pair2.getValue()) return "darkvisuals:disable2";
         if (legacy.getValue()) return "darkvisuals:disable";
-        return "darkvisuals:disable1";  
+        return "darkvisuals:disable1";
     }
 
     public NumberSetting getVolume() {

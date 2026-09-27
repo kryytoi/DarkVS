@@ -28,9 +28,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
-/**
- * TotemFX — золотой взрыв при срабатывании тотема: кольца, гейзеры искр и вспышка.
- */
 public class TotemFX extends Module {
 
     private static final long RING_TTL_MS = 700L;
@@ -100,7 +97,7 @@ public class TotemFX extends Module {
     public void onPacketReceive(dev.darkvisuals.client.events.impl.EventPacket.Receive e) {
         if (mc.player == null || mc.world == null) return;
         if (!(e.getPacket() instanceof net.minecraft.network.packet.s2c.play.EntityStatusS2CPacket packet)) return;
-        // статус 35 — срабатывание тотема бессмертия
+
         if (packet.getStatus() != 35) return;
 
         mc.execute(() -> {
@@ -119,7 +116,7 @@ public class TotemFX extends Module {
 
             int count = (int) (float) sparkCount.getValue();
             for (int i = 0; i < count; i++) {
-                // сферический разлёт с упором вверх — как настоящий тотем
+
                 double theta = rnd.nextDouble() * Math.PI * 2;
                 double phi = Math.acos(1 - rnd.nextDouble() * 1.4);
                 double sp = 0.08 + rnd.nextDouble() * 0.14;

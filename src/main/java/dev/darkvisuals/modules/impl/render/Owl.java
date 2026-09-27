@@ -46,7 +46,7 @@ public class Owl extends Module {
         MatrixStack ms = event.getMatrices();
         ms.push();
         ms.translate(owlWorldPos.x - cam.x, owlWorldPos.y - cam.y, owlWorldPos.z - cam.z);
-         
+
         ms.scale(0.8F, 0.8F, 0.8F);
 
         float age = mc.player.age + tickDelta;

@@ -28,7 +28,6 @@ import org.joml.Matrix4f;
 
 import java.awt.Color;
 
-
 public class ItemGlow extends Module {
 
     private static final Identifier GLOW_TEXTURE = darkvisuals.id("hud/glow.png");
@@ -80,9 +79,8 @@ public class ItemGlow extends Module {
             double dist = entity.getPos().distanceTo(mc.player.getPos());
             if (dist > maxRange) continue;
 
-            // плавное исчезновение на границе дистанции
             float distFade = MathHelper.clamp((float) ((maxRange - dist) / 4f), 0f, 1f);
-            // только что заспавненные предметы разгораются
+
             float ageFade = MathHelper.clamp(entity.age / 8f, 0f, 1f);
             float pulseMod = pulse.getValue()
                     ? 0.8f + 0.2f * MathHelper.sin(now / 350f + entity.getId() * 1.7f)

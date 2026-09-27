@@ -14,14 +14,12 @@ public class InventoryHUD extends HudElement {
 
     private final ThemeManager themeManager;
 
-     
     private static final int COLS = 9;
     private static final int ROWS = 3;
-    private static final float SLOT = 18f;     
-    private static final float PADDING = 3f;   
-    private static final float RADIUS = 4f;    
+    private static final float SLOT = 18f;
+    private static final float PADDING = 3f;
+    private static final float RADIUS = 4f;
 
-     
     private static final Color SLOT_BG = new Color(255, 255, 255, 22);
 
     public InventoryHUD() {
@@ -46,7 +44,6 @@ public class InventoryHUD extends HudElement {
 
         setBounds(baseX, baseY, panelW, panelH);
 
-         
         Render2D.drawHudBackground(matrices, baseX, baseY, panelW, panelH, RADIUS, 1f);
 
         boolean previewMode = mc.player == null;
@@ -56,10 +53,8 @@ public class InventoryHUD extends HudElement {
                 float cellX = baseX + PADDING + col * SLOT;
                 float cellY = baseY + PADDING + row * SLOT;
 
-                 
                 Render2D.drawRoundedRect(matrices, cellX, cellY, SLOT - 1f, SLOT - 1f, 2f, SLOT_BG);
 
-                 
                 int slotIndex = 9 + row * COLS + col;
                 ItemStack stack = previewMode
                         ? previewStack(row, col)
@@ -67,12 +62,10 @@ public class InventoryHUD extends HudElement {
 
                 if (stack == null || stack.isEmpty()) continue;
 
-                 
                 int itemX = Math.round(cellX + (SLOT - 16f) / 2f);
                 int itemY = Math.round(cellY + (SLOT - 16f) / 2f);
                 context.drawItem(stack, itemX, itemY);
 
-                 
                 if (stack.getCount() > 1) {
                     String cnt = String.valueOf(stack.getCount());
                     float cntSize = 7.0f;
@@ -89,7 +82,6 @@ public class InventoryHUD extends HudElement {
         super.onRender2D(e);
     }
 
-     
     private ItemStack previewStack(int row, int col) {
         return switch (row * COLS + col) {
             case 0 -> new ItemStack(Items.OAK_LOG, 64);

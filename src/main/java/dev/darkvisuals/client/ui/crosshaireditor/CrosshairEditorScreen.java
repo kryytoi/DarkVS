@@ -13,17 +13,15 @@ import net.minecraft.text.Text;
 
 import java.awt.*;
 
- 
 public class CrosshairEditorScreen extends Screen {
 
     private static final int GRID = CrosshairPattern.SIZE;
-    private static final float CELL = 18f;       
-    private static final float PAD = 16f;        
+    private static final float CELL = 18f;
+    private static final float PAD = 16f;
 
     private final Crosshair module;
-    private final CrosshairPattern pattern;      
+    private final CrosshairPattern pattern;
 
-     
     private static final Color[] PALETTE = {
             new Color(255, 255, 255), new Color(20, 20, 20),
             new Color(235, 64, 52),   new Color(52, 235, 100),
@@ -31,14 +29,12 @@ public class CrosshairEditorScreen extends Screen {
             new Color(34, 211, 238),  new Color(217, 70, 239)
     };
     private Color selectedColor;
-    private int selectedIndex = 0;    
+    private int selectedIndex = 0;
     private boolean themeColorSelected;
 
-     
     private boolean symmetry = true;
     private boolean paintingLeft, paintingRight;
 
-     
     private float panelX, panelY, panelW, panelH;
     private float gridX, gridY;
 
@@ -51,13 +47,9 @@ public class CrosshairEditorScreen extends Screen {
         this.selectedColor = PALETTE[0];
     }
 
-     
-     
-     
-
     private void layout() {
-        float gridSize = GRID * CELL;                  
-        float previewW = 96f;                          
+        float gridSize = GRID * CELL;
+        float previewW = 96f;
         panelW = PAD + gridSize + 12f + previewW + PAD;
         panelH = PAD + 20f    + 8f + gridSize + 10f + 24f    + 10f + 26f    + PAD;
         panelX = (width - panelW) / 2f;
@@ -70,25 +62,18 @@ public class CrosshairEditorScreen extends Screen {
     private float buttonsY()  { return paletteY() + 24f + 10f; }
     private float previewX()  { return gridX + GRID * CELL + 12f; }
 
-     
-     
-     
-
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         layout();
         MatrixStack ms = context.getMatrices();
         Color accent = ThemeManager.getInstance().getCurrentTheme().getAccentColor();
 
-         
         Render2D.drawRect(ms, 0, 0, width, height, new Color(0, 0, 0, 120));
 
-         
         Render2D.drawRoundedRect(ms, panelX, panelY, panelW, panelH, 8f, new Color(18, 18, 22, 240));
         Render2D.drawBorder(ms, panelX, panelY, panelW, panelH, 8f, 1f, 1f,
                 new Color(accent.getRed(), accent.getGreen(), accent.getBlue(), 90));
 
-         
         Render2D.drawFont(ms, Fonts.SEMIBOLD.getFont(11f), "Редактор прицела",
                 panelX + PAD, panelY + PAD, Color.WHITE);
         String hint = "ЛКМ — рисовать, ПКМ — стирать";
@@ -104,7 +89,7 @@ public class CrosshairEditorScreen extends Screen {
 
     private void renderGrid(MatrixStack ms, int mouseX, int mouseY) {
         float size = GRID * CELL;
-         
+
         for (int y = 0; y < GRID; y++) {
             for (int x = 0; x < GRID; x++) {
                 boolean dark = (x + y) % 2 == 0;
@@ -113,12 +98,10 @@ public class CrosshairEditorScreen extends Screen {
             }
         }
 
-         
         int c = GRID / 2;
         Render2D.drawRect(ms, gridX + c * CELL, gridY, CELL, size, new Color(255, 255, 255, 10));
         Render2D.drawRect(ms, gridX, gridY + c * CELL, size, CELL, new Color(255, 255, 255, 10));
 
-         
         for (int y = 0; y < GRID; y++) {
             for (int x = 0; x < GRID; x++) {
                 int argb = pattern.get(x, y);
@@ -128,7 +111,6 @@ public class CrosshairEditorScreen extends Screen {
             }
         }
 
-         
         int hx = cellAtX(mouseX), hy = cellAtY(mouseY);
         if (hx >= 0 && hy >= 0) {
             Render2D.drawBorder(ms, gridX + hx * CELL, gridY + hy * CELL, CELL, CELL,
@@ -152,17 +134,14 @@ public class CrosshairEditorScreen extends Screen {
 
         Render2D.drawFont(ms, Fonts.MEDIUM.getFont(8f), "Превью", px, gridY, new Color(160, 160, 170));
 
-         
         float boxY = gridY + 14f;
         Render2D.drawRoundedRect(ms, px, boxY, pw, 64f, 4f, new Color(28, 28, 32));
         drawPatternAt(ms, px + pw / 2f, boxY + 32f, 2f);
 
-         
         float boxY2 = boxY + 64f + 8f;
         Render2D.drawRoundedRect(ms, px, boxY2, pw, 64f, 4f, new Color(205, 205, 210));
         drawPatternAt(ms, px + pw / 2f, boxY2 + 32f, 2f);
 
-         
         float boxY3 = boxY2 + 64f + 8f;
         Render2D.drawRoundedRect(ms, px, boxY3, pw, 40f, 4f, new Color(28, 28, 32));
         Render2D.drawFont(ms, Fonts.REGULAR.getFont(6.5f), "1:1", px + 4f, boxY3 + 3f, new Color(120, 120, 130));
@@ -186,7 +165,6 @@ public class CrosshairEditorScreen extends Screen {
         float sw = 20f, gapX = 6f;
         float x = gridX;
 
-         
         boolean hoverTheme = MathUtils.isHovered(x, y, sw, sw, mouseX, mouseY);
         Render2D.drawRoundedRect(ms, x, y, sw, sw, 4f, accent);
         if (themeColorSelected || hoverTheme)
@@ -203,7 +181,6 @@ public class CrosshairEditorScreen extends Screen {
             x += sw + gapX;
         }
 
-         
         float tx = gridX + GRID * CELL - 86f;
         boolean hoverSym = MathUtils.isHovered(tx, y, 86f, sw, mouseX, mouseY);
         Color symBg = symmetry
@@ -240,15 +217,10 @@ public class CrosshairEditorScreen extends Screen {
                 x + (w - tw) / 2f, y + (h - Fonts.MEDIUM.getHeight(8f)) / 2f, Color.WHITE);
     }
 
-     
-     
-     
-
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         layout();
 
-         
         int cx = cellAtX(mouseX), cy = cellAtY(mouseY);
         if (cx >= 0 && cy >= 0) {
             if (button == 0) { paintingLeft = true; paint(cx, cy, currentArgb()); return true; }
@@ -257,7 +229,6 @@ public class CrosshairEditorScreen extends Screen {
 
         if (button != 0) return super.mouseClicked(mouseX, mouseY, button);
 
-         
         float py = paletteY();
         float sw = 20f, gapX = 6f;
         float x = gridX;
@@ -276,14 +247,12 @@ public class CrosshairEditorScreen extends Screen {
             x += sw + gapX;
         }
 
-         
         float tx = gridX + GRID * CELL - 86f;
         if (MathUtils.isHovered(tx, py, 86f, sw, (float) mouseX, (float) mouseY)) {
             symmetry = !symmetry;
             return true;
         }
 
-         
         float by = buttonsY();
         float bw = 84f, bh = 22f, bGap = 8f;
         float bx = gridX;
@@ -322,7 +291,6 @@ public class CrosshairEditorScreen extends Screen {
         }
     }
 
-      
     private int currentArgb() {
         Color c = themeColorSelected
                 ? ThemeManager.getInstance().getCurrentTheme().getAccentColor()
@@ -335,7 +303,6 @@ public class CrosshairEditorScreen extends Screen {
         return (cx >= 0 && cx < GRID && mouseXInGridY()) ? cx : (cx >= 0 && cx < GRID ? cx : -1);
     }
 
-     
     private boolean mouseXInGridY() { return true; }
 
     private int cellAtY(double mouseY) {

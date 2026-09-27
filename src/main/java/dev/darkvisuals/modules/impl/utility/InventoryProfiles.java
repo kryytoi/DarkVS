@@ -30,10 +30,8 @@ import java.io.FileWriter;
 import java.util.HashMap;
 import java.util.Map;
 
- 
 public class InventoryProfiles extends Module {
 
-      
     public enum ProfileType implements Nameable {
         CRYSTAL("Crystal PvP"),
         SWORD("Sword PvP"),
@@ -48,7 +46,6 @@ public class InventoryProfiles extends Module {
         @Override public String getName() { return name; }
     }
 
-     
     private final EnumSetting<ProfileType> profile =
             new EnumSetting<>("setting.profile", ProfileType.CRYSTAL);
 
@@ -73,7 +70,6 @@ public class InventoryProfiles extends Module {
     private final ButtonSetting applyProfile =
             new ButtonSetting("setting.applyProfile", this::applyProfileToInventory);
 
-     
     private static final String FILE_NAME = "inventory_profiles.json";
     private static final Map<ProfileType, Map<Integer, ItemId>> profiles = new HashMap<>();
     private static boolean profilesLoaded = false;
@@ -97,7 +93,6 @@ public class InventoryProfiles extends Module {
         loadProfiles();
     }
 
-     
     @EventHandler
     public void onHandledScreen(EventHandledScreen event) {
         if (mc.player == null || mc.currentScreen == null) return;
@@ -109,10 +104,8 @@ public class InventoryProfiles extends Module {
 
         ScreenHandler handler = screen.getScreenHandler();
 
-         
         Map<Integer, ItemId> target = buildTargetMap(handler, template);
 
-         
         int matched = 0, total = target.size();
         for (Map.Entry<Integer, ItemId> e : target.entrySet()) {
             Slot slot = findSlot(handler, e.getKey());
@@ -123,16 +116,14 @@ public class InventoryProfiles extends Module {
 
             if (correct) matched++;
 
-             
             if (safeMode.getValue() && !correct) {
                 Color c = stackInSlot.isEmpty()
-                        ? new Color(255, 200, 0, 90)    
-                        : new Color(255, 60, 60, 90);   
+                        ? new Color(255, 200, 0, 90)
+                        : new Color(255, 60, 60, 90);
                 drawSlotHighlight(event, slot, c);
             }
         }
 
-         
         if (safeMode.getValue() && warnMissing.getValue()) {
             for (Map.Entry<Integer, ItemId> e : target.entrySet()) {
                 if (hasItemAnywhere(handler, e.getValue())) continue;
@@ -143,22 +134,18 @@ public class InventoryProfiles extends Module {
             }
         }
 
-         
         if (showProgress.getValue()) {
             drawProgress(event, matched, total);
         }
     }
 
-     
     private void drawSlotHighlight(EventHandledScreen event, Slot slot, Color color) {
-         
-         
+
         float sx = slot.x + event.getGuiX();
         float sy = slot.y + event.getGuiY();
         Render2D.drawRoundedRect(event.getDrawContext().getMatrices(), sx, sy, 16, 16, 3, color);
     }
 
-     
     private void drawProgress(EventHandledScreen event, int matched, int total) {
         if (total == 0) return;
         float ratio = matched / (float) total;
@@ -171,28 +158,25 @@ public class InventoryProfiles extends Module {
         float barW = 120f;
         float barH = 8f;
         float barX = guiX + cx - barW / 2f;
-        float barY = guiY - 18f;  
+        float barY = guiY - 18f;
 
-         
         Render2D.drawRoundedRect(event.getDrawContext().getMatrices(), barX, barY, barW, barH, 4,
                 new Color(0, 0, 0, 140));
-         
+
         Render2D.drawRoundedRect(event.getDrawContext().getMatrices(), barX, barY,
                 barW * ratio, barH, 4, new Color(138, 43, 226, 220));
-         
+
         Render2D.drawFont(event.getDrawContext().getMatrices(), Fonts.SEMIBOLD.getFont(4f),
                 text, barX, barY - 8, Color.WHITE);
     }
 
-     
     private Map<Integer, ItemId> buildTargetMap(ScreenHandler handler, Map<Integer, ItemId> template) {
         Map<Integer, ItemId> target = new HashMap<>();
-         
-         
+
         var playerInv = mc.player.getInventory();
         for (Map.Entry<Integer, ItemId> e : template.entrySet()) {
             int playerSlot = e.getKey();
-            if (playerSlot < 0 || playerSlot >= 36) continue;  
+            if (playerSlot < 0 || playerSlot >= 36) continue;
             for (Slot s : handler.slots) {
                 if (s.inventory == playerInv && s.getIndex() == playerSlot) {
                     target.put(s.id, e.getValue());
@@ -203,7 +187,6 @@ public class InventoryProfiles extends Module {
         return target;
     }
 
-     
     private Slot findSlot(ScreenHandler handler, int slotId) {
         for (Slot s : handler.slots) {
             if (s.id == slotId) return s;
@@ -227,7 +210,6 @@ public class InventoryProfiles extends Module {
         return false;
     }
 
-     
     private void saveCurrentAsProfile() {
         if (mc.player == null) return;
         ProfileType type = profile.getValue();
@@ -240,7 +222,7 @@ public class InventoryProfiles extends Module {
                 snapshot.put(i, new ItemId(st.getItem(), st.getCount()));
             }
         }
-         
+
         ItemStack off = mc.player.getOffHandStack();
         if (separateOffhand.getValue() && !off.isEmpty()) {
             snapshot.put(OFFHAND, new ItemId(off.getItem(), off.getCount()));
@@ -251,16 +233,12 @@ public class InventoryProfiles extends Module {
         darkvisuals.LOGGER.info("[InventoryProfiles] Сохранён профиль {}", type.getName());
     }
 
-     
     private void applyProfileToInventory() {
         if (mc.player == null || mc.currentScreen == null) return;
-        if (safeMode.getValue()) return;  
-         
-         
-         
+        if (safeMode.getValue()) return;
+
     }
 
-     
     private static File profilesFile() {
         return new File(darkvisuals.getInstance().getGlobalsDir(), FILE_NAME);
     }
@@ -308,9 +286,7 @@ public class InventoryProfiles extends Module {
         } catch (Exception ignored) {}
     }
 
-      
     private record ItemId(Item item, int count) {}
 
-     
     public static void ensureProfilesLoaded() { loadProfiles(); }
 }

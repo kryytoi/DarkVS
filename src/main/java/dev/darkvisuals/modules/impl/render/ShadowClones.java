@@ -23,9 +23,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-/**
- * ShadowClones — тёмные копии игрока, появляющиеся рядом на короткое время.
- */
 public class ShadowClones extends Module {
 
     private final NumberSetting max = new NumberSetting("Количество клонов", 3f, 1f, 8f, 1f);

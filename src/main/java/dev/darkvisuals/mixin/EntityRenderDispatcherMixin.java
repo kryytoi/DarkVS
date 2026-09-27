@@ -34,38 +34,49 @@ public abstract class EntityRenderDispatcherMixin {
         Optimization optimization = darkvisuals.getInstance().getModuleManager().getModule(Optimization.class);
         if (optimization == null || !optimization.isToggled()) return;
 
-         
         net.minecraft.client.MinecraftClient mc = net.minecraft.client.MinecraftClient.getInstance();
         if (mc.player != null && entity == mc.player && mc.options.getPerspective().isFirstPerson()) return;
 
         boolean isPlayer = entity instanceof AbstractClientPlayerEntity;
         boolean isItem = entity instanceof ItemEntity;
 
-        // полностью скрываем выпавшие предметы, если включена настройка
         if (isItem && optimization.hideItems.getValue()) {
             ci.cancel();
             return;
         }
 
-        // ограничиваем количество одновременно отрисованных предметов
         if (isItem && !optimization.tryConsumeItemBudget()) {
             ci.cancel();
             return;
         }
 
-        boolean shouldCheckFrustum = (isPlayer && optimization.hidePlayers.getValue())
-                || (!isPlayer && optimization.hideEntities.getValue());
+        if (isPlayer && optimization.hidePlayers.getValue()) {
+            ci.cancel();
+            return;
+        }
 
-        if (!shouldCheckFrustum) return;
+        if (!isPlayer && !isItem && optimization.hideEntities.getValue()) {
+            ci.cancel();
+            return;
+        }
 
+        Frustum frustum = null;
         try {
-            Frustum frustum = ((IWorldRenderer) mc.worldRenderer).getFrustum();
-            if (frustum == null) return;
-
-            Box box = entity.getBoundingBox().expand(0.5);
-            if (!frustum.isVisible(box)) {
-                ci.cancel();
+            if (mc.worldRenderer != null) {
+                frustum = ((IWorldRenderer) mc.worldRenderer).getFrustum();
             }
         } catch (Throwable ignored) {}
+
+        double camX = 0, camY = 0, camZ = 0;
+        if (mc.gameRenderer != null && mc.gameRenderer.getCamera() != null) {
+            var cpos = mc.gameRenderer.getCamera().getPos();
+            camX = cpos.x;
+            camY = cpos.y;
+            camZ = cpos.z;
+        }
+
+        if (Optimization.shouldCullEntity(entity, camX, camY, camZ, frustum)) {
+            ci.cancel();
+        }
     }
 }

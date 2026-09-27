@@ -8,10 +8,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-/**
- * В режиме стройки ЛКМ/ПКМ ставят и убирают виртуальные блоки,
- * средняя кнопка (пик блока) блокируется, чтобы не рассинхронизировать инвентарь.
- */
 @Mixin(Mouse.class)
 public abstract class BuildSpaceMouseMixin {
 

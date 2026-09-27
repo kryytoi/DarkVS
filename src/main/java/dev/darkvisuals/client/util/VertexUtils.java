@@ -45,7 +45,6 @@ public class VertexUtils {
                     .cull(DISABLE_CULLING)
                     .build(false));
 
-
     public static void drawImageQuad(VertexConsumer vertices, Matrix4f matrix, float posX, float posY, float posZ, float halfSize, int color) {
         vertices.vertex(matrix, posX - halfSize, posY - halfSize, posZ).texture(0, 1).color(color);
         vertices.vertex(matrix, posX - halfSize, posY + halfSize, posZ).texture(0, 0).color(color);

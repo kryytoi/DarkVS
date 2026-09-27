@@ -9,10 +9,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-/**
- * В режиме стройки блокируем выброс предметов (Q) — пакеты заморожены,
- * и клиентская попытка выброса рассинхронизировала бы инвентарь с сервером.
- */
 @Mixin(Keyboard.class)
 public abstract class BuildSpaceKeyboardMixin {
 

@@ -21,11 +21,6 @@ import org.joml.Matrix4f;
 
 import java.awt.Color;
 
-/**
- * Halo — светящийся нимб над головой игрока.
- * Плоское кольцо света, висящее над головой, всегда
-                повёрнуто к камере и мягко пульсирует.
- */
 public class Halo extends Module {
 
     private final NumberSetting height =
@@ -61,7 +56,6 @@ public class Halo extends Module {
         float eyeHeight = mc.player.getEyeHeight(mc.player.getPose());
         Vec3d pos = player.add(0, eyeHeight + height.getValue(), 0);
 
-        // мягкая пульсация свечения
         long now = System.currentTimeMillis();
         float pulse = 0.5f + 0.5f * (float) Math.sin(now / 1000.0 * pulseSpeed.getValue() * Math.PI * 2);
 
@@ -74,13 +68,12 @@ public class Halo extends Module {
 
         matrices.push();
         matrices.translate((float) (pos.x - cam.x), (float) (pos.y - cam.y), (float) (pos.z - cam.z));
-        // кольцо всегда лицом к камере
+
         matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(-camYaw));
         matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(camPitch));
 
         drawRing(matrices.peek().getPositionMatrix(), radius.getValue(), thickness.getValue(), pulse, 1f);
 
-        // лёгкое внешнее сияние вокруг нимба
         drawRing(matrices.peek().getPositionMatrix(),
                 radius.getValue() * (1f + thickness.getValue() * 0.9f),
                 thickness.getValue() * 1.8f, pulse, 0.3f);
@@ -94,7 +87,6 @@ public class Halo extends Module {
         RenderSystem.disableBlend();
     }
 
-    // плоское кольцо (кольцевая полоса) в локальной плоскости XY
     private void drawRing(Matrix4f matrix, float radius, float thickness, float pulse, float intensity) {
         float rIn = radius - thickness * 0.5f * (1f + 0.06f * pulse);
         float rOut = radius + thickness * 0.5f * (1f + 0.06f * pulse);

@@ -90,7 +90,7 @@ public class WorldParticles extends Module implements ThemeManager.ThemeChangeLi
         if (isVzletMode()) {
             pos = mc.player.getPos().add(
                     ThreadLocalRandom.current().nextDouble(-radius, radius),
-                    0.2,  
+                    0.2,
                     ThreadLocalRandom.current().nextDouble(-radius, radius)
             );
             vel = new Vec3d(
@@ -111,7 +111,6 @@ public class WorldParticles extends Module implements ThemeManager.ThemeChangeLi
             );
         }
 
-         
         Color themeColor = themeManager.getCurrentTheme().getBackgroundColor();
         Color color = randomColor.getValue()
                 ? new Color(ThreadLocalRandom.current().nextInt(256),
@@ -153,7 +152,6 @@ public class WorldParticles extends Module implements ThemeManager.ThemeChangeLi
         float size = baseSize * sizeFactor * heightFactor;
         int alpha = Math.max(0, Math.min(255, (int) (255 * sizeFactor * heightFactor * lightFactor)));
 
-         
         Color glowColor = new Color(
                 p.color.getRed(),
                 p.color.getGreen(),
@@ -163,11 +161,11 @@ public class WorldParticles extends Module implements ThemeManager.ThemeChangeLi
 
         int rgbaMain = new Color(glowColor.getRed(), glowColor.getGreen(), glowColor.getBlue(), alpha).getRGB();
         if (glossy.getValue()) {
-             
+
             Render3D.batchBillboard(e.getMatrices(), p.pos, size * 2.5f, rgbaMain);
             Render3D.batchBillboard(e.getMatrices(), p.pos, size * 1.5f, rgbaMain);
         } else {
-             
+
             int softAlpha = Math.max(0, Math.min(255, (int) (alpha * 0.65f)));
             int rgbaSoft = new Color(glowColor.getRed(), glowColor.getGreen(), glowColor.getBlue(), softAlpha).getRGB();
             Render3D.batchBillboard(e.getMatrices(), p.pos, size * 2.2f, rgbaSoft);
@@ -186,7 +184,7 @@ public class WorldParticles extends Module implements ThemeManager.ThemeChangeLi
     @Override
     public void onThemeChanged(ThemeManager.Theme theme) {
         this.currentColor = theme.getBackgroundColor();
-         
+
         for (Particle p : particles) {
             p.color = this.currentColor;
         }

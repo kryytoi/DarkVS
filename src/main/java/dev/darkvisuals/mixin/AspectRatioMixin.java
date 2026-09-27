@@ -18,12 +18,12 @@ public class AspectRatioMixin {
         AspectRatio module = darkvisuals.getInstance().getModuleManager().getModule(AspectRatio.class);
 
         if (module.isToggled()) {
-            float aspect = module.getAspectRatio().getValue();  
+            float aspect = module.getAspectRatio().getValue();
             MatrixStack matrixStack = new MatrixStack();
             matrixStack.peek().getPositionMatrix().identity();
             matrixStack.peek().getPositionMatrix().mul(
                     new Matrix4f().setPerspective(
-                            (float) (fov * 0.017453292),  
+                            (float) (fov * 0.017453292),
                             aspect,
                             0.05f,
                             256.0f

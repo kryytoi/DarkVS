@@ -35,7 +35,7 @@ public abstract class GameRendererMixin implements Wrapper {
 	@Inject(method = "renderWorld", at = @At("HEAD"))
 	public void renderWorld(RenderTickCounter renderTickCounter, CallbackInfo ci) {
 		Render3D.prepare();
-		 
+
 		Render3D.clearCustomHitBoxQueues();
 		Render3D.clearBlockOverlayQueues();
 	}
@@ -49,11 +49,10 @@ public abstract class GameRendererMixin implements Wrapper {
 		Render3D.setTickDelta(tickDelta);
 		EventRender3D.Game event = new EventRender3D.Game(renderTickCounter, matrixStack);
 		darkvisuals.post(event);
-		 
+
 		Render3D.draw(Render3D.QUADS, Render3D.DEBUG_LINES, false);
 		Render3D.draw(Render3D.SHINE_QUADS, Render3D.SHINE_DEBUG_LINES, true);
 
-		 
 		RenderSystem.getModelViewStack().popMatrix();
 	}
 
@@ -66,8 +65,6 @@ public abstract class GameRendererMixin implements Wrapper {
 	public void tiltViewWhenHurt(CallbackInfo ci) {
 		if (darkvisuals.getInstance().getModuleManager().getModule(NoRender.class).isToggled() && darkvisuals.getInstance().getModuleManager().getModule(NoRender.class).hurtCam.getValue()) ci.cancel();
 	}
-
-
 
 	@Inject(method = "getFov", at = @At("RETURN"), cancellable = true)
 	private void applyZoomFov(Camera camera, float tickDelta, boolean changingFov, CallbackInfoReturnable<Float> cir) {

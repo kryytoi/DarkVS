@@ -14,10 +14,6 @@ import net.minecraft.util.math.Vec3d;
 
 import java.awt.Color;
 
-/**
- * ChunkBorders — сетка границ чанков вокруг игрока (как F3+G).
- * Рисуется линиями через общую очередь Render3D.
- */
 public class ChunkBorders extends Module {
 
     private final BooleanSetting neighbors =
@@ -47,7 +43,7 @@ public class ChunkBorders extends Module {
         Color base = color.getColor();
         int bottomY = mc.world.getBottomY();
         int topY = bottomY + mc.world.getHeight();
-        // рисуем колонну чуть выше и ниже видимой высоты
+
         double yMin = bottomY - 8;
         double yMax = topY + 8;
 
@@ -67,11 +63,9 @@ public class ChunkBorders extends Module {
                 int startX = cx << 4;
                 int startZ = cz << 4;
 
-                // колонна текущего чанка: обводка от низа до верха
                 Box chunkBox = new Box(startX, yMin, startZ, startX + 16, yMax, startZ + 16);
                 Render3D.renderBoxOutline(event.getMatrices(), chunkBox, c);
 
-                // крест в центре чанка, чтобы сетку было видно с высоты
                 Vec3d mid = new Vec3d(startX + 8, yMin, startZ + 8);
                 Vec3d midTop = new Vec3d(startX + 8, yMax, startZ + 8);
                 Render3D.drawLine(mid, midTop, c.getRGB(), lineWidth.getValue());

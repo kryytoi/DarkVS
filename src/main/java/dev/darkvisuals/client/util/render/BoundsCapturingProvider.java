@@ -4,7 +4,6 @@ import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.VertexConsumerProvider;
 
- 
 public final class BoundsCapturingProvider implements VertexConsumerProvider {
     private final VertexConsumerProvider delegate;
 

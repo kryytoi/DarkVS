@@ -22,9 +22,6 @@ import org.joml.Matrix4f;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
-/**
- * EchoTrail — «эхо» силуэтов игрока, остающееся за спиной при движении.
- */
 public class EchoTrail extends Module {
 
     private final NumberSetting max = new NumberSetting("Количество эхо", 6f, 2f, 16f, 1f);

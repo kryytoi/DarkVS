@@ -26,18 +26,15 @@ import java.util.*;
 
 public class NounClickGuiRenderer {
 
-    // ─── Главный фрейм ────────────────────────────────────────────────
     public static final float FRAME_W  = 476f;
     public static final float FRAME_H  = 326f;
     public static final float FRAME_R  = 22f;
 
-    // ─── Сайдбар и Шапка ──────────────────────────────────────────────
     private static final float SIDEBAR_W  = 46f;
     private static final float HEADER_H   = 38f;
     private static final float CONTENT_PAD = 12f;
     private static final float SIDEBAR_SLOT_H = 42f;
 
-    // ─── Карточки модулей (сетка из двух колонок) ──────────────────────
     private static final int   GRID_COLS   = 2;
     private static final float CARD_GAP    = 8f;
     private static final float CARD_W      = (FRAME_W - SIDEBAR_W - CONTENT_PAD * 2f - CARD_GAP) / GRID_COLS;
@@ -48,11 +45,9 @@ public class NounClickGuiRenderer {
     private static final float SUB_PAD_BOT = 11f;
     private static final float SUB_PAD_X   = 12f;
 
-    // ─── Настройки ───────────────────────────────────────────────────
     private static final float SET_R       = 5f;
     private static final float SET_GAP     = 5f;
 
-    // ─── Верхняя панель: кнопки AI, Grid и Search ─────────────────────
     private static final float AI_BTN_W    = 28f;
     private static final float AI_BTN_H    = 22f;
     private static final float GRID_BTN_W  = 22f;
@@ -61,21 +56,19 @@ public class NounClickGuiRenderer {
     private static final float SEARCH_H    = 22f;
     private static final float SEARCH_R    = 11f;
 
-    // ─── Цвета ───────────────────────────────────────────────────────
-    private static final int C_BG          = 0xFF121215; // Тёмный матовый фон главного окна
-    private static final int C_CARD        = 0xFF1C1C20; // Фон карточки модуля (стиль New)
+    private static final int C_BG          = 0xFF121215;
+    private static final int C_CARD        = 0xFF1C1C20;
     private static final int C_CARD_HOV    = 0xFF232328;
-    private static final int C_LINE        = 0x1AFFFFFF; // Тонкие разделители
-    private static final int C_SIDE_DIV    = 0xFF2A2A30; // Серая разделительная линия сайдбара
-    private static final int C_SIDE_HOV    = 0xFF26262C; // Серый фон кнопки раздела при наведении
+    private static final int C_LINE        = 0x1AFFFFFF;
+    private static final int C_SIDE_DIV    = 0xFF2A2A30;
+    private static final int C_SIDE_HOV    = 0xFF26262C;
     private static final int C_TEXT        = 0xFFFFFFFF;
     private static final int C_TEXT_DIM    = 0xFF8E8E95;
     private static final int C_ICON_DIM    = 0xFF7A7A82;
 
-    private static final int C_ACCENT      = 0xFF7C3AED; // Фиолетовый акцент
-    private static final int C_THUMB       = 0xFF8B5CF6; // Бегунок тогла
+    private static final int C_ACCENT      = 0xFF7C3AED;
+    private static final int C_THUMB       = 0xFF8B5CF6;
 
-    // ─── Вспомогательные инпуты (Friends/Markers/Config) ───────────────
     private static final float INPUT_H      = 22f;
     private static final float INPUT_R      = 7f;
     private static final float BTN_W        = 42f;
@@ -83,7 +76,6 @@ public class NounClickGuiRenderer {
     private static final float LIST_ROW_GAP = 5f;
     private static final float ROWSET_GAP   = 8f;
 
-    // ─── Иконки и текстуры ─────────────────────────────────────────────
     private static final Identifier ICON_LOGO    = Identifier.of("darkvisuals", "textures/logo.png");
     private static final Identifier ICON_SKULL   = Identifier.of("darkvisuals", "hud/skull.png");
     private static final Identifier ICON_AMONGUS = Identifier.of("darkvisuals", "hud/amongus.png");
@@ -240,7 +232,6 @@ public class NounClickGuiRenderer {
         ms.scale(scale, scale, 1f);
         ms.translate(-sw / 2f, -sh / 2f, 0f);
 
-        // ── Основа главного окна (матовая или жидкое стекло) ───────────
         if (isLiquidGlass()) {
             Render2D.drawGlass(ms, fx, fy, FRAME_W, FRAME_H, fade, FRAME_R, glassTint(0.20f * fade), 8f, 3f, 3.5f, 2f);
             Render2D.drawGradientRect(ms, fx + FRAME_R, fy + 0.5f, FRAME_W - FRAME_R * 2f, 1f,
@@ -250,21 +241,16 @@ public class NounClickGuiRenderer {
             rect(context, fx, fy, FRAME_W, FRAME_H, FRAME_R, withAlpha(C_BG, (int) (255f * fade)));
         }
 
-        // ── Линии-разделители сайдбара и шапки ─────────────────────────
         int lineCol = isLiquidGlass() ? withAlpha(0xFFFFFFFF, (int) (26f * fade)) : withAlpha(C_LINE, (int) (255f * fade));
         fill(context, fx + SIDEBAR_W, fy, 1f, FRAME_H, lineCol);
         fill(context, fx, fy + HEADER_H, FRAME_W, 1f, lineCol);
 
-        // ── Логотип в левом верхнем углу сайдбара ──────────────────────
         renderTopLeftLogo(context, fx, fy, fade);
 
-        // ── Сайдбар с категориями и серыми разделителями ──────────────
         renderSidebar(context, fx, fy, fade);
 
-        // ── Верхняя панель (Заголовок, AI, Grid, Поиск) ───────────────
         renderTopBar(context, fx, fy, fade);
 
-        // ── Основное содержимое ───────────────────────────────────────
         if (welcomeScreen && !ClickGuiRenderer.isSearching() && viewMode == ViewMode.MODULES) {
             renderWelcomeScreen(context, fx, fy, fade);
         } else if (viewMode == ViewMode.DARKA) {
@@ -276,13 +262,10 @@ public class NounClickGuiRenderer {
             renderScrollBar(context, fx, fy, state, fade);
         }
 
-        // ── Амонгус сверху справа ─────────────────────────────────────
         renderSittingAmongus(context, fx, fy, fade);
 
-        // ── Корона слева сверху ───────────────────────────────────────
         renderFloatingCrown(context, fx, fy, fade);
 
-        // Описание при наведении на функцию
         renderTooltip(context, fx, fy, fade);
 
         ms.pop();
@@ -410,7 +393,6 @@ public class NounClickGuiRenderer {
         aiX = gridX - 6f - aiW;
         aiY = fy + (HEADER_H - aiH) / 2f;
 
-        // Кнопка AI
         boolean aiActive = (viewMode == ViewMode.DARKA);
         boolean aiHov = hit(lastMouseX, lastMouseY, aiX, aiY, aiW, aiH);
         float aiT = aval("btnai", (aiHov || aiActive) ? 1f : 0f, 12f);
@@ -421,7 +403,6 @@ public class NounClickGuiRenderer {
         text(ctx, Fonts.BOLD, "AI", aiX + (aiW - aiTextW) / 2f, aiY + 6.5f,
                 withAlpha(C_TEXT, (int) (255f * fade)), 9f);
 
-        // Кнопка Grid (Настройки)
         boolean gridActive = (viewMode == ViewMode.SETTINGS);
         boolean gridHov = hit(lastMouseX, lastMouseY, gridX, gridY, gridW, gridH);
         float gridT = aval("btngrid", (gridHov || gridActive) ? 1f : 0f, 12f);
@@ -431,7 +412,6 @@ public class NounClickGuiRenderer {
         drawGridGlyph(ctx, gridX + (gridW - 10f) / 2f, gridY + (gridH - 10f) / 2f,
                 withAlpha(C_TEXT, (int) (255f * fade)));
 
-        // Поле Поиска
         boolean focused = ClickGuiRenderer.searchInputFocused;
         float searchFocusT = aval("searchfocus", focused ? 1f : 0f, 12f);
         rect(ctx, searchBoxX, searchBoxY, searchBoxW, searchBoxH, SEARCH_R,
@@ -1410,7 +1390,7 @@ public class NounClickGuiRenderer {
                 ClickGuiRenderer.searchInputFocused = false;
                 return true;
             }
-            // Поддержка Ctrl + V для вставки текста
+
             if (keyCode == GLFW.GLFW_KEY_V && (modifiers & GLFW.GLFW_MOD_CONTROL) != 0) {
                 String clip = MinecraftClient.getInstance().keyboard.getClipboard();
                 if (clip != null && !clip.isEmpty()) {

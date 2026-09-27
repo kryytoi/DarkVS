@@ -25,11 +25,6 @@ import java.awt.Color;
 import java.util.ArrayDeque;
 import java.util.Iterator;
 
-/**
- * ElytraTrails — светящийся след от кончиков крыльев при полёте на элитрах.
- * Рисуется billboard-квадами (как ArrowTrails) напрямую в матрицу события —
- * без Render3D.prepare()/render(), чтобы не чистить и не дублировать общие очереди.
- */
 public class ElytraTrails extends Module {
 
     private final NumberSetting length =
@@ -68,7 +63,7 @@ public class ElytraTrails extends Module {
         int maxPoints = (int) (float) length.getValue();
 
         if (mc.player.isGliding()) {
-            // кончики крыльев: по бокам и чуть позади игрока
+
             float yawRad = (float) Math.toRadians(mc.player.getYaw());
             double wingSpan = 0.62;
             double back = 0.35;
@@ -85,7 +80,7 @@ public class ElytraTrails extends Module {
             leftTrail.addLast(left);
             rightTrail.addLast(right);
         } else {
-            // после приземления шлейф быстро тает
+
             if (!leftTrail.isEmpty()) leftTrail.pollFirst();
             if (!rightTrail.isEmpty()) rightTrail.pollFirst();
         }
@@ -131,11 +126,10 @@ public class ElytraTrails extends Module {
         Color base = rainbow.getValue() ? null : trailColor.getColor();
         float maxSize = size.getValue();
 
-        // индекс от хвоста (старые) к голове (у игрока)
         int idx = 0;
         for (Iterator<Vec3d> it = trail.descendingIterator(); it.hasNext(); ) {
             Vec3d point = it.next();
-            // t=0 у игрока (самая свежая), t=1 на хвосте
+
             float t = (float) idx / (float) (count - 1);
             idx++;
 

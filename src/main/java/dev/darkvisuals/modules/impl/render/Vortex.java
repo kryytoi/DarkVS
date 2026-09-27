@@ -19,9 +19,6 @@ import java.awt.*;
 import java.util.*;
 import java.util.List;
 
-/**
- * Vortex — вращающаяся воронка частиц вокруг игрока.
- */
 public class Vortex extends Module {
 
     private final NumberSetting count = new NumberSetting("Количество", 40f, 8f, 120f, 4f);
@@ -86,7 +83,7 @@ public class Vortex extends Module {
         for (double[] p : parts) {
             double ang = p[0] * Math.PI * 2;
             double y = p[1] * h;
-            // спираль сужается к верху
+
             double curR = r * (1.0 - y / h * 0.6);
             double px = pos.x + Math.cos(ang) * curR - cam.x;
             double py = pos.y + y - cam.y;

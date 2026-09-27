@@ -27,10 +27,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
-/**
- * Butterflies — бабочки, порхающие вокруг игрока днём.
- * Два «крыла» машут (сжимаются по X), траектория — блуждание с синус-покачиванием.
- */
 public class Butterflies extends Module {
 
     private final NumberSetting count =
@@ -103,14 +99,12 @@ public class Butterflies extends Module {
             Butterfly b = it.next();
             b.age++;
 
-            // случайные повороты направления
             if (b.age >= b.nextTurn) {
                 b.nextTurn = b.age + 10 + rnd.nextInt(30);
                 b.vel = new Vec3d(rnd.nextDouble() - 0.5, (rnd.nextDouble() - 0.5) * 0.2, rnd.nextDouble() - 0.5)
                         .normalize().multiply(0.12);
             }
 
-            // держимся в радиусе от игрока
             Vec3d toPlayer = mc.player.getPos().add(0, 1.5, 0).subtract(b.pos);
             if (toPlayer.lengthSquared() > r * r) {
                 b.vel = toPlayer.normalize().multiply(0.14);
@@ -118,7 +112,7 @@ public class Butterflies extends Module {
 
             b.pos = b.pos.add(b.vel.x, b.vel.y + Math.sin(b.age * 0.2 + b.bobPhase) * 0.02, b.vel.z);
 
-            if (b.age > 2400) it.remove(); // время от времени пересоздаём
+            if (b.age > 2400) it.remove();
         }
     }
 
@@ -142,7 +136,7 @@ public class Butterflies extends Module {
 
         for (Butterfly b : butterflies) {
             Color base = b.variantB ? cb : ca;
-            // машущие крылья: ширина пульсирует
+
             float flap = (float) Math.abs(Math.sin(b.age * b.flapSpeed));
             float wing = Math.max(0.15f, flap) * size.getValue();
             float body = size.getValue() * 0.35f;
@@ -155,12 +149,12 @@ public class Butterflies extends Module {
             Matrix4f matrix = matrices.peek().getPositionMatrix();
             BufferBuilder buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
             int rgba = base.getRGB();
-            // левое крыло
+
             buffer.vertex(matrix, -wing, -body, 0).color(rgba);
             buffer.vertex(matrix, -body, -body, 0).color(rgba);
             buffer.vertex(matrix, -body, body, 0).color(rgba);
             buffer.vertex(matrix, -wing, body, 0).color(rgba);
-            // правое крыло
+
             buffer.vertex(matrix, body, -body, 0).color(rgba);
             buffer.vertex(matrix, wing, -body, 0).color(rgba);
             buffer.vertex(matrix, wing, body, 0).color(rgba);

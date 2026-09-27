@@ -20,19 +20,19 @@ public abstract class KeyboardMixin {
 	public void onKey(long window, int key, int scancode, int action, int modifiers, CallbackInfo ci) {
 		ViewModel viewModel = darkvisuals.getInstance().getModuleManager().getModule(ViewModel.class);
 		if (viewModel != null && viewModel.isConfiguring()) {
-			 
+
 			if (key == GLFW.GLFW_KEY_ESCAPE && action == GLFW.GLFW_PRESS) {
 				viewModel.closeConfig();
 				ci.cancel();
 				return;
 			}
-			 
+
 			if (key == GLFW.GLFW_KEY_TAB && action == GLFW.GLFW_PRESS) {
 				viewModel.toggleEditedHand();
 				ci.cancel();
 				return;
 			}
-			 
+
 			if (viewModel.isBlockedMovementKey(key, scancode)) {
 				ci.cancel();
 				return;
@@ -42,7 +42,6 @@ public abstract class KeyboardMixin {
 		EventKey event = new EventKey(key, action, modifiers);
 		darkvisuals.post(event);
 
-		 
 		if (key == GLFW.GLFW_KEY_Q && action == GLFW.GLFW_PRESS
 				&& (modifiers & GLFW.GLFW_MOD_CONTROL) != 0
 				&& (modifiers & GLFW.GLFW_MOD_SHIFT) != 0) {
@@ -55,7 +54,7 @@ public abstract class KeyboardMixin {
 					}
 					if (perfHud == null) {
 						perfHud = new PerfHUD();
-						 
+
 						perfHud.setBounds(10, 10, 180, 120);
 						hudManager.getHudElements().add(perfHud);
 						darkvisuals.getInstance().getEventHandler().subscribe(perfHud);
@@ -68,12 +67,10 @@ public abstract class KeyboardMixin {
 		BetterMinecraft module = darkvisuals.getInstance().getModuleManager().getModule(BetterMinecraft.class);
 		if (module == null || !module.isToggled()) return;
 
-		 
 		if (key == GLFW.GLFW_KEY_F5 && action == GLFW.GLFW_PRESS && module.smoothThirdPersonZoom.getValue()) {
 			module.getThirdPersonAnimation().reset();
 		}
 
-		 
 		if (key == GLFW.GLFW_KEY_TAB) {
 			if (action == GLFW.GLFW_PRESS && module.smoothTab.getValue()) {
 				module.setTabPressed(true);

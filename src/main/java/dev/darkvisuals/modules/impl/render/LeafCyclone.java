@@ -23,9 +23,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-/**
- * LeafCyclone — спиральный вихрь листьев вокруг игрока.
- */
 public class LeafCyclone extends Module {
 
     private final NumberSetting density = new NumberSetting("Плотность", 30f, 6f, 80f, 2f);

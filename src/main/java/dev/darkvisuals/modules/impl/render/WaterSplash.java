@@ -31,7 +31,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-
 public class WaterSplash extends Module {
 
     private final NumberSetting range =
@@ -72,7 +71,6 @@ public class WaterSplash extends Module {
 
         float maxRange = range.getValue();
 
-        // отслеживаем вход в воду
         Map<Entity, Boolean> current = new HashMap<>();
         for (Entity entity : mc.world.getEntities()) {
             if (entity.getPos().distanceTo(mc.player.getPos()) > maxRange) continue;
@@ -87,7 +85,6 @@ public class WaterSplash extends Module {
         wasInWater.clear();
         wasInWater.putAll(current);
 
-        // физика брызг
         Iterator<Droplet> dit = dropletsList.iterator();
         while (dit.hasNext()) {
             Droplet d = dit.next();
@@ -106,7 +103,7 @@ public class WaterSplash extends Module {
     }
 
     private void spawnSplash(Entity entity) {
-        // ищем поверхность воды над сущностью
+
         double surfaceY = entity.getY() + 0.4;
         Vec3d center = new Vec3d(entity.getX(), surfaceY, entity.getZ());
         splashes.add(new Splash(center, (float) MathHelper.clamp(entity.getWidth(), 0.4f, 1.5f)));
@@ -136,7 +133,6 @@ public class WaterSplash extends Module {
         RenderSystem.disableCull();
         RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR);
 
-        // расходящиеся эллипсы на поверхности
         for (Splash splash : splashes) {
             float t = (now - splash.birth) / (float) SPLASH_TTL_MS;
             float radius = (float) Easing.OUT_QUAD.apply(t) * ringSize.getValue() * splash.width;
@@ -160,7 +156,6 @@ public class WaterSplash extends Module {
             matrices.pop();
         }
 
-        // капли брызг
         for (Droplet d : dropletsList) {
             float progress = (now - d.birth) / (float) d.life;
             int alpha = (int) (200 * (1f - progress));

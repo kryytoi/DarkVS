@@ -22,7 +22,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
     private static File altsFile;
     private static final List<String> nicknames = new CopyOnWriteArrayList<>();
     private static String lastUsed = null;
-    private static final int MAX_ALTS = 100;  
+    private static final int MAX_ALTS = 100;
     private static final int MAX_NICKNAME_LENGTH = 16;
     private static final int MIN_NICKNAME_LENGTH = 3;
 
@@ -40,24 +40,24 @@ import java.util.concurrent.CopyOnWriteArrayList;
             ChatUtils.sendMessage(I18n.translate("darkvisuals.alt.emptyNickname"));
             return false;
         }
-        
+
         nickname = nickname.trim();
-        
+
         if (!isValidNickname(nickname)) {
             ChatUtils.sendMessage(I18n.translate("darkvisuals.alt.invalidNickname"));
             return false;
         }
-        
+
         if (nicknames.size() >= MAX_ALTS) {
             ChatUtils.sendMessage(I18n.translate("darkvisuals.alt.tooManyAlts", MAX_ALTS));
             return false;
         }
-        
+
         if (nicknames.contains(nickname)) {
             ChatUtils.sendMessage(I18n.translate("darkvisuals.alt.alreadyExists"));
             return false;
         }
-        
+
         try {
             nicknames.add(nickname);
             save();
@@ -74,19 +74,19 @@ import java.util.concurrent.CopyOnWriteArrayList;
             ChatUtils.sendMessage(I18n.translate("darkvisuals.alt.emptyNickname"));
             return false;
         }
-        
+
         final String trimmedNickname = nickname.trim();
         boolean removed = nicknames.removeIf(n -> n.equalsIgnoreCase(trimmedNickname));
-        
+
         if (!removed) {
             ChatUtils.sendMessage(I18n.translate("darkvisuals.alt.notFound"));
             return false;
         }
-        
+
         if (lastUsed != null && lastUsed.equalsIgnoreCase(trimmedNickname)) {
             lastUsed = null;
         }
-        
+
         try {
             save();
             ChatUtils.sendMessage(I18n.translate("darkvisuals.alt.removed", trimmedNickname));
@@ -102,13 +102,13 @@ import java.util.concurrent.CopyOnWriteArrayList;
             ChatUtils.sendMessage(I18n.translate("darkvisuals.alt.emptyNickname"));
             return false;
         }
-        
+
         nickname = nickname.trim();
         if (!isValidNickname(nickname)) {
             ChatUtils.sendMessage(I18n.translate("darkvisuals.alt.invalidNickname"));
             return false;
         }
-        
+
         try {
             lastUsed = nickname;
             save();
@@ -118,7 +118,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
             dev.darkvisuals.mixin.accessors.IMinecraftClientSessionAccessor accessor = (dev.darkvisuals.mixin.accessors.IMinecraftClientSessionAccessor) MinecraftClient.getInstance();
             accessor.darkvisuals$setSession(session);
-            
+
             ChatUtils.sendMessage(I18n.translate("darkvisuals.alt.applied", nickname));
             return true;
         } catch (Exception e) {
@@ -135,28 +135,26 @@ import java.util.concurrent.CopyOnWriteArrayList;
         if (nickname == null || nickname.isEmpty()) {
             return false;
         }
-        
-         
+
         if (nickname.length() < MIN_NICKNAME_LENGTH || nickname.length() > MAX_NICKNAME_LENGTH) {
             return false;
         }
-        
-         
+
         return nickname.matches("[A-Za-z0-9_]+");
     }
-    
+
     public static int getAltCount() {
         return nicknames.size();
     }
-    
+
     public static int getMaxAlts() {
         return MAX_ALTS;
     }
-    
+
     public static boolean hasNickname(String nickname) {
         return nicknames.contains(nickname);
     }
-    
+
     public static void clearAllAlts() {
         nicknames.clear();
         lastUsed = null;
@@ -166,7 +164,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
     private static void save() {
         if (altsFile == null) return;
-        
+
         try {
             JsonObject root = new JsonObject();
             JsonArray arr = new JsonArray();
@@ -179,7 +177,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
             if (lastUsed != null) root.addProperty("lastUsed", lastUsed);
             root.addProperty("version", "1.0");
             root.addProperty("maxAlts", MAX_ALTS);
-            
+
             try (FileWriter writer = new FileWriter(altsFile)) {
                 GSON.toJson(root, writer);
             }
@@ -194,11 +192,11 @@ import java.util.concurrent.CopyOnWriteArrayList;
             save();
             return;
         }
-        
+
         try (FileReader reader = new FileReader(altsFile)) {
             JsonObject root = JsonParser.parseReader(reader).getAsJsonObject();
             nicknames.clear();
-            
+
             if (root.has("alts")) {
                 JsonArray arr = root.getAsJsonArray("alts");
                 for (JsonElement e : arr) {
@@ -208,30 +206,27 @@ import java.util.concurrent.CopyOnWriteArrayList;
                     }
                 }
             }
-            
+
             if (root.has("lastUsed")) {
                 String lastUsedNick = root.get("lastUsed").getAsString();
                 if (lastUsedNick != null && !lastUsedNick.trim().isEmpty() && isValidNickname(lastUsedNick.trim())) {
                     lastUsed = lastUsedNick.trim();
                 }
             }
-            
-             
+
             if (lastUsed != null && !nicknames.contains(lastUsed)) {
                 lastUsed = null;
             }
-            
+
         } catch (Exception e) {
             ChatUtils.sendMessage(I18n.translate("darkvisuals.alt.loadError"));
-             
+
             if (altsFile.exists()) {
                 File backup = new File(altsFile.getParent(), "alts_backup_" + System.currentTimeMillis() + ".json");
                 altsFile.renameTo(backup);
             }
-            save();  
+            save();
         }
     }
 }
-
-
 

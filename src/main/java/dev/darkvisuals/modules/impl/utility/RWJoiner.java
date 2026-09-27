@@ -17,9 +17,8 @@ import net.minecraft.util.Hand;
 
 public class RWJoiner extends Module {
 
-     
     private final StringSetting grief = new StringSetting("Гриф", "", false);
-     
+
     private final NumberSetting delay = new NumberSetting("Задержка (тики)", 3, 1, 20, 1);
 
     private static final String COMPASS_NAME = "выбор гриф (ПКМ)";
@@ -34,7 +33,7 @@ public class RWJoiner extends Module {
 
     @Override
     public void onEnable() {
-        super.onEnable();  
+        super.onEnable();
         step = Step.FIND_COMPASS;
         timer = 0;
     }
@@ -48,13 +47,13 @@ public class RWJoiner extends Module {
         switch (step) {
             case FIND_COMPASS -> {
                 int slot = findCompassSlot();
-                if (slot == -1) { setToggled(false); return; }  
-                mc.player.getInventory().selectedSlot = slot;    
+                if (slot == -1) { setToggled(false); return; }
+                mc.player.getInventory().selectedSlot = slot;
                 step = Step.USE_COMPASS;
                 timer = delayTicks();
             }
             case USE_COMPASS -> {
-                 
+
                 mc.interactionManager.interactItem(mc.player, Hand.MAIN_HAND);
                 step = Step.WAIT_MENU;
                 timer = delayTicks();
@@ -64,26 +63,26 @@ public class RWJoiner extends Module {
                     step = Step.CLICK_TABLE;
                     timer = delayTicks();
                 } else {
-                     
+
                     step = Step.USE_COMPASS;
                     timer = delayTicks();
                 }
             }
             case CLICK_TABLE -> {
-                 
+
                 clickItemInContainer(Items.CRAFTING_TABLE, null);
                 step = Step.CLICK_HEAD;
                 timer = delayTicks();
             }
             case CLICK_HEAD -> {
-                 
+
                 clickItemInContainer(Items.PLAYER_HEAD, targetHeadName());
                 step = Step.LOOP;
                 timer = delayTicks();
             }
             case LOOP -> {
-                if (mc.player != null) mc.player.closeHandledScreen();  
-                 
+                if (mc.player != null) mc.player.closeHandledScreen();
+
                 if (findCompassSlot() == -1) {
                     setToggled(false);
                 } else {
@@ -98,7 +97,6 @@ public class RWJoiner extends Module {
         return Math.max(1, Math.round(delay.getValue()));
     }
 
-     
     private int findCompassSlot() {
         int fallback = -1;
         for (int i = 0; i < 9; i++) {
@@ -108,7 +106,7 @@ public class RWJoiner extends Module {
             if (name != null && name.toLowerCase().contains(COMPASS_NAME.toLowerCase())) return i;
             if (fallback == -1) fallback = i;
         }
-        return fallback;  
+        return fallback;
     }
 
     private String targetHeadName() {
@@ -116,14 +114,12 @@ public class RWJoiner extends Module {
         return "ГРИФ #" + g + " (1.16.5+)";
     }
 
-     
-     
     private boolean clickItemInContainer(Item item, String requiredName) {
         if (!(mc.currentScreen instanceof HandledScreen<?> hs)) return false;
         ScreenHandler handler = hs.getScreenHandler();
-        int containerSize = handler.slots.size() - 36;  
+        int containerSize = handler.slots.size() - 36;
         for (Slot slot : handler.slots) {
-            if (containerSize > 0 && slot.id >= containerSize) continue;  
+            if (containerSize > 0 && slot.id >= containerSize) continue;
             ItemStack st = slot.getStack();
             if (st.isEmpty() || st.getItem() != item) continue;
             if (requiredName != null) {

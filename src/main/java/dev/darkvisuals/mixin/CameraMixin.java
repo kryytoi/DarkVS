@@ -37,9 +37,8 @@ public abstract class CameraMixin {
 		module.getThirdPersonAnimation().update(isThirdPerson);
 		float factor = module.getThirdPersonAnimation().getValue();
 
-		 
 		float baseOffset = isThirdPerson ? 0.35f : 0.0f;
 		float animatedDistance = Math.max(baseOffset, desiredDistance * factor);
 		return this.clipToSpace(animatedDistance);
 	}
-} 
+}

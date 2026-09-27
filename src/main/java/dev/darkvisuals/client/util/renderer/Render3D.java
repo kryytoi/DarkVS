@@ -39,7 +39,6 @@ public class Render3D implements Wrapper {
 	public List<VertexCollection> BLOCK_OVERLAY_LINES = new ArrayList<>();
 	public List<VertexCollection> HITBOX_LINES = new ArrayList<>();
 
-	 
 	public List<VertexCollection> CUSTOM_HITBOX_QUADS = new ArrayList<>();
 	public List<VertexCollection> CUSTOM_HITBOX_LINES = new ArrayList<>();
 
@@ -102,7 +101,6 @@ public class Render3D implements Wrapper {
 		GL11.glEnable(GL11.GL_LINE_SMOOTH);
 		GL11.glLineWidth(width);
 
-		 
 		RenderSystem.disableDepthTest();
 		BufferRenderer.drawWithGlobalProgram(buffer.end());
 		RenderSystem.enableDepthTest();
@@ -120,10 +118,9 @@ public class Render3D implements Wrapper {
 		GL11.glEnable(GL11.GL_LINE_SMOOTH);
 		GL11.glLineWidth(width);
 
-		 
 		RenderSystem.enableDepthTest();
 		RenderSystem.depthFunc(GL11.GL_LEQUAL);
-		RenderSystem.depthMask(true);  
+		RenderSystem.depthMask(true);
 		BufferRenderer.drawWithGlobalProgram(buffer.end());
 
 		GL11.glDisable(GL11.GL_LINE_SMOOTH);
@@ -134,7 +131,7 @@ public class Render3D implements Wrapper {
 
 		RenderSystem.enableDepthTest();
 		RenderSystem.depthFunc(GL11.GL_LEQUAL);
-		RenderSystem.depthMask(true);  
+		RenderSystem.depthMask(true);
 
 		RenderSystem.enableBlend();
 		if (shine) RenderSystem.blendFunc(770, 32772);
@@ -153,24 +150,22 @@ public class Render3D implements Wrapper {
 	}
 
  	public static void renderCustomHitBox() {
-		 
+
 		if (!CUSTOM_HITBOX_QUADS.isEmpty()) {
 			drawQuadsWithDepth(CUSTOM_HITBOX_QUADS, false);
 		}
 
-		 
 		if (!CUSTOM_HITBOX_LINES.isEmpty()) {
 			drawLinesWithDepth(CUSTOM_HITBOX_LINES, HITBOX_LINE_WIDTH);
 		}
 	}
 
  	public static void renderBlockOverlay() {
-		 
+
 		if (!OVERLAY_QUADS.isEmpty()) {
 			drawIgnoringDepth(OVERLAY_QUADS, OVERLAY_DEBUG_LINES, false);
 		}
 
-		 
 		if (!BLOCK_OVERLAY_LINES.isEmpty()) {
 			drawLines(BLOCK_OVERLAY_LINES, BLOCK_OVERLAY_LINE_WIDTH);
 		}
@@ -189,20 +184,20 @@ public class Render3D implements Wrapper {
 
  	public static void drawRibbonSegment(Vec3d a, Vec3d b, float halfWidth, Color color) {
 		if (!rendering) return;
-		 
+
 		Vec3d cam = mc.gameRenderer.getCamera().getPos();
 		Vec3d pa = a.subtract(cam);
 		Vec3d pb = b.subtract(cam);
 		Vec3d dir = pb.subtract(pa);
 		if (dir.lengthSquared() == 0) return;
-		 
+
 		Vec3d mid = pa.add(pb).multiply(0.5);
 		Vec3d viewDir = mid.normalize();
-		 
+
 		Vec3d normal = dir.crossProduct(viewDir);
 		if (normal.lengthSquared() == 0) return;
 		normal = normal.normalize().multiply(halfWidth);
-		 
+
 		Vec3d aL = pa.subtract(normal);
 		Vec3d aR = pa.add(normal);
 		Vec3d bL = pb.subtract(normal);
@@ -255,7 +250,6 @@ public class Render3D implements Wrapper {
 		RenderSystem.disableBlend();
 	}
 
-	 
 	private static boolean spriteBatchActive = false;
 	private static BufferBuilder spriteBuffer = null;
 	private static boolean spriteHasVertices = false;
@@ -281,7 +275,7 @@ public class Render3D implements Wrapper {
 
 	public static void batchBillboard(MatrixStack matrices, Vec3d worldPos, float size, int rgba) {
 		if (!spriteBatchActive) return;
-		 
+
 		Vec3d cameraPos = mc.gameRenderer.getCamera().getPos();
 		Vec3d toCamera = cameraPos.subtract(worldPos).normalize();
 		Vec3d worldUp = new Vec3d(0, 1, 0);
@@ -342,28 +336,22 @@ public class Render3D implements Wrapper {
 		RenderSystem.depthFunc(GL11.GL_LEQUAL);
 		RenderSystem.depthMask(false);
 
-		 
 		Vec3d cameraPos = mc.gameRenderer.getCamera().getPos();
 
-		 
 		Vec3d toCamera = cameraPos.subtract(worldPos).normalize();
 
-		 
 		Vec3d worldUp = new Vec3d(0, 1, 0);
 		Vec3d right = worldUp.crossProduct(toCamera).normalize();
 		Vec3d up = toCamera.crossProduct(right).normalize();
 
-		 
 		right = right.multiply(size);
 		up = up.multiply(size);
 
-		 
 		Vec3d topLeft = worldPos.add(up).subtract(right);
 		Vec3d topRight = worldPos.add(up).add(right);
 		Vec3d bottomLeft = worldPos.subtract(up).subtract(right);
 		Vec3d bottomRight = worldPos.subtract(up).add(right);
 
-		 
 		Vec3d cameraPosVec = mc.getEntityRenderDispatcher().camera.getPos();
 		topLeft = topLeft.subtract(cameraPosVec);
 		topRight = topRight.subtract(cameraPosVec);
@@ -379,7 +367,6 @@ public class Render3D implements Wrapper {
 		float b = color.getBlue() / 255.0f;
 		float a = color.getAlpha() / 255.0f;
 
-		 
 		buffer.vertex(matrix, (float) bottomLeft.x, (float) bottomLeft.y, (float) bottomLeft.z)
 				.texture(0.0f, 1.0f).color(r, g, b, a);
 		buffer.vertex(matrix, (float) bottomRight.x, (float) bottomRight.y, (float) bottomRight.z)
@@ -409,23 +396,18 @@ public class Render3D implements Wrapper {
 		RenderSystem.depthFunc(GL11.GL_LEQUAL);
 		RenderSystem.depthMask(false);
 
-		 
 		Vec3d cameraPos = mc.gameRenderer.getCamera().getPos();
 
-		 
 		Vec3d toCamera = cameraPos.subtract(worldPos).normalize();
 
-		 
 		Vec3d worldUp = new Vec3d(0, 1, 0);
 		Vec3d right = worldUp.crossProduct(toCamera).normalize();
 		Vec3d up = toCamera.crossProduct(right).normalize();
 
-		 
 		double radians = Math.toRadians(fixedRotation);
 		double cos = Math.cos(radians);
 		double sin = Math.sin(radians);
 
-		 
 		Vec3d rotatedRight = new Vec3d(
 			right.x * cos - right.z * sin,
 			right.y,
@@ -437,17 +419,14 @@ public class Render3D implements Wrapper {
 			up.x * sin + up.z * cos
 		);
 
-		 
 		rotatedRight = rotatedRight.multiply(size);
 		rotatedUp = rotatedUp.multiply(size);
 
-		 
 		Vec3d topLeft = worldPos.add(rotatedUp).subtract(rotatedRight);
 		Vec3d topRight = worldPos.add(rotatedUp).add(rotatedRight);
 		Vec3d bottomLeft = worldPos.subtract(rotatedUp).subtract(rotatedRight);
 		Vec3d bottomRight = worldPos.subtract(rotatedUp).add(rotatedRight);
 
-		 
 		Vec3d cameraPosVec = mc.getEntityRenderDispatcher().camera.getPos();
 		topLeft = topLeft.subtract(cameraPosVec);
 		topRight = topRight.subtract(cameraPosVec);
@@ -463,7 +442,6 @@ public class Render3D implements Wrapper {
 		float b = color.getBlue() / 255.0f;
 		float a = color.getAlpha() / 255.0f;
 
-		 
 		buffer.vertex(matrix, (float) bottomLeft.x, (float) bottomLeft.y, (float) bottomLeft.z)
 				.texture(0.0f, 1.0f).color(r, g, b, a);
 		buffer.vertex(matrix, (float) bottomRight.x, (float) bottomRight.y, (float) bottomRight.z)
@@ -480,11 +458,6 @@ public class Render3D implements Wrapper {
 	 RenderSystem.disableBlend();
 	}
 
-	/**
-	 * Декаль на грани блока: лежит на стороне side, как картина,
-	 * и не поворачивается за камерой. Ограничивающий прямоугольник
-	 * остаётся горизонтальным/вертикальным относительно мира.
-	 */
 	public static void drawDecalTexture(MatrixStack matrices, Vec3d worldPos, Direction side, float size, Identifier texture, Color color) {
 		RenderSystem.setShader(ShaderProgramKeys.POSITION_TEX_COLOR);
 		RenderSystem.setShaderTexture(0, texture);
@@ -504,8 +477,7 @@ public class Render3D implements Wrapper {
 		Vec3d right;
 		Vec3d up;
 		if (side.getAxis() == Direction.Axis.Y) {
-			// фиксированная горизонтальная ось — поставленная декаль не
-			// дёргается вслед за камерой, как картина на полу
+
 			right = new Vec3d(1, 0, 0);
 			up = normal.crossProduct(right).normalize();
 		} else {
@@ -577,7 +549,6 @@ public class Render3D implements Wrapper {
 
 		float half = size / 2.0f;
 
-		 
 		buffer.vertex(matrix, -half, -half, 0).texture(0.0f, 1.0f).color(r, g, b, a);
 		buffer.vertex(matrix, half, -half, 0).texture(1.0f, 1.0f).color(r, g, b, a);
 		buffer.vertex(matrix, half, half, 0).texture(1.0f, 0.0f).color(r, g, b, a);
@@ -772,7 +743,6 @@ public class Render3D implements Wrapper {
 		Matrix4f matrix = matrices.peek().getPositionMatrix();
 		box = cameraTransform(box);
 
-		 
 		DEBUG_LINES.add(new VertexCollection(
 				new Vertex(matrix, (float) box.minX, (float) box.minY, (float) box.minZ, endColor.getRGB()),
 				new Vertex(matrix, (float) box.minX, (float) box.minY, (float) box.maxZ, endColor.getRGB())
@@ -790,7 +760,6 @@ public class Render3D implements Wrapper {
 				new Vertex(matrix, (float) box.minX, (float) box.minY, (float) box.minZ, endColor.getRGB())
 		));
 
-		 
 		DEBUG_LINES.add(new VertexCollection(
 				new Vertex(matrix, (float) box.minX, (float) box.maxY, (float) box.minZ, startColor.getRGB()),
 				new Vertex(matrix, (float) box.minX, (float) box.maxY, (float) box.maxZ, startColor.getRGB())
@@ -808,7 +777,6 @@ public class Render3D implements Wrapper {
 				new Vertex(matrix, (float) box.minX, (float) box.maxY, (float) box.minZ, startColor.getRGB())
 		));
 
-		 
 		DEBUG_LINES.add(new VertexCollection(
 				new Vertex(matrix, (float) box.minX, (float) box.minY, (float) box.minZ, endColor.getRGB()),
 				new Vertex(matrix, (float) box.minX, (float) box.maxY, (float) box.minZ, startColor.getRGB())
@@ -882,7 +850,6 @@ public class Render3D implements Wrapper {
 		Matrix4f matrix = matrices.peek().getPositionMatrix();
 		box = cameraTransform(box);
 
-		 
 		OVERLAY_DEBUG_LINES.add(new VertexCollection(
 				new Vertex(matrix, (float) box.minX, (float) box.minY, (float) box.minZ, endColor.getRGB()),
 				new Vertex(matrix, (float) box.minX, (float) box.minY, (float) box.maxZ, endColor.getRGB())
@@ -900,7 +867,6 @@ public class Render3D implements Wrapper {
 				new Vertex(matrix, (float) box.minX, (float) box.minY, (float) box.minZ, endColor.getRGB())
 		));
 
-		 
 		OVERLAY_DEBUG_LINES.add(new VertexCollection(
 				new Vertex(matrix, (float) box.minX, (float) box.maxY, (float) box.minZ, startColor.getRGB()),
 				new Vertex(matrix, (float) box.minX, (float) box.maxY, (float) box.maxZ, startColor.getRGB())
@@ -918,7 +884,6 @@ public class Render3D implements Wrapper {
 				new Vertex(matrix, (float) box.minX, (float) box.maxY, (float) box.minZ, startColor.getRGB())
 		));
 
-		 
 		OVERLAY_DEBUG_LINES.add(new VertexCollection(
 				new Vertex(matrix, (float) box.minX, (float) box.minY, (float) box.minZ, endColor.getRGB()),
 				new Vertex(matrix, (float) box.minX, (float) box.maxY, (float) box.minZ, startColor.getRGB())
@@ -1068,10 +1033,8 @@ public class Render3D implements Wrapper {
 				new Vertex(matrix, (float) e.x, (float) e.y, (float) e.z, color)
 		));
 
-		 
 		GL11.glLineWidth(width);
 	}
-
 
 	public static void drawTextureVivid(MatrixStack matrices, float x0, float y0, float z0,
 									   float x1, float y1, float z1, Identifier texture, Color color, float strength) {
@@ -1080,7 +1043,7 @@ public class Render3D implements Wrapper {
 
 	public static void drawTextureVivid(MatrixStack matrices, float x0, float y0, float z0,
                                        float x1, float y1, float z1, Identifier texture, Color color, float strength, VividMode mode) {
-		 
+
 		float[] hsb = Color.RGBtoHSB(color.getRed(), color.getGreen(), color.getBlue(), null);
 		float satBoost = switch (mode) {
 			case SOFT -> 0.4f + 0.3f * strength;
@@ -1097,7 +1060,7 @@ public class Render3D implements Wrapper {
 		RenderSystem.setShader(ShaderProgramKeys.POSITION_TEX_COLOR);
 		RenderSystem.setShaderTexture(0, texture);
 		RenderSystem.enableBlend();
-		 
+
 		RenderSystem.blendFunc(GlStateManager.SrcFactor.SRC_ALPHA, GlStateManager.DstFactor.ONE);
 		RenderSystem.disableCull();
 		RenderSystem.enableDepthTest();
@@ -1124,7 +1087,6 @@ public class Render3D implements Wrapper {
 		RenderSystem.depthMask(true);
 		RenderSystem.disableBlend();
 	}
-
 
 	public record VertexCollection(Vertex... vertices) {
 		public void vertex(BufferBuilder buffer) {

@@ -17,9 +17,6 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.Vec3d;
 import org.joml.Matrix4f;
 
-/**
- * GroundCracks — светящиеся трещины, расходящиеся от ног игрока.
- */
 public class GroundCracks extends Module {
 
     private final NumberSetting count = new NumberSetting("Количество", 7f, 3f, 16f, 1f);

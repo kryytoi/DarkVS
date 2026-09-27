@@ -28,16 +28,13 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.UUID;
 
- 
 public class VirtualPlayer extends Module {
 
-      
     private static final int MAX_FAKE_PLAYERS = 50;
 
     @Getter
     private static VirtualPlayer instance;
 
-      
     public enum SkinModel implements Nameable {
         STEVE("Steve", SkinTextures.Model.WIDE,
                 Identifier.ofVanilla("textures/entity/player/wide/steve.png")),
@@ -59,13 +56,11 @@ public class VirtualPlayer extends Module {
             return name;
         }
 
-          
         public SkinTextures toSkinTextures() {
             return new SkinTextures(texture, null, null, null, model, true);
         }
     }
 
-      
     public enum MainHandItem implements Nameable {
         NONE("Пусто", null),
         NETHERITE_SWORD("Незеритовый меч", Items.NETHERITE_SWORD),
@@ -91,7 +86,6 @@ public class VirtualPlayer extends Module {
         }
     }
 
-      
     public enum OffHandItem implements Nameable {
         NONE("Пусто", null),
         TOTEM("Тотем", Items.TOTEM_OF_UNDYING),
@@ -115,7 +109,6 @@ public class VirtualPlayer extends Module {
         }
     }
 
- 
     private static final class FakePlayer extends OtherClientPlayerEntity {
         private volatile SkinTextures skinTextures;
 
@@ -133,8 +126,6 @@ public class VirtualPlayer extends Module {
             this.skinTextures = textures;
         }
     }
-
-     
 
     @Getter
     private final StringSetting nickname = new StringSetting("Никнейм", "VirtualPlayer", false);
@@ -158,10 +149,8 @@ public class VirtualPlayer extends Module {
     private final ButtonSetting removeLastButton = new ButtonSetting("Удалить последнего", this::removeLastFakePlayer);
     private final ButtonSetting removeAllButton = new ButtonSetting("Удалить всех", this::removeAllFakePlayers);
 
-      
     private static int fakeIdCounter = -1337;
 
-      
     private final Deque<OtherClientPlayerEntity> fakePlayers = new ArrayDeque<>();
 
     public VirtualPlayer() {
@@ -179,7 +168,6 @@ public class VirtualPlayer extends Module {
         getSettings().add(removeAllButton);
     }
 
-      
     private void spawnFakePlayer() {
         if (fullNullCheck() || !isToggled()) return;
 
@@ -194,8 +182,6 @@ public class VirtualPlayer extends Module {
 
         FakePlayer entity = new FakePlayer(mc.world, profile, model.toSkinTextures());
 
-         
-         
         if (nickSkin.getValue()) {
             SkullBlockEntity.fetchProfileByName(name).thenAccept(opt ->
                     opt.ifPresent(realProfile ->
@@ -208,7 +194,6 @@ public class VirtualPlayer extends Module {
 
         entity.setId(fakeIdCounter--);
 
-         
         Vec3d pos = mc.player.getPos();
         float yaw = mc.player.getYaw();
         float pitch = mc.player.getPitch();
@@ -216,19 +201,17 @@ public class VirtualPlayer extends Module {
         entity.refreshPositionAndAngles(pos.x, pos.y, pos.z, yaw, pitch);
         entity.setHeadYaw(yaw);
         entity.setBodyYaw(yaw);
-         
+
         entity.lastRenderX = pos.x;
         entity.lastRenderY = pos.y;
         entity.lastRenderZ = pos.z;
 
         applyEquipment(entity);
 
-         
         mc.world.addEntity(entity);
         fakePlayers.addLast(entity);
     }
 
-      
     private void applyEquipment(OtherClientPlayerEntity entity) {
         if (wearArmor.getValue()) {
             entity.equipStack(EquipmentSlot.HEAD, new ItemStack(Items.NETHERITE_HELMET));
@@ -240,14 +223,12 @@ public class VirtualPlayer extends Module {
         entity.equipStack(EquipmentSlot.OFFHAND, offHand.getValue().toStack());
     }
 
-      
     private void removeLastFakePlayer() {
         OtherClientPlayerEntity last = fakePlayers.pollLast();
         if (last == null) return;
         discardEntity(last);
     }
 
-      
     private void removeAllFakePlayers() {
         while (!fakePlayers.isEmpty()) {
             discardEntity(fakePlayers.pollLast());
@@ -261,19 +242,17 @@ public class VirtualPlayer extends Module {
         entity.discard();
     }
 
-      
     private static String sanitizeNick(String raw) {
         String cleaned = raw == null ? "" : raw.replaceAll("[^a-zA-Z0-9_]", "");
         if (cleaned.isEmpty()) cleaned = "VirtualPlayer";
         return cleaned.length() > 16 ? cleaned.substring(0, 16) : cleaned;
     }
 
- 
     @EventHandler
     public void onTick(EventTick e) {
         if (fakePlayers.isEmpty()) return;
         if (mc.world == null) {
-            fakePlayers.clear();  
+            fakePlayers.clear();
             return;
         }
         fakePlayers.removeIf(p -> p.isRemoved() || p.getWorld() != mc.world);

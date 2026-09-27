@@ -26,7 +26,7 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
- 
+
 import java.util.concurrent.ThreadLocalRandom;
 
 public class DamageParticles extends Module implements ThemeManager.ThemeChangeListener {
@@ -41,7 +41,6 @@ public class DamageParticles extends Module implements ThemeManager.ThemeChangeL
             new BooleanSetting("mode.legacy", false)
     );
 
-     
     private final ListSetting textures = new ListSetting(
             "setting.textures",
             false,
@@ -57,7 +56,7 @@ public class DamageParticles extends Module implements ThemeManager.ThemeChangeL
     private static final Identifier DOLLAR  = darkvisuals.id("hud/dollar.png");
     private static final Identifier CIRCLE  = darkvisuals.id("hud/circle.png");
     private static final Identifier AMONGUS = darkvisuals.id("hud/amongus.png");
-     
+
     private static int maxParticles = 500;
     private static final double HOVER_HEIGHT = 0.03;
     private static final double CAMERA_BIAS = 0.02;
@@ -67,8 +66,6 @@ public class DamageParticles extends Module implements ThemeManager.ThemeChangeL
     private final java.util.ArrayList<Particle> particles = new java.util.ArrayList<>();
     private final java.util.ArrayList<PendingSpawn> pending = new java.util.ArrayList<>();
 
-     
-
     public DamageParticles() {
         super("DamageParticles", Category.Render, I18n.translate("module.damageparticles.description"));
         getSettings().add(dmgCount);
@@ -77,11 +74,11 @@ public class DamageParticles extends Module implements ThemeManager.ThemeChangeL
         getSettings().add(animSpeed);
         getSettings().add(lifeTimeSec);
         getSettings().add(mode);
-        getSettings().add(textures);  
+        getSettings().add(textures);
         this.themeManager = ThemeManager.getInstance();
         this.currentColor = themeManager.getThemeColor();
         themeManager.addThemeChangeListener(this);
-         
+
         maxParticles = 500;
     }
 
@@ -92,7 +89,7 @@ public class DamageParticles extends Module implements ThemeManager.ThemeChangeL
         if (!(e.getTarget() instanceof LivingEntity entity)) return;
         if (!entity.isAlive()) return;
         if (!e.isEffectsAllowed()) return;
-         
+
         if (!e.canProcess()) return;
 
         List<Identifier> textures = getSelectedTextures();
@@ -113,7 +110,6 @@ public class DamageParticles extends Module implements ThemeManager.ThemeChangeL
             return;
         }
 
-         
         Vec3d base;
         HitResult ch = mc.crosshairTarget;
         if (ch != null && ch.getType() == HitResult.Type.ENTITY) {
@@ -130,8 +126,6 @@ public class DamageParticles extends Module implements ThemeManager.ThemeChangeL
             base = entity.getPos().add(0, entity.getHeight() / 2f, 0);
         }
 
-         
-         
         Vec3d attackerEye = e.getPlayer() != null ? e.getPlayer().getEyePos() : mc.player.getEyePos();
         Vec3d preferredDir = base.subtract(attackerEye);
         if (preferredDir.lengthSquared() == 0) preferredDir = mc.player.getRotationVec(1.0f);
@@ -194,10 +188,8 @@ public class DamageParticles extends Module implements ThemeManager.ThemeChangeL
             pending.clear();
         }
 
-         
         maxParticles = 500;
 
-         
         for (int i = particles.size() - 1; i >= 0; i--) {
             Particle p = particles.get(i);
             if ((now - p.spawnTime > p.lifeTime) || (mc.player.getPos().distanceTo(p.pos) > 100)) {
@@ -208,20 +200,15 @@ public class DamageParticles extends Module implements ThemeManager.ThemeChangeL
         Vec3d cameraPos = mc.gameRenderer.getCamera().getPos();
         for (int i = 0, size = particles.size(); i < size; i++) {
             Particle p = particles.get(i);
-             
 
             p.updatePhysics();
-
-             
 
             float f = Math.max(0f, 1 - ((now - p.spawnTime) / (float) p.lifeTime));
             int alpha = (int) (255 * 0.8f * f);
             if (alpha <= 0) continue;
 
-             
-             
             float worldSize = dmgSize.getValue() * 0.04f * 0.3f * f;
-             
+
             Color themeColor = themeManager.getCurrentTheme().getBackgroundColor();
             Color color = new Color(themeColor.getRed(), themeColor.getGreen(), themeColor.getBlue(), alpha);
             Vec3d toCam = cameraPos.subtract(p.pos);
@@ -257,7 +244,7 @@ public class DamageParticles extends Module implements ThemeManager.ThemeChangeL
     private boolean isSolidAt(BlockPos pos) {
         if (mc.world == null) return false;
         var state = mc.world.getBlockState(pos);
-         
+
         return !state.getCollisionShape(mc.world, pos).isEmpty();
     }
 
@@ -271,7 +258,7 @@ public class DamageParticles extends Module implements ThemeManager.ThemeChangeL
             var state = mc.world.getBlockState(check);
             var shape = state.getCollisionShape(mc.world, check);
             if (shape.isEmpty()) continue;
-             
+
             net.minecraft.util.math.Box bb = shape.getBoundingBox();
             double topY = check.getY() + bb.maxY;
             if (pos.y >= topY) {
@@ -352,24 +339,22 @@ public class DamageParticles extends Module implements ThemeManager.ThemeChangeL
 
         static Particle createDamage(DamageParticles owner, Vec3d pos, Identifier tex, long lifeTime, float scatter, Vec3d preferredDir) {
             double speedJitter = ThreadLocalRandom.current().nextDouble(0.2, 0.4);
-             
+
             double jx = ThreadLocalRandom.current().nextDouble(-scatter, scatter);
             double jy = ThreadLocalRandom.current().nextDouble(-scatter, scatter);
             double jz = ThreadLocalRandom.current().nextDouble(-scatter, scatter);
             Vec3d spawnPos = pos.add(jx, jy, jz);
 
-             
             double theta = ThreadLocalRandom.current().nextDouble(0, Math.PI * 2.0);
             double u = ThreadLocalRandom.current().nextDouble(-1.0, 1.0);
             double r = Math.sqrt(1 - u * u);
             double sx = r * Math.cos(theta);
             double sy = u;
             double sz = r * Math.sin(theta);
-             
+
             Vec3d dir = new Vec3d(sx, -Math.abs(sy), sz).normalize();
 
-             
-            double baseline = 0.07;  
+            double baseline = 0.07;
             double speedScale = Math.max(0.4, Math.min(2.5, scatter / baseline));
             double baseSpeed = ThreadLocalRandom.current().nextDouble(0.02, 0.25) * speedScale;
             Vec3d velocity = dir.multiply(baseSpeed * speedJitter);
@@ -379,22 +364,21 @@ public class DamageParticles extends Module implements ThemeManager.ThemeChangeL
 
         static Particle createLegacy(DamageParticles owner, Vec3d pos, Identifier tex, long lifeTime, float scatter) {
             double speedJitter = ThreadLocalRandom.current().nextDouble(0.2, 0.4);
-             
+
             double jx = ThreadLocalRandom.current().nextDouble(-scatter, scatter);
             double jy = ThreadLocalRandom.current().nextDouble(-scatter, scatter);
             double jz = ThreadLocalRandom.current().nextDouble(-scatter, scatter);
             Vec3d spawnPos = pos.add(jx, jy, jz);
 
-             
             double theta = ThreadLocalRandom.current().nextDouble(0, Math.PI * 2.0);
             double u = ThreadLocalRandom.current().nextDouble(-1.0, 1.0);
             double r = Math.sqrt(1 - u * u);
             double sx = r * Math.cos(theta);
             double sy = u;
             double sz = r * Math.sin(theta);
-             
+
             Vec3d dir = new Vec3d(sx, -Math.abs(sy), sz).normalize();
-             
+
             double baseline = 0.07;
             double speedScale = Math.max(0.4, Math.min(2.5, scatter / baseline));
             double baseSpeed = ThreadLocalRandom.current().nextDouble(0.04, 0.12) * speedScale;
@@ -404,7 +388,7 @@ public class DamageParticles extends Module implements ThemeManager.ThemeChangeL
         }
 
         void updatePhysics() {
-             
+
             double s = owner.animSpeed.getValue();
             double gravity = 0.00006;
             velocityPhysics = velocityPhysics.subtract(0, gravity * s, 0);
@@ -416,7 +400,6 @@ public class DamageParticles extends Module implements ThemeManager.ThemeChangeL
             Vec3d step = velocityPhysics.multiply(s);
             Vec3d nextPos = pos.add(step);
 
-             
             if (owner.mc.world != null) {
                 net.minecraft.world.RaycastContext ctx = new net.minecraft.world.RaycastContext(
                         prevPos,
@@ -428,7 +411,7 @@ public class DamageParticles extends Module implements ThemeManager.ThemeChangeL
                 net.minecraft.util.hit.HitResult hit = owner.mc.world.raycast(ctx);
                 if (hit.getType() == net.minecraft.util.hit.HitResult.Type.BLOCK) {
                     net.minecraft.util.hit.BlockHitResult bhr = (net.minecraft.util.hit.BlockHitResult) hit;
-                     
+
                     final double eps = 0.002;
                     switch (bhr.getSide().getAxis()) {
                         case X -> {
@@ -444,12 +427,12 @@ public class DamageParticles extends Module implements ThemeManager.ThemeChangeL
                             velocityPhysics = new Vec3d(velocityPhysics.x * 0.88, velocityPhysics.y, -velocityPhysics.z * 0.4);
                         }
                         case Y -> {
-                             
+
                             boolean up = (bhr.getSide() == net.minecraft.util.math.Direction.UP);
                             double ny = hit.getPos().y + (up ? HOVER_HEIGHT : -eps);
                             nextPos = new Vec3d(hit.getPos().x, ny, hit.getPos().z);
                             if (!up) {
-                                 
+
                                 velocityPhysics = new Vec3d(velocityPhysics.x * 0.9, -velocityPhysics.y * 0.3, velocityPhysics.z * 0.9);
                             }
                         }
@@ -457,12 +440,11 @@ public class DamageParticles extends Module implements ThemeManager.ThemeChangeL
                 }
             }
 
-             
             double groundY = owner.groundTopY(nextPos);
             if (!Double.isNaN(groundY) && nextPos.y <= groundY + HOVER_HEIGHT) {
-                 
+
                 pos = new Vec3d(nextPos.x, groundY + HOVER_HEIGHT, nextPos.z);
-                 
+
                 if (velocityPhysics.y <= 0.0) {
                     if (bounces < 3) {
                         double restitution = 0.18 * Math.pow(0.6, Math.max(0, bounces));
@@ -501,7 +483,7 @@ public class DamageParticles extends Module implements ThemeManager.ThemeChangeL
                 double dyMin = p.pos.y - bb.minY;
                 double dyMax = bb.maxY - p.pos.y;
                 double minPen = dxMin;
-                int axis = 0;  
+                int axis = 0;
                 boolean positive = false;
                 if (dxMax < minPen) { minPen = dxMax; axis = 0; positive = true; }
                 if (dzMin < minPen) { minPen = dzMin; axis = 2; positive = false; }

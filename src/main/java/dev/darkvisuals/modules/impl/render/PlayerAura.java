@@ -26,7 +26,6 @@ import org.joml.Matrix4f;
 
 import java.awt.Color;
 
-
 public class PlayerAura extends Module {
 
     private static final Identifier GLOW_TEXTURE = darkvisuals.id("hud/glow.png");
@@ -90,7 +89,6 @@ public class PlayerAura extends Module {
         }
         matrices.pop();
 
-        // светящиеся орбы, вращающиеся вокруг игрока
         int orbs = (int) (float) orbCount.getValue();
         if (orbs > 0) {
             RenderSystem.setShaderTexture(0, GLOW_TEXTURE);
@@ -138,7 +136,6 @@ public class PlayerAura extends Module {
             float cos = MathHelper.cos(angle);
             float sin = MathHelper.sin(angle);
 
-            // бегущий градиент яркости по кольцу
             float wave = 0.45f + 0.55f * (0.5f + 0.5f * MathHelper.sin(angle * 3f + (float) Math.toRadians(rotation)));
             int alpha = (int) (170 * wave * strength);
             int innerAlpha = (int) (60 * wave * strength);

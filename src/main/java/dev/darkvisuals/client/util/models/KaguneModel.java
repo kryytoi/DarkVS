@@ -16,13 +16,11 @@ import net.minecraft.util.math.Vec3d;
 import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL11;
 
- 
 public final class KaguneModel {
 
     private KaguneModel() {
     }
 
- 
     private static int themeColor(float brightness, int alpha) {
         java.awt.Color c = dev.darkvisuals.client.managers.ThemeManager.getInstance()
                 .getCurrentTheme().getAccentColor();
@@ -32,16 +30,15 @@ public final class KaguneModel {
         return (alpha << 24) | (r << 16) | (g << 8) | b;
     }
 
-    private static final int SEGMENTS = 12;           
-    private static final float PIXEL = 0.0625f;       
+    private static final int SEGMENTS = 12;
+    private static final float PIXEL = 0.0625f;
 
- 
     private static final float[][] TENTACLES = {
-             
-            {  -14f,  -18f,   +38f,    +4.2f,    1.00f,  0.0f },  
-            {  +14f,  -18f,   -38f,    -4.2f,    1.00f,  1.6f },  
-            {  -10f,  -12f,  +112f,    +2.6f,    0.82f,  3.2f },  
-            {  +10f,  -12f,  -112f,    -2.6f,    0.82f,  4.8f },  
+
+            {  -14f,  -18f,   +38f,    +4.2f,    1.00f,  0.0f },
+            {  +14f,  -18f,   -38f,    -4.2f,    1.00f,  1.6f },
+            {  -10f,  -12f,  +112f,    +2.6f,    0.82f,  3.2f },
+            {  +10f,  -12f,  -112f,    -2.6f,    0.82f,  4.8f },
     };
 
     public static void render(PlayerEntity player, float tickDelta, MatrixStack matrices, Vec3d cameraPos,
@@ -59,9 +56,6 @@ public final class KaguneModel {
         matrices.translate(px, py, pz);
         matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(-bodyYaw));
 
-         
-         
-         
         float backY = player.isSneaking() ? 0.80f : 1.05f;
         matrices.translate(0.0, backY, -0.30);
         if (player.isSneaking()) {
@@ -73,9 +67,6 @@ public final class KaguneModel {
         RenderSystem.enableDepthTest();
         RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR);
 
-         
-         
-         
         RenderSystem.depthMask(false);
         RenderSystem.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE);
         BufferBuilder glow = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
@@ -84,7 +75,6 @@ public final class KaguneModel {
         }
         BufferRenderer.drawWithGlobalProgram(glow.end());
 
-         
         RenderSystem.depthMask(true);
         RenderSystem.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
         BufferBuilder buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
@@ -109,19 +99,16 @@ public final class KaguneModel {
         float phase = cfg[5];
 
         matrices.push();
-         
-        matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(yaw));     
-        matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(backX));  
-        matrices.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(rollZ));  
 
-         
+        matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(yaw));
+        matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(backX));
+        matrices.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(rollZ));
+
         float widthMul = glowPass ? 2.1f : 1.0f;
-        float segLen = 2.6f * size * lenMul;                     
-        float widthStart = 3.4f * size * widthMul;               
-        float widthEnd = 0.9f * size * widthMul;                 
+        float segLen = 2.6f * size * lenMul;
+        float widthStart = 3.4f * size * widthMul;
+        float widthEnd = 0.9f * size * widthMul;
 
-         
-         
         int colorRoot = glowPass ? themeColor(1.25f, 60) : themeColor(1.0f, 255);
         int colorTip  = glowPass ? themeColor(1.10f, 35) : themeColor(0.45f, 255);
         int colorSpike = glowPass ? themeColor(1.10f, 35) : themeColor(0.30f, 255);
@@ -129,14 +116,11 @@ public final class KaguneModel {
         for (int seg = 0; seg < SEGMENTS; seg++) {
             float t = seg / (float) (SEGMENTS - 1);
 
-             
-             
             float bend = bendZ;
             float pitch = 0.0f;
 
             if (animated) {
-                 
-                 
+
                 float amp = 0.6f + t * 2.4f;
                 bend += MathHelper.sin(animTime * 0.9f + phase + seg * 0.45f) * amp;
                 pitch = MathHelper.cos(animTime * 0.7f + phase + seg * 0.35f) * amp * 0.5f;
@@ -155,7 +139,6 @@ public final class KaguneModel {
             matrices.translate(0.0, lenBlocks, 0.0);
         }
 
-         
         float tipW = widthEnd * 0.6f * PIXEL;
         float tipLen = 5.5f * size * lenMul * PIXEL;
         spike(buffer, matrices.peek().getPositionMatrix(), tipW, tipLen, colorSpike);
@@ -163,19 +146,17 @@ public final class KaguneModel {
         matrices.pop();
     }
 
-      
     private static void spike(BufferBuilder buffer, Matrix4f m, float w, float len, int color) {
         int r = (color >> 16) & 0xFF;
         int g = (color >> 8) & 0xFF;
         int b = color & 0xFF;
         int a = (color >> 24) & 0xFF;
 
-         
-        quad(buffer, m, -w, 0, -w,  w, 0, -w,  0, len, 0,  0, len, 0, r, g, b, a);  
-        quad(buffer, m,  w, 0,  w, -w, 0,  w,  0, len, 0,  0, len, 0, r, g, b, a);  
-        quad(buffer, m, -w, 0,  w, -w, 0, -w,  0, len, 0,  0, len, 0, r, g, b, a);  
-        quad(buffer, m,  w, 0, -w,  w, 0,  w,  0, len, 0,  0, len, 0, r, g, b, a);  
-         
+        quad(buffer, m, -w, 0, -w,  w, 0, -w,  0, len, 0,  0, len, 0, r, g, b, a);
+        quad(buffer, m,  w, 0,  w, -w, 0,  w,  0, len, 0,  0, len, 0, r, g, b, a);
+        quad(buffer, m, -w, 0,  w, -w, 0, -w,  0, len, 0,  0, len, 0, r, g, b, a);
+        quad(buffer, m,  w, 0, -w,  w, 0,  w,  0, len, 0,  0, len, 0, r, g, b, a);
+
         quad(buffer, m, -w, 0, -w, -w, 0,  w,  w, 0,  w,  w, 0, -w, r, g, b, a);
     }
 
@@ -196,17 +177,16 @@ public final class KaguneModel {
         int b = color & 0xFF;
         int a = (color >> 24) & 0xFF;
 
-         
         quad(buffer, m, x1, y0, z1, x1, y0, z0, x1, y1, z0, x1, y1, z1, r, g, b, a);
-         
+
         quad(buffer, m, x0, y0, z0, x0, y0, z1, x0, y1, z1, x0, y1, z0, r, g, b, a);
-         
+
         quad(buffer, m, x1, y0, z1, x0, y0, z1, x0, y0, z0, x1, y0, z0, r, g, b, a);
-         
+
         quad(buffer, m, x1, y1, z0, x0, y1, z0, x0, y1, z1, x1, y1, z1, r, g, b, a);
-         
+
         quad(buffer, m, x1, y0, z0, x0, y0, z0, x0, y1, z0, x1, y1, z0, r, g, b, a);
-         
+
         quad(buffer, m, x0, y0, z1, x1, y0, z1, x1, y1, z1, x0, y1, z1, r, g, b, a);
     }
 

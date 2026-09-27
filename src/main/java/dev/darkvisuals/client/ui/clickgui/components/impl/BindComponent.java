@@ -18,7 +18,7 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.resource.language.I18n;
 
 public class BindComponent extends Component {
-	
+
 	private final BindSetting setting;
 	private final InfinityAnimation animation = new InfinityAnimation(Easing.LINEAR);
 	private final Animation bindingAnimation = new Animation(300, 1f, false, Easing.BOTH_SINE);
@@ -35,7 +35,7 @@ public class BindComponent extends Component {
 		String text = binding ? "..." : setting.getValue().toString().replace("_", " ");
 		float textWidth = Fonts.REGULAR.getWidth(text, 6.5f);
 		float finalWidth = animation.animate(textWidth + 4f, 200);
-		 
+
 		Color themeText = ThemeManager.getInstance().getCurrentTheme().getTextColor();
 		Color accent = ThemeManager.getInstance().getCurrentTheme().getAccentColor();
 		Color boxColor = new Color(accent.getRed(), accent.getGreen(), accent.getBlue(), 160);
@@ -58,7 +58,7 @@ public class BindComponent extends Component {
 			binding = true;
 			return;
 		}
-		
+
 		if (binding) {
 			Bind.Mode mode = setting.getValue() != null ? setting.getValue().getMode() : Bind.Mode.TOGGLE;
 			setting.setValue(new Bind(button, true, mode));
@@ -69,7 +69,7 @@ public class BindComponent extends Component {
 
 	@Override
 	public void mouseReleased(double mouseX, double mouseY, int button) {
-		
+
 	}
 
 	@Override
@@ -86,11 +86,11 @@ public class BindComponent extends Component {
 
 	@Override
 	public void keyReleased(int keyCode, int scanCode, int modifiers) {
-		
+
 	}
 
 	@Override
 	public void charTyped(char chr, int modifiers) {
-		
-	} 
+
+	}
 }

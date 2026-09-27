@@ -15,7 +15,6 @@ public class SwingAnimation extends Module {
 
     private static final SwingAnimation INSTANCE = new SwingAnimation();
 
-     
     private final BooleanSetting modeNormal = new BooleanSetting("mode.normal", true, () -> false);
     private final BooleanSetting modeFirst = new BooleanSetting("mode.first", false, () -> false);
     private final BooleanSetting modeSecond = new BooleanSetting("mode.second", false, () -> false);
@@ -34,7 +33,6 @@ public class SwingAnimation extends Module {
     private final NumberSetting swingPower = new NumberSetting("setting.swingPower", 5.0f, 1.0f, 10.0f, 0.05f);
     private static final float scale = 0.5f;
 
-     
     private final NumberSetting customTranslateX = new NumberSetting(
             "custom.translateX", 0.0f, -2.0f, 2.0f, 0.01f,
             () -> animationMode.getName("mode.custom") != null && animationMode.getName("mode.custom").getValue()
@@ -71,10 +69,7 @@ public class SwingAnimation extends Module {
             "custom.scaleZ", 1.0f, 0.1f, 3.0f, 0.01f,
             () -> animationMode.getName("mode.custom") != null && animationMode.getName("mode.custom").getValue()
     );
-     
 
-     
-     
     private final NumberSetting customBaseYaw = new NumberSetting(
             "custom.baseYaw", 0.0f, -180.0f, 180.0f, 0.01f,
             () -> animationMode.getName("mode.custom") != null && animationMode.getName("mode.custom").getValue()
@@ -104,7 +99,6 @@ public class SwingAnimation extends Module {
             () -> animationMode.getName("mode.custom") != null && animationMode.getName("mode.custom").getValue() && customIdleRotate.getValue()
     );
 
-
     public SwingAnimation() {
         super("SwingAnimation", Category.Render, I18n.translate("module.swinganimation.description"));
         getSettings().add(swingPower);
@@ -127,10 +121,10 @@ public class SwingAnimation extends Module {
     }
 
     public void renderSwordAnimation(MatrixStack matrices, float swingProgress, float equipProgress, Arm arm) {
-         
+
         BooleanSetting activeMode = animationMode.getToggled().stream().findFirst().orElse(modeNormal);
         if (animationMode.getToggled().size() > 1) {
-             
+
             BooleanSetting finalActiveMode = activeMode;
             animationMode.getValue().forEach(setting -> {
                 if (setting != finalActiveMode) {
@@ -138,7 +132,7 @@ public class SwingAnimation extends Module {
                 }
             });
         } else if (animationMode.getToggled().isEmpty()) {
-             
+
             modeNormal.setValue(true);
             activeMode = modeNormal;
         }
@@ -208,11 +202,11 @@ public class SwingAnimation extends Module {
                 matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(-140 * anim * power / 5.0f));
             }
             case "mode.custom" -> {
-                 
+
                 applyEquipOffset(matrices, arm, equipProgress);
-                 
+
                 float curve = anim * 1.0f;
-                 
+
                 if (customBasePitch.getValue() != 0.0f) matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(customBasePitch.getValue()));
                 if (customBaseYaw.getValue()   != 0.0f) matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(customBaseYaw.getValue()));
                 if (customBaseRoll.getValue()  != 0.0f) matrices.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(customBaseRoll.getValue()));
@@ -222,15 +216,13 @@ public class SwingAnimation extends Module {
                         customTranslateZ.getValue() * curve
                 );
 
-                 
                 if (customIdleRotate.getValue()) {
-                    float time = (System.currentTimeMillis() % 100000L) / 1000.0f;  
+                    float time = (System.currentTimeMillis() % 100000L) / 1000.0f;
                     matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(time * customIdleRotateSpeedX.getValue()));
                     matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(time * customIdleRotateSpeedY.getValue()));
                     matrices.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(time * customIdleRotateSpeedZ.getValue()));
                 }
 
-                 
                 matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(customRotateX.getValue() * curve));
                 matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(customRotateY.getValue() * curve));
                 matrices.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(customRotateZ.getValue() * curve));
@@ -259,7 +251,6 @@ public class SwingAnimation extends Module {
         matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees((float) i * -45.0F));
     }
 
-     
     public static SwingAnimation getInstance() {
         return INSTANCE;
     }

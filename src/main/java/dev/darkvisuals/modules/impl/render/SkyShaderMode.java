@@ -2,7 +2,6 @@ package dev.darkvisuals.modules.impl.render;
 
 import dev.darkvisuals.modules.settings.api.Nameable;
 
-
 public enum SkyShaderMode implements Nameable {
     SKY("Sky"),
     WATER("Water"),

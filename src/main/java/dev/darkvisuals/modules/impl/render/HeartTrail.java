@@ -23,9 +23,6 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Random;
 
-/**
- * HeartTrail — дорожка из летящих за игроком сердечек.
- */
 public class HeartTrail extends Module {
 
     private final NumberSetting density = new NumberSetting("Плотность", 12f, 2f, 40f, 2f);
@@ -118,7 +115,7 @@ public class HeartTrail extends Module {
             Matrix4f m = matrices.peek().getPositionMatrix();
             BufferBuilder buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
             int alpha = (int) (230 * fade);
-            // две дуги + клин = сердечко из 3 квадов
+
             buffer.vertex(m, -sz, -sz * 0.3f, 0).color(255, 80, 120, alpha);
             buffer.vertex(m, -sz, sz * 0.4f, 0).color(255, 80, 120, alpha);
             buffer.vertex(m, 0, sz, 0).color(255, 80, 120, alpha);

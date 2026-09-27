@@ -14,7 +14,7 @@ public abstract class MouseMixin {
 
     @Inject(method = "onMouseButton", at = @At("HEAD"), cancellable = true)
     public void onMouseButton(long window, int button, int action, int mods, CallbackInfo ci) {
-         
+
         if (darkvisuals.getInstance() == null
                 || darkvisuals.getInstance().getModuleManager() == null) {
             return;
@@ -25,14 +25,14 @@ public abstract class MouseMixin {
         ViewModel viewModel = darkvisuals.getInstance().getModuleManager().getModule(ViewModel.class);
         if (viewModel != null && viewModel.isConfiguring()) {
             viewModel.handleMouseButton(button, action);
-             
+
             ci.cancel();
         }
     }
 
     @Inject(method = "onCursorPos", at = @At("HEAD"), cancellable = true)
     public void onCursorPos(long window, double x, double y, CallbackInfo ci) {
-         
+
         if (darkvisuals.getInstance() == null
                 || darkvisuals.getInstance().getModuleManager() == null) {
             return;
@@ -40,14 +40,14 @@ public abstract class MouseMixin {
         ViewModel viewModel = darkvisuals.getInstance().getModuleManager().getModule(ViewModel.class);
         if (viewModel != null && viewModel.isConfiguring()) {
             viewModel.handleCursorPos(x, y);
-             
+
             ci.cancel();
         }
     }
 
     @Inject(method = "onMouseScroll", at = @At("HEAD"), cancellable = true)
     public void onMouseScroll(long window, double horizontal, double vertical, CallbackInfo ci) {
-         
+
         if (darkvisuals.getInstance() == null
                 || darkvisuals.getInstance().getModuleManager() == null) {
             return;

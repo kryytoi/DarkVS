@@ -25,17 +25,11 @@ public abstract class TntFuseRenderMixin {
         float scale = module.getFusePulseScale(state.fuse);
         if (scale == 1f) return;
 
-         
-         
-         
-         
         matrices.push();
         matrices.translate(0.5, 0.5, 0.5);
         matrices.scale(scale, scale, scale);
         matrices.translate(-0.5, -0.5, -0.5);
-         
-         
-         
+
         darkvisuals$pendingPop = true;
     }
 

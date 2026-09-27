@@ -39,4 +39,4 @@ public abstract class ClientPlayerInteractionManagerMixin {
 		darkvisuals.post(event);
 		if (event.isCancelled()) ci.cancel();
 	}
-} 
+}

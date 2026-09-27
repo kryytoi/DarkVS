@@ -23,17 +23,6 @@ import java.nio.file.Path;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
-/**
- * GraffityEditorScreen - пиксельный редактор граффити.
- *
- * Рисуете спрей на сетке 32x32, сохраняете - PNG пишется в
- * {gameDir}/darkvisuals/grafi/, регистрируется в GraffityManager
- * и сразу появляется в колесе выбора. Также подхватывается при
- * перезагрузке ресурсов (F3+T).
- *
- * Управление: ЛКМ - рисовать, ПКМ - стирать, колесо/кнопки - палитра,
- * E - ластик, B - кисть, F - заливка, Ctrl+Z - отмена, ESC - выход.
- */
 public class GraffityEditorScreen extends Screen {
 
     private static final int GRID = 32;
@@ -74,20 +63,17 @@ public class GraffityEditorScreen extends Screen {
 
         Render2D.drawRoundedRect(stack, 0, 0, this.width, this.height, 0f, new Color(8, 8, 12, 190));
 
-        // Заголовок
         float ts = 10f;
         String title = "Редактор граффити";
         float tw = Fonts.SEMIBOLD.getWidth(title, ts);
         Render2D.drawFont(stack, Fonts.SEMIBOLD.getFont(ts), title, this.width / 2f - tw / 2f, 10f,
                 new Color(255, 255, 255, 240));
 
-        // Позиционирование канваса
         canvasSize = Math.min(this.width, this.height) * 0.55f;
         cell = canvasSize / GRID;
         canvasX = this.width / 2f - canvasSize / 2f;
         canvasY = 30f;
 
-        // Фон канваса (шахматка) и сетка
         Render2D.drawRoundedRect(stack, canvasX - 2f, canvasY - 2f, canvasSize + 4f, canvasSize + 4f, 4f,
                 new Color(0, 0, 0, 230));
         for (int gy = 0; gy < GRID; gy++) {
@@ -103,11 +89,9 @@ public class GraffityEditorScreen extends Screen {
             }
         }
 
-        // Рамка канваса в цвет темы
         Render2D.drawRoundedRect(stack, canvasX - 2f, canvasY - 2f, canvasSize + 4f, 1.6f, 0.8f, accent);
         Render2D.drawRoundedRect(stack, canvasX - 2f, canvasY + canvasSize + 2.4f, canvasSize + 4f, 1.6f, 0.8f, accent);
 
-        // Панель инструментов под канвасом
         float toolY = canvasY + canvasSize + 12f;
         float btnW = 58f, btnH = 18f, gap = 8f;
         float bx = this.width / 2f - (btnW * 3 + gap * 2) / 2f;
@@ -120,7 +104,6 @@ public class GraffityEditorScreen extends Screen {
         drawToolButton(stack, "Ластик (E)", bx + btnW + gap, toolY, btnW, btnH, eraser, eraserHovered);
         drawToolButton(stack, "Заливка (F)", bx + (btnW + gap) * 2, toolY, btnW, btnH, fillMode, fillHovered);
 
-        // Действия
         float actY = toolY + btnH + gap;
         undoHovered = hover(mouseX, mouseY, bx, actY, btnW, btnH);
         clearHovered = hover(mouseX, mouseY, bx + btnW + gap, actY, btnW, btnH);
@@ -130,7 +113,6 @@ public class GraffityEditorScreen extends Screen {
         drawToolButton(stack, "Очистить", bx + btnW + gap, actY, btnW, btnH, false, clearHovered);
         drawToolButton(stack, "Сохранить", bx + (btnW + gap) * 2, actY, btnW, btnH, false, saveHovered);
 
-        // Палитра справа
         float palX = canvasX + canvasSize + 18f;
         float palSize = 16f, palGap = 5f;
         if (palX + palSize * 2 + palGap * 3 < this.width) {
@@ -149,7 +131,6 @@ public class GraffityEditorScreen extends Screen {
             }
         }
 
-        // Подсказка
         String hint = "ЛКМ - рисовать | ПКМ - стирать | ESC - выход | Спрей появится в колесе (G)";
         float hsz = 6.5f;
         float hw = Fonts.MEDIUM.getWidth(hint, hsz);
@@ -211,7 +192,7 @@ public class GraffityEditorScreen extends Screen {
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        // Палитра
+
         float palX = canvasX + canvasSize + 18f;
         float palSize = 16f, palGap = 5f;
         for (int i = 0; i < PALETTE.length; i++) {
@@ -226,7 +207,6 @@ public class GraffityEditorScreen extends Screen {
             }
         }
 
-        // Кнопки
         float toolY = canvasY + canvasSize + 12f;
         float btnW = 58f, btnH = 18f, gap = 8f;
         float bx = this.width / 2f - (btnW * 3 + gap * 2) / 2f;
@@ -244,7 +224,6 @@ public class GraffityEditorScreen extends Screen {
         }
         if (hover(mouseX, mouseY, bx + (btnW + gap) * 2, actY, btnW, btnH)) { save(); return true; }
 
-        // Рисование по канвасу
         int idx = cellAt(mouseX, mouseY);
         if (idx >= 0) {
             snapshot();
@@ -288,7 +267,6 @@ public class GraffityEditorScreen extends Screen {
         return super.keyPressed(keyCode, scanCode, modifiers);
     }
 
-    /** Сохраняет спрей: PNG в darkvisuals/grafi/ + мгновенная регистрация текстуры. */
     private void save() {
         boolean empty = true;
         for (int y = 0; y < GRID && empty; y++)
@@ -300,7 +278,7 @@ public class GraffityEditorScreen extends Screen {
         for (int y = 0; y < GRID; y++) {
             for (int x = 0; x < GRID; x++) {
                 int argb = pixels[x][y];
-                // ABGR (NativeImage) <- ARGB
+
                 int abgr = (argb & 0xFF000000) | ((argb & 0xFF) << 16) | (argb & 0xFF00) | ((argb >> 16) & 0xFF);
                 image.setColorArgb(x, y, abgr);
             }

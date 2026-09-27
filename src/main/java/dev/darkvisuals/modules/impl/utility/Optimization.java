@@ -4,12 +4,21 @@ import dev.darkvisuals.client.events.impl.EventTick;
 import dev.darkvisuals.modules.api.Category;
 import dev.darkvisuals.modules.api.Module;
 import dev.darkvisuals.modules.settings.impl.BooleanSetting;
+import dev.darkvisuals.modules.settings.impl.ButtonSetting;
 import dev.darkvisuals.modules.settings.impl.NumberSetting;
 import meteordevelopment.orbit.EventHandler;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.option.CloudRenderMode;
 import net.minecraft.client.option.GraphicsMode;
 import net.minecraft.client.option.SimpleOption;
+import net.minecraft.client.render.Frustum;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.ItemEntity;
+import net.minecraft.entity.decoration.ArmorStandEntity;
 import net.minecraft.particle.ParticlesMode;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Box;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Field;
@@ -20,7 +29,6 @@ import java.util.Queue;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class Optimization extends Module {
-
 
     private ParticlesMode oldParticles = ParticlesMode.ALL;
     private double oldEntityDistance = 1.0;
@@ -37,19 +45,13 @@ public class Optimization extends Module {
     private int oldSimulationDistance = 12;
     private double oldFovEffectScale = 1.0;
     private double oldScreenEffectScale = 1.0;
-    // имя этой опции нестабильно между версиями yarn (screen/nausea) — ищем через рефлексию
+
     private net.minecraft.client.option.SimpleOption<Double> screenEffectOption;
 
     private long lastCleanup = 0L;
 
-
-
-
-
-
     public @NotNull BooleanSetting dynamicFps = new BooleanSetting("Динамический ФПС", false);
     public @NotNull NumberSetting backgroundFps = new NumberSetting("ФПС в фоне", 15f, 1f, 60f, 1f, dynamicFps::getValue);
-
 
     public @NotNull BooleanSetting hideEntities = new BooleanSetting("Скрывать сущности", false);
 
@@ -59,43 +61,29 @@ public class Optimization extends Module {
 
     public @NotNull BooleanSetting hideItems = new BooleanSetting("Скрывать выпавшие предметы", false);
 
-
     public @NotNull BooleanSetting limitParticles = new BooleanSetting("Лимит частиц", false);
     public @NotNull NumberSetting particleLimit = new NumberSetting("Максимум частиц", 200f, 0f, 2000f, 10f, limitParticles::getValue);
 
-
     public @NotNull BooleanSetting slowerLight = new BooleanSetting("Реже обновлять свет", false);
-
 
     public @NotNull BooleanSetting reduceViewDistance = new BooleanSetting("Уменьшить дальность прорисовки", false);
     public @NotNull NumberSetting viewDistanceLimit = new NumberSetting("Лимит дальности прорисовки", 8f, 2f, 32f, 1f, reduceViewDistance::getValue);
 
-
     public @NotNull BooleanSetting reduceSimulationDistance = new BooleanSetting("Уменьшить дальность симуляции", false);
     public @NotNull NumberSetting simulationDistanceLimit = new NumberSetting("Дальность симуляции", 5f, 2f, 32f, 1f, reduceSimulationDistance::getValue);
 
-
     public @NotNull BooleanSetting noDistortion = new BooleanSetting("Без эффектов искажения", false);
-
 
     public static final AtomicInteger renderedItemsThisFrame = new AtomicInteger(0);
 
     public static int lightFrameCounter = 0;
 
-
-
-
-
-
     public @NotNull BooleanSetting fpsProtector = new BooleanSetting("Защита ФПС", false);
     public @NotNull NumberSetting fpsProtectThreshold = new NumberSetting("Целевой ФПС", 60f, 20f, 240f, 5f, fpsProtector::getValue);
-
 
     public @NotNull BooleanSetting adaptiveRenderDistance = new BooleanSetting("Адаптивная дальность прорисовки", false);
     public @NotNull NumberSetting maxRenderDistance = new NumberSetting("Макс. дальность прорисовки", 8f, 4f, 32f, 1f, adaptiveRenderDistance::getValue);
 
-
-    // ===== New optimization options =====
     private static Optimization instance;
 
     public @NotNull BooleanSetting hudOptimize = new BooleanSetting("Optimizaciya HUD", false);
@@ -105,6 +93,23 @@ public class Optimization extends Module {
     public @NotNull BooleanSetting noWeather = new BooleanSetting("Otklyuchit pogodu", false);
     public @NotNull BooleanSetting limitFps = new BooleanSetting("Ogranichit FPS", false);
     public @NotNull NumberSetting fpsLimit = new NumberSetting("Limit FPS", 120f, 30f, 360f, 5f, limitFps::getValue);
+
+    public @NotNull BooleanSetting asusPreset = new BooleanSetting("Пресет: 120 FPS (Стабильно)", true);
+    public @NotNull ButtonSetting applyAsus = new ButtonSetting("Применить профиль 120 FPS", this::applyAsus120FpsProfile);
+
+    public @NotNull BooleanSetting smartCulling = new BooleanSetting("Умный куллинг сущностей", true);
+    public @NotNull NumberSetting maxEntityDistance = new NumberSetting("Дистанция мобов", 24f, 8f, 64f, 2f, smartCulling::getValue);
+    public @NotNull NumberSetting maxPlayerDistance = new NumberSetting("Дистанция игроков", 48f, 16f, 128f, 4f, smartCulling::getValue);
+    public @NotNull NumberSetting maxItemDistance = new NumberSetting("Дистанция предметов", 16f, 6f, 48f, 2f, smartCulling::getValue);
+    public @NotNull BooleanSetting cullArmorStands = new BooleanSetting("Скрывать невидимые стойки", true, smartCulling::getValue);
+    public @NotNull BooleanSetting frustumCulling = new BooleanSetting("Куллинг вне поля зрения", true, smartCulling::getValue);
+
+    public @NotNull BooleanSetting blockEntityCulling = new BooleanSetting("Куллинг блоков-сущностей", true);
+    public @NotNull NumberSetting maxBlockEntityDistance = new NumberSetting("Дистанция блоков-сущностей", 24f, 8f, 64f, 2f, blockEntityCulling::getValue);
+
+    public @NotNull BooleanSetting noFog = new BooleanSetting("Отключить туман (No Fog)", true);
+    public @NotNull BooleanSetting ramCleaner = new BooleanSetting("Авто-очистка ОЗУ (GC)", true);
+
     private double baseEntityDistance = 1.0;
     private boolean adaptiveActive = false;
 
@@ -114,6 +119,18 @@ public class Optimization extends Module {
     public Optimization() {
         super("Оптимизация", Category.Utility, "Моментально повышает ФПС, убирая лишнюю нагрузку");
 
+        getSettings().add(asusPreset);
+        getSettings().add(applyAsus);
+        getSettings().add(smartCulling);
+        getSettings().add(maxEntityDistance);
+        getSettings().add(maxPlayerDistance);
+        getSettings().add(maxItemDistance);
+        getSettings().add(cullArmorStands);
+        getSettings().add(frustumCulling);
+        getSettings().add(blockEntityCulling);
+        getSettings().add(maxBlockEntityDistance);
+        getSettings().add(noFog);
+        getSettings().add(ramCleaner);
         getSettings().add(dynamicFps);
         getSettings().add(backgroundFps);
         getSettings().add(hideEntities);
@@ -169,19 +186,21 @@ public class Optimization extends Module {
             SimpleOption<Double> screenOpt = findScreenEffectOption();
             oldScreenEffectScale = screenOpt != null ? screenOpt.getValue() : 1.0;
 
-
-            mc.options.getParticles().setValue(ParticlesMode.MINIMAL);
-            mc.options.getEntityDistanceScaling().setValue(0.5);
-            mc.options.getBiomeBlendRadius().setValue(0);
-            mc.options.getEntityShadows().setValue(false);
-            mc.options.getGraphicsMode().setValue(GraphicsMode.FAST);
-            mc.options.getCloudRenderMode().setValue(CloudRenderMode.OFF);
-            mc.options.getAo().setValue(false);
-            mc.options.getBobView().setValue(false);
-            mc.options.getMipmapLevels().setValue(0);
-            mc.options.getMaxFps().setValue(getEffectiveMaxFps());
-            mc.options.getEnableVsync().setValue(false);
-
+            if (asusPreset.getValue()) {
+                applyAsus120FpsProfile();
+            } else {
+                mc.options.getParticles().setValue(ParticlesMode.MINIMAL);
+                mc.options.getEntityDistanceScaling().setValue(0.5);
+                mc.options.getBiomeBlendRadius().setValue(0);
+                mc.options.getEntityShadows().setValue(false);
+                mc.options.getGraphicsMode().setValue(GraphicsMode.FAST);
+                mc.options.getCloudRenderMode().setValue(CloudRenderMode.OFF);
+                mc.options.getAo().setValue(false);
+                mc.options.getBobView().setValue(false);
+                mc.options.getMipmapLevels().setValue(0);
+                mc.options.getMaxFps().setValue(getEffectiveMaxFps());
+                mc.options.getEnableVsync().setValue(false);
+            }
 
             if (reduceViewDistance.getValue()) {
                 int limit = Math.round(viewDistanceLimit.getValue());
@@ -198,18 +217,15 @@ public class Optimization extends Module {
             }
 
             if (noDistortion.getValue()) {
-                // FOV-эффекты (скорость/замедление) — стабильный геттер
+
                 mc.options.getFovEffectScale().setValue(0.0);
-                // эффекты экрана (тошнота/портал) — через рефлексию
+
                 if (screenOpt != null) screenOpt.setValue(0.0);
             }
 
-
             lastFocused = mc.isWindowFocused();
 
-
             clearRenderCaches();
-
 
             forceMemoryCleanup(true);
         } catch (Exception e) {
@@ -246,8 +262,6 @@ public class Optimization extends Module {
         }
     }
 
-
-
     @EventHandler
     public void onTick(EventTick event) {
         handleDynamicFps();
@@ -256,22 +270,15 @@ public class Optimization extends Module {
         handleAdaptiveRenderDistance();
 
         long now = System.currentTimeMillis();
-        if (now - lastCleanup < 10_000L) return;
-        lastCleanup = now;
-        forceMemoryCleanup(false);
+        long interval = ramCleaner.getValue() ? 8_000L : 15_000L;
+        if (now - lastCleanup >= interval) {
+            lastCleanup = now;
+            forceMemoryCleanup(false);
+        }
     }
 
-
-    /**
-     * Минимальное допустимое значение entityDistanceScaling в ванилле — 0.5.
-     * Всё, что меньше, отклоняется SimpleOption и спамит «Illegal option value» в лог.
-     */
     private static final double MIN_ENTITY_DISTANCE = 0.5;
 
-    /**
-     * Безопасно задаёт масштаб дальности сущностей: клампит в допустимый диапазон
-     * и не пишет значение, если оно не поменялось (чтобы не дёргать опцию каждый тик).
-     */
     private void setEntityDistance(double value) {
         if (mc.options == null) return;
         double clamped = Math.max(MIN_ENTITY_DISTANCE, Math.min(4.0, value));
@@ -297,14 +304,13 @@ public class Optimization extends Module {
             float target = fpsProtectThreshold.getValue();
 
             if (fps < target) {
-                // минимум ваниллы — 0.5, ниже игра отклоняет значение
+
                 setEntityDistance(0.5);
             } else {
                 setEntityDistance(baseEntityDistance);
             }
         } catch (Throwable ignored) {}
     }
-
 
     private void handleAdaptiveRenderDistance() {
         if (mc.options == null) return;
@@ -330,17 +336,14 @@ public class Optimization extends Module {
         } catch (Throwable ignored) {}
     }
 
-
     public static Optimization getInstanceSafe() {
         return instance;
     }
 
-    /** Effective FPS cap: user limit if enabled, otherwise 260. */
     public int getEffectiveMaxFps() {
         return limitFps.getValue() ? Math.max(30, Math.round(fpsLimit.getValue())) : 260;
     }
 
-    // HUD optimization flags (queried from render hot paths, no module lookups).
     public static boolean isHudFastBackground() {
         Optimization o = instance;
         return o != null && o.isToggled() && o.hudOptimize.getValue() && o.hudFastBackground.getValue();
@@ -361,13 +364,114 @@ public class Optimization extends Module {
         return o != null && o.isToggled() && o.noWeather.getValue();
     }
 
+    public static boolean isNoFog() {
+        Optimization o = instance;
+        return o != null && o.isToggled() && o.noFog.getValue();
+    }
+
+    public void applyAsus120FpsProfile() {
+        limitFps.setValue(true);
+        fpsLimit.setValue(120f);
+        reduceViewDistance.setValue(true);
+        viewDistanceLimit.setValue(6f);
+        reduceSimulationDistance.setValue(true);
+        simulationDistanceLimit.setValue(4f);
+        smartCulling.setValue(true);
+        maxEntityDistance.setValue(24f);
+        maxPlayerDistance.setValue(48f);
+        maxItemDistance.setValue(16f);
+        cullArmorStands.setValue(true);
+        frustumCulling.setValue(true);
+        blockEntityCulling.setValue(true);
+        maxBlockEntityDistance.setValue(24f);
+        limitParticles.setValue(true);
+        particleLimit.setValue(80f);
+        slowerLight.setValue(true);
+        noWeather.setValue(true);
+        noFog.setValue(true);
+        hudOptimize.setValue(true);
+        hudFastBackground.setValue(true);
+        hudStaticAnimations.setValue(true);
+        hudSlowCounters.setValue(true);
+        ramCleaner.setValue(true);
+
+        if (mc.options != null) {
+            mc.options.getMaxFps().setValue(120);
+            mc.options.getViewDistance().setValue(6);
+            mc.options.getSimulationDistance().setValue(4);
+            mc.options.getEnableVsync().setValue(false);
+            mc.options.getGraphicsMode().setValue(GraphicsMode.FAST);
+            mc.options.getCloudRenderMode().setValue(CloudRenderMode.OFF);
+            mc.options.getAo().setValue(false);
+            mc.options.getBobView().setValue(false);
+            mc.options.getMipmapLevels().setValue(0);
+            mc.options.getParticles().setValue(ParticlesMode.MINIMAL);
+            mc.options.getEntityDistanceScaling().setValue(0.5);
+            mc.options.getBiomeBlendRadius().setValue(0);
+            mc.options.getEntityShadows().setValue(false);
+        }
+    }
+
+    public static boolean shouldCullEntity(Entity entity, double camX, double camY, double camZ, Frustum frustum) {
+        Optimization o = instance;
+        if (o == null || !o.isToggled()) return false;
+        if (!o.smartCulling.getValue()) return false;
+
+        MinecraftClient mc = MinecraftClient.getInstance();
+        if (mc.player != null && entity == mc.player) return false;
+
+        if (o.cullArmorStands.getValue() && entity instanceof ArmorStandEntity stand) {
+            if (stand.isInvisible() || stand.isMarker()) return true;
+        }
+
+        double dx = entity.getX() - camX;
+        double dy = entity.getY() - camY;
+        double dz = entity.getZ() - camZ;
+        double distSq = dx * dx + dy * dy + dz * dz;
+
+        if (entity instanceof AbstractClientPlayerEntity) {
+            double pDist = o.maxPlayerDistance.getValue();
+            if (distSq > pDist * pDist) return true;
+        } else if (entity instanceof ItemEntity) {
+            double iDist = o.maxItemDistance.getValue();
+            if (distSq > iDist * iDist) return true;
+        } else {
+            double eDist = o.maxEntityDistance.getValue();
+            if (distSq > eDist * eDist) return true;
+        }
+
+        if (o.frustumCulling.getValue() && frustum != null) {
+            Box box = entity.getBoundingBox().expand(0.3);
+            if (!frustum.isVisible(box)) return true;
+        }
+
+        return false;
+    }
+
+    public static boolean shouldCullBlockEntity(BlockPos pos, double camX, double camY, double camZ, Frustum frustum) {
+        Optimization o = instance;
+        if (o == null || !o.isToggled()) return false;
+        if (o.hideBlockEntities.getValue()) return true;
+        if (!o.blockEntityCulling.getValue()) return false;
+
+        double dx = (pos.getX() + 0.5) - camX;
+        double dy = (pos.getY() + 0.5) - camY;
+        double dz = (pos.getZ() + 0.5) - camZ;
+        double distSq = dx * dx + dy * dy + dz * dz;
+
+        double maxDist = o.maxBlockEntityDistance.getValue();
+        if (distSq > maxDist * maxDist) return true;
+
+        if (frustum != null) {
+            Box box = new Box(pos).expand(0.2);
+            if (!frustum.isVisible(box)) return true;
+        }
+
+        return false;
+    }
+
     public boolean isFpsProtectorActive() { return isToggled() && fpsProtector.getValue(); }
 
-    /**
-     * Опция «эффектов экрана» (тошнота/портал). Имя в mappings менялось между
-     * версиями (screenEffectScale / nauseaEffectScale), поэтому ищем поле
-     * рефлексией по шаблону «effect» + «screen|nausea» (fullscreen исключён).
-     */
     @SuppressWarnings("unchecked")
     private SimpleOption<Double> findScreenEffectOption() {
         if (screenEffectOption != null) return screenEffectOption;
@@ -388,7 +492,6 @@ public class Optimization extends Module {
         return null;
     }
 
-
     private void handleDynamicFps() {
         if (mc.options == null) return;
         if (!dynamicFps.getValue()) return;
@@ -406,7 +509,6 @@ public class Optimization extends Module {
             }
         } catch (Throwable ignored) {}
     }
-
 
     private void handleParticleLimit() {
         renderedItemsThisFrame.set(0);
@@ -459,14 +561,11 @@ public class Optimization extends Module {
         } catch (Throwable ignored) {}
     }
 
-
     public boolean tryConsumeItemBudget() {
         if (!limitParticles.getValue()) return true;
         int limit = Math.round(particleLimit.getValue());
         return renderedItemsThisFrame.getAndIncrement() < limit;
     }
-
-
 
     private void clearRenderCaches() {
         try {
@@ -476,8 +575,6 @@ public class Optimization extends Module {
             }
         } catch (Throwable ignored) {}
     }
-
-
 
     private void forceMemoryCleanup(boolean force) {
         try {

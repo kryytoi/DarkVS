@@ -21,14 +21,8 @@ import org.joml.Matrix4f;
 
 import java.awt.Color;
 
-/**
- * Rainbow — большая радуга, висящая в небе рядом с игроком.
- * Полукруг из семи параллельных цветных полос, всегда повёрнут
-                к камере и подсвечен мягким аддитивным свечением.
- */
 public class Rainbow extends Module {
 
-    // классические семь цветов радуги
     private static final Color[] RAINBOW_COLORS = {
             new Color(255, 0, 0),
             new Color(255, 127, 0),
@@ -69,7 +63,6 @@ public class Rainbow extends Module {
         float yaw = mc.gameRenderer.getCamera().getYaw();
         float pitch = mc.gameRenderer.getCamera().getPitch();
 
-        // направление взгляда по горизонтали — туда и смотрит радуга
         float rad = (float) Math.toRadians(yaw);
         double fwdX = -Math.sin(rad);
         double fwdZ = Math.cos(rad);
@@ -87,7 +80,7 @@ public class Rainbow extends Module {
 
         matrices.push();
         matrices.translate((float) (center.x - cam.x), (float) (center.y - cam.y), (float) (center.z - cam.z));
-        // поворот к камере — арка всегда лицом к игроку
+
         matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(-yaw));
         matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(pitch));
 
@@ -102,7 +95,6 @@ public class Rainbow extends Module {
         RenderSystem.disableBlend();
     }
 
-    // верхний полукруг из семи вложенных цветных полос
     private void drawArc(Matrix4f matrix, float radius) {
         float th = thickness.getValue();
         float a = alpha.getValue();
@@ -111,7 +103,7 @@ public class Rainbow extends Module {
         for (int band = 0; band < RAINBOW_COLORS.length; band++) {
             float rIn = radius + band * th;
             float rOut = rIn + th * 0.92f;
-            // мягкие края: полосы в середине ярче
+
             float bandFade = 0.35f + 0.65f * (float) Math.sin(Math.PI * (band + 0.5f) / RAINBOW_COLORS.length);
             int alpha = (int) (255 * a * bandFade);
             if (alpha <= 4) continue;

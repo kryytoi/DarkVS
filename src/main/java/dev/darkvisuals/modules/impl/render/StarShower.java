@@ -21,9 +21,6 @@ import org.joml.Matrix4f;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
-/**
- * StarShower — метеорный дождь вокруг игрока.
- */
 public class StarShower extends Module {
 
     private final NumberSetting density = new NumberSetting("Плотность", 20f, 4f, 80f, 2f);

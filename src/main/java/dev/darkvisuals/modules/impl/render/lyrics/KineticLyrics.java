@@ -23,7 +23,11 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class KineticLyrics extends Module {
 
-    // Module Settings
+    private final ListSetting renderMode = new ListSetting("Режим", true,
+            new BooleanSetting("Оба", true),
+            new BooleanSetting("3D Мир", false),
+            new BooleanSetting("Экран (HUD)", false));
+
     private final ListSetting animation = new ListSetting("Анимация", true,
             new BooleanSetting("LyricFlow", true),
             new BooleanSetting("Typewriter", false),
@@ -47,26 +51,25 @@ public class KineticLyrics extends Module {
             new BooleanSetting("FullLine", false));
 
     private final NumberSetting maxLines = new NumberSetting("Макс. строк", 3.0f, 1.0f, 6.0f, 1.0f);
-    private final NumberSetting minDistance = new NumberSetting("Мин. дистанция", 2.0f, 1.2f, 4.0f, 0.1f);
-    private final NumberSetting maxDistance = new NumberSetting("Макс. дистанция", 4.5f, 2.0f, 7.0f, 0.1f);
-    private final NumberSetting arcSpread = new NumberSetting("Разброс", 70.0f, 20.0f, 85.0f, 5.0f);
-    private final NumberSetting floatHeight = new NumberSetting("Высота", 0.5f, 0.1f, 2.0f, 0.1f);
+    private final NumberSetting minDistance = new NumberSetting("Мин. дистанция", 1.8f, 1.0f, 3.5f, 0.1f);
+    private final NumberSetting maxDistance = new NumberSetting("Макс. дистанция", 3.5f, 1.8f, 6.0f, 0.1f);
+    private final NumberSetting arcSpread = new NumberSetting("Разброс", 45.0f, 15.0f, 75.0f, 5.0f);
+    private final NumberSetting floatHeight = new NumberSetting("Высота", 0.4f, 0.1f, 1.5f, 0.1f);
     private final NumberSetting timeOffset = new NumberSetting("Смещение (мс)", 0.0f, -5000.0f, 5000.0f, 50.0f);
     private final BooleanSetting throughWalls = new BooleanSetting("Сквозь стены", true);
     private final BooleanSetting debugMode = new BooleanSetting("Debug", false);
 
-    // Internal State
     private final List<LyricLine> rawLyrics = new CopyOnWriteArrayList<>();
     private final List<LyricLine> lyricsQueue = new CopyOnWriteArrayList<>();
     private final List<LyricParticle3D> activeParticles = new CopyOnWriteArrayList<>();
     private int currentLyricIndex = 0;
 
-    // Real-Time Playback Clock
     private long internalAudioClockMs = 0L;
     private long lastUpdateRealTimeMs = 0L;
     private long lastWindowsReportedPosMs = 0L;
     private long lastEffectiveAudioTimeMs = 0L;
     private long trackStartTimeSys = 0L;
+    private long lastMediaSeenMs = 0L;
     private boolean isPlaying = false;
 
     private String lastTrackKey = "";
@@ -74,20 +77,20 @@ public class KineticLyrics extends Module {
     private String currentTrackArtist = "";
     private long currentTrackDurationSec = -1L;
 
-    private static final long RETRY_DELAY_MIN_MS = 8_000L;
-    private static final long RETRY_DELAY_MAX_MS = 120_000L;
+    private float subtitleAlpha = 0f;
+    private String lastActiveSubtitleText = "";
 
-    // Диагностика загрузки текста (видна в Debug HUD)
+    private static final long RETRY_DELAY_MIN_MS = 4_000L;
+    private static final long RETRY_DELAY_MAX_MS = 15_000L;
+
     private String fetchStatus = "нет данных";
     private long lastFetchAttemptMs = 0L;
     private int fetchAttempts = 0;
-    // Пауза до следующей попытки. Растёт при неудачах, но модуль не сдаётся насовсем:
-    // lrclib регулярно отвечает по 20+ с, и жёсткий лимит попыток означал
-    // "текста не будет до перезахода в игру".
     private long fetchRetryDelayMs = RETRY_DELAY_MIN_MS;
 
     public KineticLyrics() {
-        super("KineticLyrics", Category.Render, "Рендерит слова трека в 3D-пространстве как субтитры");
+        super("KineticLyrics", Category.Render, "Рендерит слова трека в 3D-пространстве и на экране как субтитры");
+        getSettings().add(renderMode);
         getSettings().add(animation);
         getSettings().add(colorMode);
         getSettings().add(fontMode);
@@ -105,6 +108,7 @@ public class KineticLyrics extends Module {
     @Override
     public void onEnable() {
         super.onEnable();
+        new java.io.File("darkvisuals/lyrics").mkdirs();
         resetPlaybackState();
     }
 
@@ -140,7 +144,6 @@ public class KineticLyrics extends Module {
         this.currentTrackDurationSec = durationSec;
         this.lastTrackKey = (currentTrackTitle + " - " + currentTrackArtist).toLowerCase();
 
-        // Полный сброс состояния при загрузке нового трека
         activeParticles.clear();
         rawLyrics.clear();
         lyricsQueue.clear();
@@ -169,9 +172,6 @@ public class KineticLyrics extends Module {
                 return;
             }
 
-            // ВАЖНО: применяем результат только на главном (render) потоке,
-            // иначе параллельная мутация списков из потока ForkJoinPool роняет
-            // обработчики событий и модуль молча перестаёт рендерить текст.
             mc.execute(() -> {
                 if (!this.lastTrackKey.equalsIgnoreCase(expectedKey)) {
                     return;
@@ -180,7 +180,7 @@ public class KineticLyrics extends Module {
                 if (lines == null || lines.isEmpty()) {
                     String err = LrcLibClient.getLastResult();
                     fetchStatus = "текст не найден" + (err != null && !err.isEmpty() ? " (" + err + ")" : "");
-                    // Экспоненциальный откат: не долбим сеть, но и не сдаёмся навсегда.
+
                     fetchRetryDelayMs = Math.min(RETRY_DELAY_MAX_MS, fetchRetryDelayMs * 2);
                     return;
                 }
@@ -195,9 +195,6 @@ public class KineticLyrics extends Module {
                 fetchRetryDelayMs = RETRY_DELAY_MIN_MS;
                 fetchStatus = "загружено строк: " + lyricsQueue.size();
 
-                // Текст мог приехать через 20+ с после старта трека — сразу
-                // перематываем очередь на текущую позицию, иначе первые строки
-                // будут показаны с опозданием или пропущены.
                 resyncQueue(Math.max(0, internalAudioClockMs + (long) (float) timeOffset.getValue()));
             });
         });
@@ -229,47 +226,38 @@ public class KineticLyrics extends Module {
 
         NowPlayingBridge.Snapshot media = NowPlayingBridge.getCurrent();
         if (media != null && media.title != null && !media.title.isBlank()) {
+            lastMediaSeenMs = now;
             String title = media.title.trim();
             String artist = media.artist != null ? media.artist.trim() : "";
             String key = (title + " - " + artist).toLowerCase();
 
-            // 1. Идентифицируем смену трека
             if (!key.equalsIgnoreCase(lastTrackKey)) {
                 playTrack(title, artist, media.durationSec);
                 return;
             }
 
-            // Длительность Windows отдаёт не сразу — подхватываем, когда появится.
             if (currentTrackDurationSec <= 0 && media.durationSec > 0) {
                 currentTrackDurationSec = media.durationSec;
             }
 
-            // 2. Восстанавливаем isPlaying, если он был случайно отключен пустым снимком
             if (!isPlaying && !lyricsQueue.isEmpty()) {
                 isPlaying = true;
             }
 
-            // 2.5 Авто-ретрай с нарастающей паузой. Раньше здесь стоял потолок в 5 попыток,
-            // и после пяти таймаутов lrclib модуль замолкал до конца сессии.
             if (lyricsQueue.isEmpty() && now - lastFetchAttemptMs > fetchRetryDelayMs) {
                 fetchLyrics(currentTrackTitle, currentTrackArtist, key);
             }
 
-            // 3. Синхронизация времени с Windows Media (позиция в секундах у NowPlayingBridge)
             long mediaPosMs = media.smoothedPositionSec() * 1000L;
-            // Защита: не прыгаем в первые 1.5 сек трека, чтобы избежать получения времени старого трека
             if (now - trackStartTimeSys > 1500L && mediaPosMs > 0 && Math.abs(mediaPosMs - lastWindowsReportedPosMs) > 1500L) {
                 lastWindowsReportedPosMs = mediaPosMs;
                 internalAudioClockMs = mediaPosMs;
             }
 
-            if (media.playing) {
-                internalAudioClockMs += dt;
-            }
+            internalAudioClockMs += dt;
 
             long effectiveAudioTime = Math.max(0, internalAudioClockMs + (long) (float) timeOffset.getValue());
 
-            // 4. Детект скачков времени (если пользователь перемотал трек вперед или назад)
             if (Math.abs(effectiveAudioTime - lastEffectiveAudioTimeMs) > 1500L) {
                 resyncQueue(effectiveAudioTime);
             }
@@ -277,10 +265,16 @@ public class KineticLyrics extends Module {
 
             update(effectiveAudioTime);
         } else {
-            // Если статус плеера пропал (например, при переключении)
-            if (isPlaying) {
-                isPlaying = false;
-                activeParticles.clear();
+
+            if (now - lastMediaSeenMs > 4000L) {
+                if (isPlaying) {
+                    isPlaying = false;
+                    activeParticles.clear();
+                }
+            } else if (isPlaying) {
+                internalAudioClockMs += dt;
+                long effectiveAudioTime = Math.max(0, internalAudioClockMs + (long) (float) timeOffset.getValue());
+                update(effectiveAudioTime);
             }
         }
     }
@@ -455,6 +449,23 @@ public class KineticLyrics extends Module {
         return "LyricFlow";
     }
 
+    private boolean isMode(String name) {
+        BooleanSetting s = renderMode.getName(name);
+        return s != null && s.getValue();
+    }
+
+    public String getActiveLyricText(long audioTimeMs) {
+        if (lyricsQueue.isEmpty()) return null;
+        for (int i = 0; i < lyricsQueue.size(); i++) {
+            LyricLine line = lyricsQueue.get(i);
+            long nextStart = (i + 1 < lyricsQueue.size()) ? lyricsQueue.get(i + 1).timestampMs() : line.timestampMs() + 4500L;
+            if (audioTimeMs >= line.timestampMs() && audioTimeMs < nextStart) {
+                return line.text();
+            }
+        }
+        return null;
+    }
+
     @EventHandler
     public void onRender3D(EventRender3D.Game event) {
         if (fullNullCheck()) return;
@@ -462,6 +473,7 @@ public class KineticLyrics extends Module {
 
         syncPlaybackTime();
 
+        if (!isMode("Оба") && !isMode("3D Мир")) return;
         if (activeParticles.isEmpty()) return;
 
         Camera camera = mc.gameRenderer.getCamera();
@@ -478,10 +490,27 @@ public class KineticLyrics extends Module {
 
     @EventHandler
     public void onRender2D(EventRender2D event) {
-        if (fullNullCheck() || !debugMode.getValue()) return;
+        if (fullNullCheck()) return;
         if (!dev.darkvisuals.client.util.renderer.fonts.Fonts.isLoaded()) return;
 
         long displayTimeMs = Math.max(0, internalAudioClockMs + (long) (float) timeOffset.getValue());
+
+        if (isMode("Оба") || isMode("Экран (HUD)")) {
+            String activeLine = getActiveLyricText(displayTimeMs);
+            if (activeLine != null && !activeLine.isBlank()) {
+                lastActiveSubtitleText = activeLine;
+                subtitleAlpha = Math.min(1.0f, subtitleAlpha + 0.12f);
+            } else {
+                subtitleAlpha = Math.max(0.0f, subtitleAlpha - 0.08f);
+            }
+
+            if (subtitleAlpha > 0.01f && lastActiveSubtitleText != null && !lastActiveSubtitleText.isBlank()) {
+                renderScreenSubtitle(event.getContext().getMatrices(), lastActiveSubtitleText, subtitleAlpha);
+            }
+        }
+
+        if (!debugMode.getValue()) return;
+
         String titleStr = "Track: " + (currentTrackTitle.isEmpty() ? "None" : currentTrackTitle + " - " + currentTrackArtist);
         String timerInfo = String.format("Audio Time: %02d:%02d.%03d (%d ms)",
                 (displayTimeMs / 60_000),
@@ -512,5 +541,37 @@ public class KineticLyrics extends Module {
         Render2D.drawFont(matrices, Fonts.MEDIUM.getFont(14.0f), particlesInfo, x, y + 64, new Color(120, 255, 120, 255));
         Render2D.drawFont(matrices, Fonts.MEDIUM.getFont(14.0f), statusInfo, x, y + 80, new Color(180, 180, 255, 255));
         Render2D.drawFont(matrices, Fonts.MEDIUM.getFont(14.0f), retryInfo, x, y + 96, new Color(200, 160, 255, 255));
+    }
+
+    private void renderScreenSubtitle(net.minecraft.client.util.math.MatrixStack matrices, String text, float alpha) {
+        int screenWidth = mc.getWindow().getScaledWidth();
+        int screenHeight = mc.getWindow().getScaledHeight();
+
+        float fontSize = 13.5f;
+        var font = Fonts.BOLD.getFont(fontSize);
+        float textWidth = Fonts.BOLD.getWidth(text, fontSize);
+        float padX = 16f;
+        float pillW = textWidth + padX * 2f;
+        float pillH = 26f;
+
+        float pillX = (screenWidth - pillW) / 2f;
+        float pillY = screenHeight - 88f;
+
+        int bgAlpha = (int) (175 * alpha);
+        int borderAlpha = (int) (120 * alpha);
+        int textAlpha = (int) (255 * alpha);
+
+        ThemeManager tm = ThemeManager.getInstance();
+        Color accent = tm != null && tm.getCurrentTheme() != null ? tm.getCurrentTheme().getAccentColor() : Color.WHITE;
+
+        Render2D.drawRoundedRect(matrices, pillX, pillY, pillW, pillH, 8f, new Color(12, 12, 16, bgAlpha));
+        Render2D.drawBorder(matrices, pillX, pillY, pillW, pillH, 8f, 0f, 1f,
+                new Color(accent.getRed(), accent.getGreen(), accent.getBlue(), borderAlpha));
+
+        Render2D.drawRoundedRect(matrices, pillX + pillW * 0.25f, pillY + pillH - 2f, pillW * 0.5f, 1.6f, 0.8f,
+                new Color(accent.getRed(), accent.getGreen(), accent.getBlue(), (int) (210 * alpha)));
+
+        float textY = pillY + (pillH - Fonts.BOLD.getHeight(fontSize)) / 2f;
+        Render2D.drawFont(matrices, font, text, pillX + padX, textY, new Color(255, 255, 255, textAlpha));
     }
 }

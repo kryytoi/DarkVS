@@ -16,10 +16,6 @@ import net.minecraft.util.math.Vec3d;
 
 import java.awt.Color;
 
-/**
- * Hitboxes — обводка хитбоксов сущностей вокруг игрока.
- * Рисуется через общую очередь Render3D (очищается и рисуется самим миксином кадра).
- */
 public class Hitboxes extends Module {
 
     private final NumberSetting range =
@@ -55,7 +51,6 @@ public class Hitboxes extends Module {
             double dist = entity.getPos().distanceTo(playerPos);
             if (dist > maxRange) continue;
 
-            // чем дальше — тем прозрачнее
             float fade = 1f - (float) (dist / maxRange) * 0.6f;
             int alpha = (int) (base.getAlpha() * fade);
             Color c = new Color(base.getRed(), base.getGreen(), base.getBlue(),

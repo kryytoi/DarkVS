@@ -38,12 +38,11 @@ public class TargetEsp extends Module implements ThemeManager.ThemeChangeListene
     private static final float BASE_SIZE = 5.0f;
     private static final String markerType = "";
 
-     
     private final BooleanSetting modeMarker = new BooleanSetting("mode.marker", true, () -> false);
     private final BooleanSetting modeGhosts = new BooleanSetting("mode.soul", false, () -> false);
     private final BooleanSetting modeJello = new BooleanSetting("mode.circle", false, () -> false);
     private final BooleanSetting modeCrystals = new BooleanSetting("mode.crystals", false, () -> false);
-    private final BooleanSetting modeSvenya = new BooleanSetting("mode.svenya", false, () -> false);  
+    private final BooleanSetting modeSvenya = new BooleanSetting("mode.svenya", false, () -> false);
 
     private final BooleanSetting modeMarkerOld = new BooleanSetting("old", false, () -> false);
     private final BooleanSetting modeMarkerNew = new BooleanSetting("new", true, () -> false);
@@ -51,31 +50,27 @@ public class TargetEsp extends Module implements ThemeManager.ThemeChangeListene
     private final ListSetting mode = new ListSetting(
             I18n.translate("setting.animationMode"),
             true,
-            modeMarker, modeGhosts, modeJello, modeCrystals, modeSvenya  
+            modeMarker, modeGhosts, modeJello, modeCrystals, modeSvenya
     );
 
-     
     private final NumberSetting markerScale = new NumberSetting("setting.markerSize", 3.0f, 0.5f, 8.0f, 0.1f);
     private final BooleanSetting markerGlow = new BooleanSetting("setting.markerGlow", true, () -> modeMarker.getValue());
     private final NumberSetting markerGlowIntensity = new NumberSetting("setting.glowIntensity", 0.8f, 0.1f, 2.0f, 0.1f);
     private final BooleanSetting markerHitFlash = new BooleanSetting("setting.hitFlash", true, () -> modeMarker.getValue());
     private ListSetting markerMode = new ListSetting("setting.markerMode", true, modeMarkerOld, modeMarkerNew);
 
-     
     private final NumberSetting ghostsScale = new NumberSetting("setting.ghostsScale", 0.3f, 0.1f, 1.0f, 0.05f);
     private final NumberSetting ghostsParticleDensity = new NumberSetting("setting.particleDensity", 14, 5, 20, 1);
     private final BooleanSetting ghostsGlow = new BooleanSetting("setting.markerGlow", true, () -> modeGhosts.getValue());
     private final NumberSetting ghostsGlowIntensity = new NumberSetting("setting.glowIntensity", 0.5f, 0.1f, 1.5f, 0.1f);
     private final NumberSetting ghostsAlpha = new NumberSetting("setting.alpha", 1.0f, 0.1f, 1.0f, 0.1f);
 
-     
     private final NumberSetting jelloHeight = new NumberSetting("setting.jelloHeight", 1.5f, 0.5f, 3.0f, 0.1f);
     private final NumberSetting jelloAnimationSpeed = new NumberSetting("setting.animationSpeed", 2500.0f, 1000.0f, 5000.0f, 100.0f);
     private final BooleanSetting jelloGlow = new BooleanSetting("setting.markerGlow", true, () -> modeJello.getValue());
     private final NumberSetting jelloGlowIntensity = new NumberSetting("setting.glowIntensity", 0.5f, 0.1f, 1.5f, 0.1f);
     private final NumberSetting jelloAlpha = new NumberSetting("setting.alpha", 1.0f, 0.1f, 1.0f, 0.1f);
 
-     
     private final NumberSetting svenyaSpeed = new NumberSetting("setting.svenyaSpeed", 1.5f, 0.5f, 3.0f, 0.1f);
 
     private final ThemeManager themeManager;
@@ -83,10 +78,8 @@ public class TargetEsp extends Module implements ThemeManager.ThemeChangeListene
     private final SoulRenderer soulRenderer;
     private final JelloRenderer jelloRenderer;
 
-     
     private float crystalMoving = 0f;
 
-     
     private PigEntity svenyaPig;
 
     public TargetEsp() {
@@ -106,31 +99,27 @@ public class TargetEsp extends Module implements ThemeManager.ThemeChangeListene
         getSettings().add(jelloGlow);
         getSettings().add(jelloGlowIntensity);
         getSettings().add(jelloAlpha);
-        getSettings().add(svenyaSpeed);  
+        getSettings().add(svenyaSpeed);
 
-         
         markerScale.setVisible(() -> modeMarker.getValue());
         markerGlow.setVisible(() -> modeMarker.getValue());
         markerGlowIntensity.setVisible(() -> modeMarker.getValue() && markerGlow.getValue());
         markerHitFlash.setVisible(() -> modeMarker.getValue());
         markerMode.setVisible(() -> modeMarker.getValue());
 
-         
         ghostsScale.setVisible(() -> modeGhosts.getValue());
         ghostsParticleDensity.setVisible(() -> modeGhosts.getValue());
         ghostsGlow.setVisible(() -> modeGhosts.getValue());
         ghostsGlowIntensity.setVisible(() -> modeGhosts.getValue() && ghostsGlow.getValue());
         ghostsAlpha.setVisible(() -> modeGhosts.getValue());
 
-         
         jelloHeight.setVisible(() -> modeJello.getValue());
         jelloAnimationSpeed.setVisible(() -> modeJello.getValue());
         jelloGlow.setVisible(() -> modeJello.getValue());
         jelloGlowIntensity.setVisible(() -> modeJello.getValue() && jelloGlow.getValue());
         jelloAlpha.setVisible(() -> modeJello.getValue());
 
-         
-        svenyaSpeed.setVisible(() -> modeSvenya.getValue());  
+        svenyaSpeed.setVisible(() -> modeSvenya.getValue());
 
         this.themeManager = ThemeManager.getInstance();
         this.currentColor = themeManager.getThemeColor();
@@ -148,7 +137,7 @@ public class TargetEsp extends Module implements ThemeManager.ThemeChangeListene
     private final Animation soulAnimation = new Animation(500, 1f, true, Easing.BOTH_SINE);
     private final Animation jelloAnimation = new Animation(500, 1f, true, Easing.BOTH_SINE);
     private final Animation crystalsAnimation = new Animation(500, 1f, true, Easing.BOTH_SINE);
-    private final Animation svenyaAnimation = new Animation(500, 1f, true, Easing.BOTH_SINE);  
+    private final Animation svenyaAnimation = new Animation(500, 1f, true, Easing.BOTH_SINE);
 
     private LivingEntity lastTarget = null;
     private LivingEntity fadingTarget = null;
@@ -313,9 +302,8 @@ public class TargetEsp extends Module implements ThemeManager.ThemeChangeListene
         soulAnimation.update(grow);
         jelloAnimation.update(grow);
         crystalsAnimation.update(grow);
-        svenyaAnimation.update(grow);  
+        svenyaAnimation.update(grow);
 
-         
         if (modeMarker.getValue() && (modeGhosts.getValue() || modeJello.getValue() || modeCrystals.getValue() || modeSvenya.getValue())) {
             modeGhosts.setValue(false);
             modeJello.setValue(false);
@@ -370,7 +358,7 @@ public class TargetEsp extends Module implements ThemeManager.ThemeChangeListene
             fadeOrigin = null;
             fadingTarget = null;
         }
-        if (svenyaAnimation.getValue() <= 0 && forceFade && modeSvenya.getValue()) {  
+        if (svenyaAnimation.getValue() <= 0 && forceFade && modeSvenya.getValue()) {
             fadeOrigin = null;
             fadingTarget = null;
         }
@@ -405,14 +393,13 @@ public class TargetEsp extends Module implements ThemeManager.ThemeChangeListene
             if (lastTarget != null || (fadingTarget != null && crystalsAnimation.getValue() > 0)) {
                 renderCrystals(e);
             }
-        } else if (modeSvenya.getValue()) {  
+        } else if (modeSvenya.getValue()) {
             if (lastTarget != null || (fadingTarget != null && svenyaAnimation.getValue() > 0)) {
                 renderSvenya(e);
             }
         }
     }
 
-     
     private void renderSvenya(EventRender3D.Game e) {
         float progress = svenyaAnimation.getValue();
         if (progress <= 0.0F) return;
@@ -458,7 +445,6 @@ public class TargetEsp extends Module implements ThemeManager.ThemeChangeListene
 
         VertexConsumerProvider.Immediate immediate = mc.getBufferBuilders().getEntityVertexConsumers();
 
-         
         float time = -(System.currentTimeMillis() % 1000000) * speedMul;
         double[] px = new double[8];
         double[] py = new double[8];
@@ -473,7 +459,6 @@ public class TargetEsp extends Module implements ThemeManager.ThemeChangeListene
             pz[i] = z + Math.sin(rad) * radius;
         }
 
-         
         double topX = x;
         double topY = y + 2.2f;
         double topZ = z;
@@ -531,7 +516,6 @@ public class TargetEsp extends Module implements ThemeManager.ThemeChangeListene
         immediate.draw();
     }
 
-     
     private void renderCrystals(EventRender3D.Game e) {
         float alpha = crystalsAnimation.getValue();
         if (alpha <= 0.0F) return;

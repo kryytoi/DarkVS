@@ -12,9 +12,6 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 
-/**
- * ItemReminder — напоминание, когда расходники заканчиваются.
- */
 public class ItemReminder extends Module {
 
     private final NumberSetting totems = new NumberSetting("Тотемы", 2f, 0f, 36f, 1f);

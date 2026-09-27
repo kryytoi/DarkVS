@@ -26,11 +26,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
-/**
- * SkyLanterns — небесные фонарики, поднимающиеся в небо.
- * Медленный подъём с лёгким покачиванием и мягкое
-                тёплое аддитивное свечение вокруг каждого фонарика.
- */
 public class SkyLanterns extends Module {
 
     private final NumberSetting density =
@@ -95,7 +90,7 @@ public class SkyLanterns extends Module {
         while (it.hasNext()) {
             Lantern l = it.next();
             l.age++;
-            // медленный подъём и плавное покачивание
+
             l.pos = l.pos.add(
                     Math.sin(l.age * l.swaySpeed + l.swayPhase) * 0.015 * swayAmount,
                     0.03 * speed * l.riseScale,
@@ -128,17 +123,15 @@ public class SkyLanterns extends Module {
         Color base = color.getColor();
 
         for (Lantern l : lanterns) {
-            // мягкое дрожание пламени внутри фонарика
+
             float flicker = 0.78f + 0.22f * (float) Math.sin(now / 550.0 * l.flickerSpeed + l.flickerPhase);
             float glow = glowSize.getValue() * flicker;
 
-            // плавное появление и угасание на большой высоте
             float fade = Math.min(l.age / 14f, 1f);
             float heightFade = Math.max(0f, 1f - (float) ((l.pos.y - mc.player.getY()) / 42f));
             float a = fade * heightFade;
             if (a <= 0.02f) continue;
 
-            // тёплый оттенок с лёгким разбросом по фонарикам
             Color warm = new Color(
                     Math.min(255, base.getRed()),
                     Math.min(255, (int) (base.getGreen() * l.hueShift)),
@@ -151,11 +144,9 @@ public class SkyLanterns extends Module {
 
             Matrix4f matrix = matrices.peek().getPositionMatrix();
 
-            // внешнее мягкое свечение
             Color glowColor = new Color(warm.getRed(), warm.getGreen(), warm.getBlue(), (int) (95 * a));
             drawQuad(matrix, glow, glowColor);
 
-            // яркое ядро фонарика
             Color coreColor = new Color(
                     Math.min(255, warm.getRed() + 60),
                     Math.min(255, warm.getGreen() + 50),
@@ -173,7 +164,6 @@ public class SkyLanterns extends Module {
         RenderSystem.disableBlend();
     }
 
-    // billboard-квад в локальной плоскости XY
     private void drawQuad(Matrix4f matrix, float half, Color color) {
         BufferBuilder buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
         buffer.vertex(matrix, -half, -half, 0).color(color.getRGB());

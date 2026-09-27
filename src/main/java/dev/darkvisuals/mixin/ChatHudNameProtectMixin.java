@@ -13,7 +13,7 @@ public class ChatHudNameProtectMixin {
 
     @ModifyVariable(method = "addMessage(Lnet/minecraft/text/Text;)V", at = @At("HEAD"), argsOnly = true)
     private Text sv$modifyAddMessage(Text message) {
-         
+
         RWHelper rwHelper = RWHelper.getInstance();
         if (rwHelper != null && rwHelper.isToggled() && message != null) {
             try {

@@ -51,14 +51,11 @@ public class Portal extends Module {
         if (fullNullCheck()) return;
         if (mc.player == null) return;
 
-        // Портал фиксируется на момент активации и не следует за игроком,
-        // иначе до него невозможно дойти.
         if (portalPos == null) {
             Vec3d look = mc.player.getRotationVector();
             double dx = look.x * distance.getValue();
             double dz = look.z * distance.getValue();
 
-            // Направление вдоль горизонтали без потери шага на дистанциях > 1.
             double horizontal = Math.sqrt(dx * dx + dz * dz);
             if (horizontal > 1e-6) {
                 dx = dx / horizontal * distance.getValue();
@@ -107,7 +104,7 @@ public class Portal extends Module {
 
         matrices.push();
         matrices.translate((float) x, (float) y, (float) z);
-        // Разворот портала к игроку в момент его создания.
+
         matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(-portalYaw));
 
         float t = System.currentTimeMillis() / 1000f;

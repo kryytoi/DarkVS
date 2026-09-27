@@ -33,26 +33,21 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 public class JumpCircle extends Module implements ThemeManager.ThemeChangeListener {
 
-     
     private final NumberSetting size = new NumberSetting("Circle Size", 0.5f, 0.2f, 2.0f, 0.05f);
     private final NumberSetting Life_Time = new NumberSetting("Life Time", 0.5f, 0.2f, 2.0f, 0.05f);
     private final NumberSetting speed = new NumberSetting("Speed", 1.0f, 0.5f, 3.0f, 0.1f);
     private final BooleanSetting showFriends = new BooleanSetting("setting.showFriends", true);
 
-     
     private final EnumSetting<JumpCircleMode> mode =
             new EnumSetting<>("Режим", JumpCircleMode.JAGGED_RING);
 
-     
     private final BooleanSetting animGrow = new BooleanSetting("Grow", true, () -> false);
     private final BooleanSetting animPulse = new BooleanSetting("Pulse", false, () -> false);
     private final BooleanSetting animRipple = new BooleanSetting("Ripple", false, () -> false);
     private final ListSetting animationMode = new ListSetting("Animation", true, animGrow, animPulse, animRipple);
 
-     
     private final BooleanSetting novaRotate = new BooleanSetting("Nova Rotate", true, () -> mode.getValue() == JumpCircleMode.NOVA);
 
-     
     private final Identifier texJaggedRing = darkvisuals.id("textures/circle_jagged_ring.png");
     private final Identifier texThickRing  = darkvisuals.id("textures/circle_thick_ring.png");
     private final Identifier texOctagon    = darkvisuals.id("textures/circle_octagon.png");
@@ -163,7 +158,6 @@ public class JumpCircle extends Module implements ThemeManager.ThemeChangeListen
                 long age = now - c.spawnTime;
                 float t = Math.max(0f, Math.min(1f, (age / (float) c.ttl) * speed.getValue()));
 
-                 
                 float radiusMul;
                 float alphaK;
                 if (animPulse.getValue()) {
@@ -176,7 +170,7 @@ public class JumpCircle extends Module implements ThemeManager.ThemeChangeListen
                     radiusMul = 0.6f + 0.8f * te;
                     alphaK = (float) Math.pow(Math.sin(Math.max(0f, Math.min(1f, t)) * (float) Math.PI), 1.2f);
                 } else {
-                     
+
                     float te = Easing.BOTH_SINE.apply(t);
                     radiusMul = 0.6f + 0.4f * te;
                     alphaK = (float) Math.pow(1.0f - t, 0.8f) * te;
@@ -187,7 +181,7 @@ public class JumpCircle extends Module implements ThemeManager.ThemeChangeListen
                 if (alpha <= 2) continue;
 
                 float r = size.getValue() * radiusMul;
-                // у пика анимации круг вспыхивает акцентным цветом темы
+
                 Color bg = themeManager.getCurrentTheme().getBackgroundColor();
                 Color ac = themeManager.getCurrentTheme().getAccentColor();
                 float blend = alphaK * 0.85f;
@@ -205,9 +199,8 @@ public class JumpCircle extends Module implements ThemeManager.ThemeChangeListen
                         c.origin.z - mc.getEntityRenderDispatcher().camera.getPos().z
                 );
 
-                 
                 if (currentMode == JumpCircleMode.NOVA && novaRotate.getValue()) {
-                    float rotSpeed = 90f;  
+                    float rotSpeed = 90f;
                     float angle = (age / 1000f) * rotSpeed;
                     matrices.multiply(net.minecraft.util.math.RotationAxis.POSITIVE_Y.rotationDegrees(angle));
                 }

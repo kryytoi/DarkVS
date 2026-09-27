@@ -20,6 +20,7 @@ public abstract class MinecraftClientMixin implements Wrapper {
 
     @Inject(method = "setScreen", at = @At("HEAD"), cancellable = true)
     private void darkvisuals$replaceDeathScreen(net.minecraft.client.gui.screen.Screen screen, CallbackInfo ci) {
+        if (screen == null || screen instanceof dev.darkvisuals.client.ui.death.DarkDeathScreen) return;
         if (!(screen instanceof net.minecraft.client.gui.screen.DeathScreen)) return;
         if (!dev.darkvisuals.modules.impl.render.CustomDeathScreen.shouldReplace()) return;
 
@@ -37,7 +38,6 @@ public abstract class MinecraftClientMixin implements Wrapper {
         darkvisuals.post(event);
         Counter.updateFPS();
 
-         
         tickCounter++;
         if (tickCounter >= 20) {
             HitDetectionManager.getInstance().cleanup();
@@ -52,12 +52,11 @@ public abstract class MinecraftClientMixin implements Wrapper {
 
     @Inject(method = "stop", at = @At("HEAD"))
     private void onStop(CallbackInfo ci) {
-         
+
         dev.darkvisuals.util.DiscordRichPresenceUtil.shutdownDiscord();
         dev.darkvisuals.client.managers.CosmeticsSyncManager.shutdown();
         dev.darkvisuals.client.managers.UserTabManager.shutdown();
 
-         
         darkvisuals.post(new EventGameShutdown());
     }
 }

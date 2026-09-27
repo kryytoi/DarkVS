@@ -27,10 +27,8 @@ public class ResetCommand extends Command {
                 return 1;
             }
 
-             
             darkvisuals.getInstance().getCommandManager().setPrefix(".");
 
-             
             for (Module module : darkvisuals.getInstance().getModuleManager().getModules()) {
                 if (module.isToggled()) module.setToggled(false);
                 for (Setting<?> setting : module.getSettings()) {
@@ -38,10 +36,8 @@ public class ResetCommand extends Command {
                 }
             }
 
-             
             darkvisuals.getInstance().getModuleManager().resetBindsToDefaults();
 
-             
             for (HudElement hud : darkvisuals.getInstance().getHudManager().getHudElements()) {
                 for (Setting<?> setting : hud.getSettings()) {
                     setting.reset();
@@ -49,7 +45,6 @@ public class ResetCommand extends Command {
                 if (!hud.isToggled()) hud.setToggled(true);
             }
 
-             
             try {
                 ThemeManager.getInstance().setTheme(new ThemeManager.LightTheme());
             } catch (Throwable ignored) {}

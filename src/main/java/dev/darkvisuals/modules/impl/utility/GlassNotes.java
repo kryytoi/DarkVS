@@ -13,9 +13,6 @@ import net.minecraft.client.util.math.MatrixStack;
 
 import java.awt.*;
 
-/**
- * GlassNotes — липкая записка из жидкого стекла.
- */
 public class GlassNotes extends Module {
 
     private final NumberSetting posX = new NumberSetting("X", 20f, 0f, 3840f, 1f);

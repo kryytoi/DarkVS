@@ -25,7 +25,6 @@ import net.minecraft.util.math.Box;
 import java.awt.*;
 import java.io.File;
 
-
 public class StructureVisualer extends Module {
 
     private final ButtonSetting buildButton = new ButtonSetting("Сделай дом", this::startBuilding);
@@ -51,27 +50,19 @@ public class StructureVisualer extends Module {
         return structure;
     }
 
-    /** Сохранить текущую структуру в файл. */
     public void saveStructure() {
         structure.saveToFile(configFile);
     }
 
-    /** Открыть экран дома (после выхода из режима стройки). */
     public void openEditor() {
         mc.setScreen(new StructureEditorScreen(this));
     }
 
-    /** Кнопка «Сделай дом»: перенестись в пространство стройки и строить по-настоящему. */
     public void startBuilding() {
         if (mc.currentScreen != null) mc.setScreen(null);
         BuildSpaceManager.getInstance().enter();
     }
 
-    /**
-     * Поставить дом к прицелу и закрепить позицию.
-     * Повторное нажатие «Сохранить и перенести» убирает прошлый дом
-     * и ставит новый на текущую позицию прицела, закрепляя её.
-     */
     public void applyStructure(StructureData data) {
         if (data.isEmpty()) {
             darkvisuals.getInstance().getNotifyManager().add(new Notify(NotifyIcons.failIcon,
@@ -81,7 +72,7 @@ public class StructureVisualer extends Module {
         structure.copyFrom(data);
 
         if (fullNullCheck()) {
-            // вне мира позицию закрепить нельзя — дом встанет к прицелу при первом рендере
+
             structure.clearAnchor();
         } else {
             BlockPos pos = currentTargetPos();
@@ -95,10 +86,6 @@ public class StructureVisualer extends Module {
                 "Дом поставлен к прицелу и закреплён на месте!", 3000));
     }
 
-    /**
-     * Точка перед прицелом: блок, на который смотрим (ставим на его грань),
-     * либо позиция в паре метров по взгляду.
-     */
     private BlockPos currentTargetPos() {
         HitResult hit = mc.crosshairTarget;
         if (hit != null && hit.getType() == HitResult.Type.BLOCK) {
@@ -120,7 +107,6 @@ public class StructureVisualer extends Module {
         if (!isToggled() || !hologram.getValue() || fullNullCheck()) return;
         if (structure.isEmpty()) return;
 
-        // старый конфиг без закреплённой позиции — закрепляем один раз к прицелу
         if (!structure.hasAnchor()) {
             BlockPos pos = currentTargetPos();
             structure.setAnchor(pos.getX(), pos.getY(), pos.getZ());
@@ -131,10 +117,8 @@ public class StructureVisualer extends Module {
         MatrixStack ms = e.getMatrices();
         float alpha = Math.max(0.15f, Math.min(1f, opacity.getValue()));
 
-        // реальные полупрозрачные блоки
         StructureRenderer.renderBlocks(ms, structure.getBlocks(), anchor, alpha);
 
-        // опциональная обводка блоков
         if (outline.getValue()) {
             Color edge = new Color(255, 255, 255, (int) (70 * alpha));
             for (StructureData.PlacedBlock pb : structure.getBlocks()) {

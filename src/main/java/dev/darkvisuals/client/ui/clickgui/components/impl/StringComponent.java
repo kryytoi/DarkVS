@@ -36,7 +36,7 @@ public class StringComponent extends Component {
         float textY = y + 2.5f;
         float maxTextWidth = width - 16f;
         float textWidth = Fonts.REGULAR.getWidth(I18n.translate(setting.getValue()), 8f);
-        
+
         if (textWidth > maxTextWidth) {
             if (textWidth - scrollOffset > maxTextWidth) scrollOffset = textWidth - maxTextWidth;
             if (textWidth - scrollOffset < 0) scrollOffset = textWidth;

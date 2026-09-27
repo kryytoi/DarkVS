@@ -12,8 +12,7 @@ import java.util.Collections;
 
 public class ClickGuiState {
     private final Map<Category, Float> scrollMap = new EnumMap<>(Category.class);
-    // отдельный скролл для колонки настроек в стиле New — иначе список
-    // модулей и настройки листаются одновременно
+
     private final Map<Category, Float> settingsScrollMap = new EnumMap<>(Category.class);
 
     public float getScroll(Category category) {
@@ -36,7 +35,7 @@ public class ClickGuiState {
     if (category == Category.Theme) return Collections.emptyList();
     List<Module> out = new ArrayList<>();
     for (Module m : darkvisuals.getInstance().getModuleManager().getModules(category)) {
-        if (dev.darkvisuals.liteapi.LiteApi.isBlocked(m.getName())) continue; // <- вставить
+        if (dev.darkvisuals.liteapi.LiteApi.isBlocked(m.getName())) continue;
         out.add(m);
     }
     return out;

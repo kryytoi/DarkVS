@@ -15,19 +15,19 @@ public final class FontData {
 	public AtlasData atlas() {
 		return this.atlas;
 	}
-	
+
 	public MetricsData metrics() {
 		return this.metrics;
 	}
-	
+
 	public List<GlyphData> glyphs() {
 		return this.glyphs;
 	}
-	
+
 	public List<KerningData> kernings() {
 		return this.kernings;
 	}
-	
+
 	public static final class AtlasData {
 
 		@SerializedName("distanceRange")
@@ -47,7 +47,7 @@ public final class FontData {
 			return this.height;
 		}
 	}
-	
+
 	public static final class MetricsData {
 
 		private float lineHeight;
@@ -70,7 +70,7 @@ public final class FontData {
 			return this.lineHeight + this.descender;
 		}
 	}
-	
+
 	public static final class GlyphData {
 
 		private int unicode;
@@ -94,7 +94,7 @@ public final class FontData {
 			return this.atlasBounds;
 		}
 	}
-	
+
 	public static final class BoundsData {
 
 		private float left;
@@ -118,9 +118,9 @@ public final class FontData {
 			return this.bottom;
 		}
 	}
-	
+
 	public static final class KerningData {
-		
+
 		@SerializedName("unicode1")
 		private int leftChar;
 		@SerializedName("unicode2")

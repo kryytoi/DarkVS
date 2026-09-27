@@ -14,9 +14,6 @@ import net.minecraft.util.math.Vec3d;
 
 import java.awt.*;
 
-/**
- * SessionStats — статистика сессии: время, дистанция, прыжки.
- */
 public class SessionStats extends Module {
 
     private final NumberSetting x = new NumberSetting("X", 20f, 0f, 3840f, 1f);

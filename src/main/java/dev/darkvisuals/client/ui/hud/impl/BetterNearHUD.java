@@ -19,39 +19,32 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
- 
 public class BetterNearHUD extends HudElement implements ThemeManager.ThemeChangeListener {
 
-     
     public static boolean enabled = true;
 
     public static boolean isEnabled() {
         return enabled;
     }
 
-     
-    private static final double MAX_RANGE = 50.0;  
-    private static final int MAX_PLAYERS = 5;      
+    private static final double MAX_RANGE = 50.0;
+    private static final int MAX_PLAYERS = 5;
 
-     
-    private static final float PADDING = 8f;       
-    private static final float ROW_HEIGHT = 14f;   
-    private static final float ROW_GAP = 3f;       
-    private static final float HEADER_H = 14f;     
-    private static final float AVATAR = 10f;       
-    private static final float ICON = 11f;         
-    private static final float RADIUS = 6f;        
-    private static final float MIN_WIDTH = 108f;   
+    private static final float PADDING = 8f;
+    private static final float ROW_HEIGHT = 14f;
+    private static final float ROW_GAP = 3f;
+    private static final float HEADER_H = 14f;
+    private static final float AVATAR = 10f;
+    private static final float ICON = 11f;
+    private static final float RADIUS = 6f;
+    private static final float MIN_WIDTH = 108f;
 
-     
-    private static final Color NAME_COLOR = Color.WHITE;                        
-    private static final Color TITLE_COLOR = Color.WHITE;                       
-    private Color accent = new Color(255, 140, 40);                             
+    private static final Color NAME_COLOR = Color.WHITE;
+    private static final Color TITLE_COLOR = Color.WHITE;
+    private Color accent = new Color(255, 140, 40);
 
-     
     private static final String[] ARROWS = {"↑", "↗", "→", "↘", "↓", "↙", "←", "↖"};
 
-     
     private static final Identifier ICON_ACCOUNTS = Identifier.of("darkvisuals", "hud/accounts.png");
 
     public BetterNearHUD() {
@@ -68,12 +61,11 @@ public class BetterNearHUD extends HudElement implements ThemeManager.ThemeChang
         this.accent = theme.getAccentColor();
     }
 
-      
     private record NearEntry(AbstractClientPlayerEntity player, double distance, float relativeYaw, double deltaY) {}
 
     @Override
     public void onRender2D(EventRender2D e) {
-         
+
         if (!enabled) return;
         if (fullNullCheck() || closed()) return;
 
@@ -89,13 +81,12 @@ public class BetterNearHUD extends HudElement implements ThemeManager.ThemeChang
         float distSize = 6f;
         float titleSize = 7f;
 
-         
         float contentWidth = MIN_WIDTH;
         for (NearEntry entry : nearby) {
             float rowW = AVATAR + 5f
                     + medium.getWidth(entry.player().getGameProfile().getName(), nameSize)
                     + 8f + medium.getWidth(formatDistance(entry.distance()), distSize)
-                    + 14f;  
+                    + 14f;
             contentWidth = Math.max(contentWidth, rowW);
         }
 
@@ -111,10 +102,8 @@ public class BetterNearHUD extends HudElement implements ThemeManager.ThemeChang
         float x = getX(), y = getY();
         float fade = toggledAnimation.getValue();
 
-         
         drawPanelBackground(matrices, x, y, totalWidth, totalHeight, fade);
 
-         
         float iconX = x + PADDING;
         float iconY = y + PADDING + (HEADER_H - ICON) / 2f;
 
@@ -125,7 +114,6 @@ public class BetterNearHUD extends HudElement implements ThemeManager.ThemeChang
         float titleY = y + PADDING + (HEADER_H - bold.getHeight(titleSize)) / 2f;
         Render2D.drawFont(matrices, bold.getFont(titleSize), "Better Near", titleX, titleY, withAlpha(TITLE_COLOR, fade));
 
-         
         float rowY = y + PADDING + HEADER_H + 4f;
 
         if (nearby.isEmpty()) {
@@ -139,35 +127,30 @@ public class BetterNearHUD extends HudElement implements ThemeManager.ThemeChang
             }
         }
 
-         
         super.onRender2D(e);
     }
 
- 
     private void drawPanelBackground(MatrixStack matrices, float x, float y,
                                      float w, float h, float fade) {
         Render2D.drawHudBackground(matrices, x, y, w, h, RADIUS, fade);
     }
 
-      
     private List<NearEntry> collectNearbyPlayers(ClientPlayerEntity self) {
         List<NearEntry> result = new ArrayList<>();
 
         for (AbstractClientPlayerEntity player : mc.world.getPlayers()) {
-            if (player == self) continue;                     
-            if (player.isInvisible()) continue;               
-            if (player.isSpectator()) continue;               
+            if (player == self) continue;
+            if (player.isInvisible()) continue;
+            if (player.isSpectator()) continue;
             if (player.isRemoved() || !player.isAlive()) continue;
 
             double distance = self.distanceTo(player);
             if (distance > MAX_RANGE) continue;
 
-             
             double dx = player.getX() - self.getX();
             double dz = player.getZ() - self.getZ();
             float angleTo = (float) (Math.toDegrees(Math.atan2(dz, dx)) - 90.0);
 
-             
             float relative = MathHelper.wrapDegrees(angleTo - self.getYaw());
 
             result.add(new NearEntry(player, distance, relative, player.getY() - self.getY()));
@@ -177,26 +160,22 @@ public class BetterNearHUD extends HudElement implements ThemeManager.ThemeChang
         return result.size() > MAX_PLAYERS ? new ArrayList<>(result.subList(0, MAX_PLAYERS)) : result;
     }
 
-      
     private void drawPlayerRow(MatrixStack matrices, NearEntry entry,
                                float rowX, float rowY, float contentWidth, float fade,
                                Font font, float nameSize, float distSize) {
         AbstractClientPlayerEntity player = entry.player();
 
-         
         float avatarY = rowY + (ROW_HEIGHT - AVATAR) / 2f;
         Render2D.drawTexture(matrices, rowX, avatarY, AVATAR, AVATAR, 2f,
                 0.125f, 0.125f, 0.125f, 0.125f,
                 player.getSkinTextures().texture(),
                 withAlpha(Color.WHITE, fade));
 
-         
         float nameX = rowX + AVATAR + 5f;
         float nameY = rowY + (ROW_HEIGHT - font.getHeight(nameSize)) / 2f;
         Render2D.drawFont(matrices, font.getFont(nameSize),
                 player.getGameProfile().getName(), nameX, nameY, withAlpha(NAME_COLOR, fade));
 
-         
         Font arrowFont = Fonts.BOLD;
         float arrowSize = nameSize + 1.5f;
         String arrow = pickArrow(entry.relativeYaw(), entry.deltaY());
@@ -205,7 +184,6 @@ public class BetterNearHUD extends HudElement implements ThemeManager.ThemeChang
         Render2D.drawFont(matrices, arrowFont.getFont(arrowSize), arrow,
                 arrowX, rowY + (ROW_HEIGHT - arrowFont.getHeight(arrowSize)) / 2f, withAlpha(accent, fade));
 
-         
         Color distColor = new Color(accent.getRed(), accent.getGreen(), accent.getBlue(), 150);
         String dist = formatDistance(entry.distance());
         float distW = font.getWidth(dist, distSize);
@@ -214,22 +192,19 @@ public class BetterNearHUD extends HudElement implements ThemeManager.ThemeChang
                 distX, rowY + (ROW_HEIGHT - font.getHeight(distSize)) / 2f, withAlpha(distColor, fade));
     }
 
- 
     private String pickArrow(float relativeYaw, double deltaY) {
-        if (deltaY > 6.0) return "↑";   
-        if (deltaY < -6.0) return "↓";  
+        if (deltaY > 6.0) return "↑";
+        if (deltaY < -6.0) return "↓";
 
-        float normalized = MathHelper.wrapDegrees(relativeYaw) + 180f;  
+        float normalized = MathHelper.wrapDegrees(relativeYaw) + 180f;
         int index = Math.round(((normalized + 180f) % 360f) / 45f) % 8;
         return ARROWS[index];
     }
 
-      
     private String formatDistance(double distance) {
         return Math.round(distance) + "m";
     }
 
-      
     private static Color withAlpha(Color base, float fade) {
         return new Color(base.getRed(), base.getGreen(), base.getBlue(),
                 MathHelper.clamp((int) (base.getAlpha() * fade), 0, 255));

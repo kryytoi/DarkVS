@@ -23,9 +23,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-/**
- * GlitchScreen — глитч-квадраты, хаотично появляющиеся вокруг игрока.
- */
 public class GlitchScreen extends Module {
 
     private final NumberSetting density = new NumberSetting("Плотность", 12f, 2f, 40f, 2f);
@@ -102,7 +99,7 @@ public class GlitchScreen extends Module {
         float sz = size.getValue();
 
         for (Glitch g : glitches) {
-            // рваная видимость: квадрат то виден, то нет
+
             float visible = Math.abs((float) Math.sin(g.life * 30f)) > 0.35f ? 1f : 0f;
             if (visible < 0.5f) continue;
 

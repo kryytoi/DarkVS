@@ -16,20 +16,17 @@ public class HotbarHUD extends HudElement {
 
     private final ThemeManager themeManager;
 
-     
     private final float barWidth = 180f;
     private final float barHeight = 20f;
     private final float slotSize = 20f;
-    private final float slotPadding = 2f;  
+    private final float slotPadding = 2f;
     private final float radius = 2f;
-    private float xpBarHeight = 6f;  
+    private float xpBarHeight = 6f;
 
-     
     private static final Color BACKGROUND = new Color(30, 30, 30, 240);
     private static final Color XP_BG = new Color(0, 0, 0, 120);
     private static final Color XP_FG = new Color(80, 200, 120, 220);
 
-     
     private static final Identifier HEART_CONTAINER       = Identifier.ofVanilla("hud/heart/container");
     private static final Identifier HEART_FULL            = Identifier.ofVanilla("hud/heart/full");
     private static final Identifier HEART_HALF            = Identifier.ofVanilla("hud/heart/half");
@@ -39,7 +36,6 @@ public class HotbarHUD extends HudElement {
     private static final Identifier FOOD_FULL             = Identifier.ofVanilla("hud/food_full");
     private static final Identifier FOOD_HALF             = Identifier.ofVanilla("hud/food_half");
 
-     
     private final InfinityAnimation xpAnimPx = new InfinityAnimation(Easing.OUT_QUAD);
     private final InfinityAnimation selAnimX = new InfinityAnimation(Easing.OUT_QUAD);
     private float lastSelX = -1f;
@@ -59,15 +55,12 @@ public class HotbarHUD extends HudElement {
         float baseX = getX();
         float baseY = getY();
 
-         
         Color background = BACKGROUND;
-         
+
         Color selected = themeManager.getCurrentTheme().getAccentColor();
 
-         
         setBounds(baseX, baseY, barWidth, barHeight);
 
-         
         Render2D.drawHudBackground(
                 matrices,
                 getX(), getY(),
@@ -76,20 +69,17 @@ public class HotbarHUD extends HudElement {
                 1f
         );
 
-         
         if (mc.player != null && !mc.player.getAbilities().creativeMode) {
-            int iconSize = 9;    
-            int iconStep = 8;    
+            int iconSize = 9;
+            int iconStep = 8;
             float rowH = 10f;
             this.xpBarHeight = 6f;
 
             float x = baseX;
             float w = barWidth;
 
-             
             float barsY = baseY - (rowH + 6f + xpBarHeight);
 
-             
             float health = mc.player.getHealth();
             float maxHealth = mc.player.getMaxHealth();
             float absorption = mc.player.getAbsorptionAmount();
@@ -114,7 +104,6 @@ public class HotbarHUD extends HudElement {
                 }
             }
 
-             
             if (absorptionInt > 0) {
                 int absHearts = (int) Math.ceil(absorptionInt / 2f);
                 int healthRows = (maxHearts + 9) / 10;
@@ -135,8 +124,7 @@ public class HotbarHUD extends HudElement {
                 }
             }
 
-             
-            int hunger = mc.player.getHungerManager().getFoodLevel();  
+            int hunger = mc.player.getHungerManager().getFoodLevel();
             for (int i = 0; i < 10; i++) {
                 int fx = (int) (x + w - (i + 1) * iconStep - 1);
                 int fy = (int) barsY;
@@ -151,15 +139,14 @@ public class HotbarHUD extends HudElement {
                 }
             }
 
-             
-            float xp = mc.player.experienceProgress;  
+            float xp = mc.player.experienceProgress;
             int level = mc.player.experienceLevel;
             float xpY = barsY + rowH + 4f;
             Render2D.drawRoundedRect(matrices, x, xpY, w, xpBarHeight, 2f, XP_BG);
             float xpTargetPx = w * Math.min(1f, Math.max(0f, xp));
             float xpFill = Math.max(0f, Math.min(w, xpAnimPx.animate(xpTargetPx, 110)));
             Render2D.drawRoundedRect(matrices, x, xpY, xpFill, xpBarHeight, 2f, XP_FG);
-             
+
             String lvl = String.valueOf(level);
             float lvlSize = 8.5f;
             var fontLvl = Fonts.REGULAR.getFont(lvlSize);
@@ -170,31 +157,27 @@ public class HotbarHUD extends HudElement {
             Render2D.drawFont(matrices, fontLvl, lvl, lvlX, lvlY, Color.WHITE);
         }
 
-         
         if (mc.player != null) {
             var inv = mc.player.getInventory();
-            int slot = inv.selectedSlot;  
-             
+            int slot = inv.selectedSlot;
+
             float sideGap = (barWidth - slotSize * 9f) / 2f;
-             
+
             float slotXTarget = baseX + sideGap + slot * slotSize;
             float slotY = baseY;
             float slotW = slotSize;
             float slotH = barHeight;
 
-             
             float selRadius = 2f;
-             
+
             float selY = slotY;
             float selH = slotH;
-             
-             
+
             if (lastSelX < 0f) lastSelX = slotXTarget;
             float selX = selAnimX.animate(slotXTarget, 140);
             lastSelX = selX;
             float selW = (slot == 8) ? Math.max(slotW, getX() + barWidth - slotXTarget) : slotW;
 
-             
             Render2D.drawRoundedRect(
                     matrices,
                     selX, selY,
@@ -202,7 +185,6 @@ public class HotbarHUD extends HudElement {
                     selRadius,
                     new Color(selected.getRed(), selected.getGreen(), selected.getBlue(), 160)
             );
-             
 
             boolean isMainHandLeft = mc.player.getMainArm().equals(net.minecraft.util.Arm.LEFT);
             float offhandX = isMainHandLeft ? baseX - slotSize - 4f : baseX + barWidth + 4f;
@@ -231,31 +213,28 @@ public class HotbarHUD extends HudElement {
                 if(offhandStack.getCount() > 1) Render2D.drawFont(matrices, offhandCntFont, offhandCnt, offhandCntX, offhandCntY, Color.WHITE);
             }
 
-             
             for (int i = 0; i <= 8; i++) {
-                float ix = baseX + sideGap + i * slotSize + 2f;     
+                float ix = baseX + sideGap + i * slotSize + 2f;
                 float iy = baseY + 2f;
                 var stack = inv.getStack(i);
                 context.drawItem(stack, (int) ix, (int) iy);
-                 
-                 
+
                 String slotNum = String.valueOf(i + 1);
                 float numSize = 6.0f;
                 var numFont = Fonts.REGULAR.getFont(numSize);
                 float numH = Fonts.REGULAR.getHeight(numSize);
-                float slotLeftX = baseX + sideGap + i * slotSize + 2f;  
+                float slotLeftX = baseX + sideGap + i * slotSize + 2f;
                 float slotTopY = baseY + 2f;
                 Render2D.drawFont(matrices, numFont, slotNum, slotLeftX, slotTopY - 0.5f, Color.WHITE);
 
-                 
                 if (!stack.isEmpty()) {
                     String cnt = String.valueOf(stack.getCount());
                     float cntSize = 7.5f;
                     var cntFont = Fonts.REGULAR.getFont(cntSize);
                     float cntW = Fonts.REGULAR.getWidth(cnt, cntSize);
                     float cntH = Fonts.REGULAR.getHeight(cntSize);
-                    float slotRightX = baseX + sideGap + i * slotSize + slotSize - 2f;  
-                    float slotBottomY = baseY + barHeight - 2f;  
+                    float slotRightX = baseX + sideGap + i * slotSize + slotSize - 2f;
+                    float slotBottomY = baseY + barHeight - 2f;
                     float drawX = slotRightX - cntW;
                     float drawY = slotBottomY - cntH + 0.5f;
                     if(stack.getCount() > 1) Render2D.drawFont(matrices, cntFont, cnt, drawX, drawY, Color.WHITE);

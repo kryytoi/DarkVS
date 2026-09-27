@@ -21,10 +21,6 @@ import org.joml.Matrix4f;
 
 import java.awt.Color;
 
-/**
- * Aurora — северное сияние над игроком: волнистые светящиеся ленты в небе.
- * Ленты строятся каждый кадр по синусоидам, цвета плавно перетекают.
- */
 public class Aurora extends Module {
 
     private final NumberSetting height =
@@ -77,7 +73,6 @@ public class Aurora extends Module {
         RenderSystem.disableCull();
         RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR);
 
-        // три ленты со сдвигом фазы и высоты
         for (int ribbon = 0; ribbon < 3; ribbon++) {
             float phase = ribbon * 1.9f;
             double yOff = ribbon * 4.0;
@@ -109,7 +104,6 @@ public class Aurora extends Module {
             double z1 = mc.player.getZ() + Math.sin(p1 * Math.PI * 2 * waveFreq + t) * 12 + ribbonIdx * 9.0;
             double z2 = mc.player.getZ() + Math.sin(p2 * Math.PI * 2 * waveFreq + t) * 12 + ribbonIdx * 9.0;
 
-            // волна по высоте тоже дышит
             double top1 = baseY + Math.sin(p1 * Math.PI * 2 * waveFreq * 0.7 + t * 1.3) * rh * 0.4 + rh;
             double top2 = baseY + Math.sin(p2 * Math.PI * 2 * waveFreq * 0.7 + t * 1.3) * rh * 0.4 + rh;
 

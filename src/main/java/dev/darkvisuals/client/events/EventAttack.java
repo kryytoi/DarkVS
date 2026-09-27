@@ -1,6 +1,5 @@
 package dev.darkvisuals.client.events;
 
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import net.minecraft.entity.Entity;

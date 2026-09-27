@@ -13,7 +13,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
- 
 @Mixin(WorldRenderer.class)
 public abstract class WorldRendererSkyMixin {
 
@@ -24,8 +23,8 @@ public abstract class WorldRendererSkyMixin {
         if (module.mc.world == null) return;
 
         RegistryKey<World> dim = module.mc.world.getRegistryKey();
-        if (dim != World.END && dim != World.NETHER) return;  
+        if (dim != World.END && dim != World.NETHER) return;
 
-        ci.cancel();  
+        ci.cancel();
     }
 }

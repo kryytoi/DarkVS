@@ -23,9 +23,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-/**
- * InkSplash — чернильные брызги, летящие от игрока при движении.
- */
 public class InkSplash extends Module {
 
     private final NumberSetting density = new NumberSetting("Плотность", 14f, 2f, 50f, 2f);

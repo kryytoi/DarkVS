@@ -24,7 +24,6 @@ import org.joml.Matrix4f;
 
 import java.util.Random;
 
- 
 public class BeautifulSky extends Module {
 
     private final BooleanSetting stars = new BooleanSetting("Stars (End)", true);
@@ -34,7 +33,6 @@ public class BeautifulSky extends Module {
     private static final int DOME_RINGS = 24;
     private static final int DOME_SEGMENTS = 48;
 
-     
     private float[] starTheta;
     private float[] starPhi;
     private float[] starSeed;
@@ -59,7 +57,7 @@ public class BeautifulSky extends Module {
         RegistryKey<World> dim = mc.world.getRegistryKey();
         boolean isEnd = dim == World.END;
         boolean isNether = dim == World.NETHER;
-        if (!isEnd && !isNether) return;  
+        if (!isEnd && !isNether) return;
 
         if (starTheta == null || starTheta.length != (int) (float) starCount.getValue()) {
             regenerateStars();
@@ -77,8 +75,7 @@ public class BeautifulSky extends Module {
         RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR);
 
         matrices.push();
-         
-         
+
         matrices.translate(0, 0, 0);
         Matrix4f matrix = matrices.peek().getPositionMatrix();
 
@@ -101,19 +98,15 @@ public class BeautifulSky extends Module {
         starTheta = new float[count];
         starPhi = new float[count];
         starSeed = new float[count];
-        Random rnd = new Random(1337L);  
+        Random rnd = new Random(1337L);
         for (int i = 0; i < count; i++) {
             starTheta[i] = rnd.nextFloat() * (float) (Math.PI * 2.0);
-             
+
             starPhi[i] = (float) Math.acos(1.0f - rnd.nextFloat() * 1.0f) * 0.92f;
             starSeed[i] = rnd.nextFloat() * 1000f;
         }
     }
 
-      
-
-
- 
     private void renderGradientDome(Matrix4f matrix, float radius,
                                     int zr, int zg, int zb,
                                     int hr, int hg, int hb) {
@@ -160,13 +153,12 @@ public class BeautifulSky extends Module {
             float cx = MathHelper.cos(theta) * rr;
             float cz = MathHelper.sin(theta) * rr;
 
-             
             float twinkle = 0.55f + 0.45f * (float) Math.sin(now / 450.0 + starSeed[i]);
             int a = (int) (255 * MathHelper.clamp(twinkle, 0f, 1f));
             if (a <= 3) continue;
 
             float size = radius * 0.006f;
-             
+
             buffer.vertex(matrix, cx - size, y - size, cz).color(255, 255, 255, a);
             buffer.vertex(matrix, cx + size, y - size, cz).color(255, 255, 255, a);
             buffer.vertex(matrix, cx + size, y + size, cz).color(255, 255, 255, a);

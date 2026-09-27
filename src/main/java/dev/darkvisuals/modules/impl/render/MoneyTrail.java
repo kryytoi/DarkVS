@@ -23,9 +23,6 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Random;
 
-/**
- * MoneyTrail — дорожка из летящих за игроком монет и купюр.
- */
 public class MoneyTrail extends Module {
 
     private final NumberSetting density = new NumberSetting("Плотность", 12f, 2f, 40f, 2f);
@@ -116,7 +113,7 @@ public class MoneyTrail extends Module {
             Matrix4f m = matrices.peek().getPositionMatrix();
             BufferBuilder buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
             int alpha = (int) (230 * fade);
-            // монета: яркий круг + тёмный ободок
+
             buffer.vertex(m, -sz, -sz, 0).color(255, 215, 60, alpha);
             buffer.vertex(m, -sz, sz, 0).color(255, 215, 60, alpha);
             buffer.vertex(m, sz, sz, 0).color(255, 215, 60, alpha);

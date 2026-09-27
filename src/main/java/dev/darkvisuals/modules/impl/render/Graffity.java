@@ -28,22 +28,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-/**
- * Graffity — граффити из папки assets/darkvisuals/grafi.
- *
- * По бинду открывается круг выбора (как в GTA 5). Выбранное граффити лепится
- * на блок, по которому смотрит игрок, и остаётся там 20 минут, после чего
- * само исчезает.
- *
- * Граффити лежит на грани блока как картина — не поворачивается за камерой,
- * а зафиксировано в мире.
- *
- * PNG-картинки кладутся в src/main/resources/assets/darkvisuals/grafi/. Они
- * должны быть квадратными — так рамка круга не режет рисунок.
- */
 public class Graffity extends Module {
 
-    /** Одно размещённое граффити. */
     public static final class Decal {
         public final Vec3d pos;
         public final Direction side;
@@ -64,11 +50,8 @@ public class Graffity extends Module {
 
     private final List<Decal> decals = new ArrayList<>();
 
-    /** Время жизни граффити — 20 минут по умолчанию. */
     private static final long TTL_MILLIS = TimeUnit.MINUTES.toMillis(20);
 
-    // бинд, по которому открывается круг выбора граффити
-    // Key that opens the graffiti editor (paint your own decal).
     private final BindSetting editorBind = new BindSetting("Graffity editor bind", new Bind(GLFW.GLFW_KEY_H, false));
     private final BindSetting wheelBind = new BindSetting("Бинды круга", new Bind(GLFW.GLFW_KEY_G, false));
 
@@ -96,8 +79,7 @@ public class Graffity extends Module {
     @Override
     public void onDisable() {
         super.onDisable();
-        // при выключении модуля старые граффити нечистим — они живут свой срок
-        // и исчезают сами; так включение/выключение не стирает рисунки
+
     }
 
     @EventHandler
@@ -110,7 +92,6 @@ public class Graffity extends Module {
         if (e.getKey() != bind.getKey()) return;
         if (e.getAction() != GLFW.GLFW_PRESS) return;
 
-        // граффити нет вообще — круг открывать не из чего
         if (GraffityManager.count() == 0) {
             if (mc.player != null) {
                 mc.player.sendMessage(net.minecraft.text.Text.of(
@@ -141,7 +122,6 @@ public class Graffity extends Module {
 
         Perf.scopeCpu("graffity");
 
-        // выкидываем истёкшие граффити (20 минут)
         synchronized (decals) {
             if (!decals.isEmpty()) {
                 Iterator<Decal> it = decals.iterator();
@@ -161,24 +141,21 @@ public class Graffity extends Module {
         }
     }
 
-    /** Поставить выбранное граффити на блок, по которому смотрит игрок. */
     public void placeSelected(int index) {
         if (fullNullCheck()) return;
 
         Identifier tex = GraffityManager.getTexture(index);
         if (tex == null) return;
 
-        // нужно целиться в блок — граффити лепится на грань, как картина
         if (!(mc.crosshairTarget instanceof BlockHitResult hit) || hit.getType() != HitResult.Type.BLOCK) {
             mc.player.sendMessage(Text.of("Наведись на блок, чтобы поставить граффити"), false);
             return;
         }
 
         Direction side = hit.getSide();
-        // точка попадания луча в грань — центр граффити
+
         Vec3d pos = hit.getPos();
 
-        // чуть-чуть отодвигаем от самой грани, иначе будет z-fighting с блоком
         Vec3d offset = Vec3d.of(side.getVector()).multiply(0.02);
         pos = pos.add(offset);
 
@@ -187,7 +164,6 @@ public class Graffity extends Module {
         }
     }
 
-    /** Очистить все граффити вручную. */
     public void clearAll() {
         synchronized (decals) {
             decals.clear();

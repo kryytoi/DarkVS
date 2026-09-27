@@ -19,9 +19,6 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.random.Random;
 import org.joml.Matrix4f;
 
-/**
- * VoidTendrils — тёмные щупальца, тянущиеся из-под земли вокруг игрока.
- */
 public class VoidTendrils extends Module {
 
     private final NumberSetting count = new NumberSetting("Количество", 7f, 3f, 16f, 1f);

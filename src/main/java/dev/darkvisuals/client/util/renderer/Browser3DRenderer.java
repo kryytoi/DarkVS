@@ -24,13 +24,6 @@ import org.lwjgl.opengl.GL11;
 
 import java.awt.Color;
 
-/**
- * 3D-плоскость с живым экраном реального браузера.
- *
- * ИЗМЕНЕНИЕ: drawCapture теперь принимает capture.getGlId() вместо
- * capture.getTexture().getGlId() — безопаснее, т.к. getGlId() возвращает -1
- * если текстура ещё не создана, а не NPE.
- */
 public class Browser3DRenderer implements Wrapper {
 
     private static final double MOVING_THRESHOLD_SQ = 0.03 * 0.03;
@@ -110,7 +103,7 @@ public class Browser3DRenderer implements Wrapper {
         drawChrome(matrices, pw, ph, accent);
 
         if (capture != null && capture.isAvailable()) {
-            // ИЗМЕНЕНИЕ: capture.getGlId() вместо capture.getTexture().getGlId()
+
             int glId = capture.getGlId();
             if (glId > 0) {
                 drawCapture(matrices, 1.5f, TITLE_BAR + 1.5f, pw - 3f, ph - TITLE_BAR - 3f, glId);

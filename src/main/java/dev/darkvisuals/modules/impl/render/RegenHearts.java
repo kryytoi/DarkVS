@@ -30,7 +30,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
-
 public class RegenHearts extends Module {
 
     private static final Identifier HEART_TEXTURE = darkvisuals.id("hud/heart.png");
@@ -114,10 +113,10 @@ public class RegenHearts extends Module {
 
         for (Heart heart : hearts) {
             float t = (now - heart.birth) / (float) HEART_TTL_MS;
-            // разгорание и мягкое угасание
+
             float fadeIn = (float) Easing.EASE_OUT_CIRC.apply(Math.min(t * 4f, 1f));
             float fadeOut = 1f - (float) Easing.FAST_IN.apply(Math.max(0f, (t - 0.6f) / 0.4f));
-            // лёгкая пульсация сердечка
+
             float pulse = 1f + 0.12f * MathHelper.sin(now / 120f + heart.phase * 3f);
             int alpha = (int) (220 * fadeIn * fadeOut);
             if (alpha <= 3) continue;

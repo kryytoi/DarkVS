@@ -14,9 +14,6 @@ import net.minecraft.entity.player.PlayerEntity;
 
 import java.awt.*;
 
-/**
- * CombatTimer — отсчёт времени после выхода из комбата.
- */
 public class CombatTimer extends Module {
 
     private final NumberSetting duration = new NumberSetting("Длительность", 10f, 1f, 60f, 1f);
@@ -70,7 +67,6 @@ public class CombatTimer extends Module {
                 px + (w - textW) / 2f, py + (h - Fonts.MEDIUM.getHeight(fs)) / 2f,
                 new Color(255, 255, 255, 235));
 
-        // полоса оставшегося времени
         float barH = 2f;
         Render2D.drawRect(matrices, px + 6f, py + h - 4f, (w - 12f) * remaining, barH,
                 new Color(255, 120, 120, 220));

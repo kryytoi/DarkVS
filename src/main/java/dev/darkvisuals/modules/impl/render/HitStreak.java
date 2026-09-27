@@ -58,17 +58,14 @@ import java.util.concurrent.CopyOnWriteArrayList;
         long now = System.currentTimeMillis();
         long resetMs = (long) (resetSeconds.getValue() * 1000);
 
-         
         if (lastHitTime != 0 && (now - lastHitTime) > resetMs) {
             streakCount = 0;
         }
         lastHitTime = now;
         streakCount++;
 
-         
         Vec3d hitPos = entity.getPos().add(0, entity.getHeight() / 2f + 0.2f, 0);
 
-         
         StringBuilder sb = new StringBuilder();
         if (showHits.getValue()) sb.append("+1");
         if (showStreak.getValue() && streakCount > 1) {
@@ -96,16 +93,13 @@ import java.util.concurrent.CopyOnWriteArrayList;
             long age = now - p.spawnTime;
             float progress = Math.min(1f, age / (float) p.ttl);
 
-             
             float fadeIn = Math.min(1f, age / 150f);
             float fadeOut = 1f - progress;
             float alpha = Math.max(0f, Math.min(1f, fadeIn * fadeOut));
 
-             
             double rise = progress * 1.2f;
             Vec3d screenPos = WorldUtils.getPosition(p.pos.add(0, rise, 0));
 
-             
             if (screenPos.z >= 1f) continue;
 
             int a = (int) (255 * alpha);
@@ -113,11 +107,10 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
             Color drawColor = new Color(themeColor.getRed(), themeColor.getGreen(), themeColor.getBlue(), a);
 
-             
             float size = textSize.getValue() * (1f - progress * 0.2f);
 
             String text = p.text;
-            int textWidth = (int) (text.length() * size * 2.2f);  
+            int textWidth = (int) (text.length() * size * 2.2f);
             float x = (float) screenPos.x - textWidth / 2f;
             float y = (float) screenPos.y - size;
 

@@ -13,7 +13,7 @@ import java.util.concurrent.*;
 
     static {
         int cores = Math.max(2, Runtime.getRuntime().availableProcessors());
-        int threads = Math.max(1, cores - 1);  
+        int threads = Math.max(1, cores - 1);
         CPU_POOL = new ThreadPoolExecutor(
                 threads,
                 threads,
@@ -48,12 +48,12 @@ import java.util.concurrent.*;
             try {
                 results.add(f.get(left, TimeUnit.NANOSECONDS));
             } catch (TimeoutException te) {
-                break;  
+                break;
             } catch (InterruptedException ie) {
                 Thread.currentThread().interrupt();
                 break;
             } catch (ExecutionException ee) {
-                 
+
             }
         }
         return results;

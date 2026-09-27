@@ -41,7 +41,6 @@ public class TargetHud extends HudElement implements ThemeManager.ThemeChangeLis
     private Color lowDurabilityColor;
     private Color absorbColor;
 
-     
     private final BooleanSetting displayAbsorption = new BooleanSetting("displayAbsorption", true);
     private final BooleanSetting displayHudParticles = new BooleanSetting("hudParticles", true);
     private final ListSetting style;
@@ -52,7 +51,6 @@ public class TargetHud extends HudElement implements ThemeManager.ThemeChangeLis
         applyTheme(themeManager.getCurrentTheme());
         themeManager.addThemeChangeListener(this);
 
-         
         BooleanSetting optDefault = new BooleanSetting("targethud.style.default", true, () -> false);
         BooleanSetting optCard = new BooleanSetting("targethud.style.card", false, () -> false);
         this.style = new ListSetting("targethud.style", () -> true, true, optDefault, optCard).setSingleSelect(true);
@@ -63,7 +61,7 @@ public class TargetHud extends HudElement implements ThemeManager.ThemeChangeLis
     }
 
     private void applyTheme(ThemeManager.Theme theme) {
-         
+
         this.bgColor = new Color(30, 30, 30, 255);
 
         int brightness = (int) (0.299 * bgColor.getRed() + 0.587 * bgColor.getGreen() + 0.114 * bgColor.getBlue());
@@ -89,7 +87,6 @@ public class TargetHud extends HudElement implements ThemeManager.ThemeChangeLis
         super.onDisable();
     }
 
-     
     private final InfinityAnimation fadeAnimation = new InfinityAnimation(Easing.OUT_QUAD);
     private final InfinityAnimation scaleAnimation = new InfinityAnimation(Easing.OUT_QUAD);
     private final InfinityAnimation slideAnimation = new InfinityAnimation(Easing.OUT_QUAD);
@@ -107,23 +104,18 @@ public class TargetHud extends HudElement implements ThemeManager.ThemeChangeLis
     private int lastHurtTicks = 0;
     private int prevHurtTime = 0;
 
-     
     private static final float ROUNDING = 6f;
     private static final float SPACING = 4f;
 
-     
     private static final float WIDTH = 112f;
     private static final float HEIGHT = 56f;
 
-     
     private static final float ICON_SIZE = 12f;
     private static final float ICON_TILE = 14f;
     private static final float ICON_GAP = 2f;
 
-     
     private static final float HEAD = 19f;
 
-     
     private static final Identifier STAR_TEX = darkvisuals.id("hud/star.png");
     private final List<HudParticle> hudParticles = new ArrayList<>();
     private long lastFrameTimeMs = System.currentTimeMillis();
@@ -149,7 +141,7 @@ public class TargetHud extends HudElement implements ThemeManager.ThemeChangeLis
     }
 
     private Color getHitColor(LivingEntity entity, int alpha) {
-        return new Color(255, 255, 255, alpha);  
+        return new Color(255, 255, 255, alpha);
     }
 
     @Override
@@ -242,28 +234,24 @@ public class TargetHud extends HudElement implements ThemeManager.ThemeChangeLis
             return;
         }
 
-         
         if (style.getName("targethud.style.card").getValue()) {
-             
+
             float cardW = WIDTH - 2f;
             float cardH = HEIGHT + 2f;
             setBounds(posX, posY, cardW, cardH);
 
-             
             Render2D.drawHudBackground(
                     e.getContext().getMatrices(),
                     posX, posY, cardW, cardH, ROUNDING,
                     fadeAnimation.getValue()
             );
 
-             
             float avatarSize = HEAD + 12f;
             float avatarX = posX + SPACING;
             float avatarY = posY + (cardH / 2f - avatarSize / 2f) - 0.5f;
             Render2D.drawRoundedRect(e.getContext().getMatrices(), avatarX, avatarY, avatarSize, avatarSize, 6f,
                     new Color(80, 80, 80, Math.min(200, alpha)));
 
-             
             if (previewMode && previewEntity instanceof PlayerEntity) {
                 Color headColor = getHitColor(previewEntity, alpha);
                 Render2D.drawTexture(
@@ -287,7 +275,7 @@ public class TargetHud extends HudElement implements ThemeManager.ThemeChangeLis
                         headColor
                 );
             } else {
-                 
+
                 Render2D.drawFont(
                         e.getContext().getMatrices(),
                         Fonts.BOLD.getFont(8.5f),
@@ -298,10 +286,9 @@ public class TargetHud extends HudElement implements ThemeManager.ThemeChangeLis
                 );
             }
 
-             
             String dispName = (previewMode && previewEntity != null) ? previewEntity.getName().getString()
                     : ((target != null && !target.getName().getString().isEmpty()) ? target.getName().getString() : "Unknown");
-             
+
             if (previewMode) {
                 NameProtect np = NameProtect.getInstance();
                 if (np != null && np.isToggled()) {
@@ -321,22 +308,19 @@ public class TargetHud extends HudElement implements ThemeManager.ThemeChangeLis
                     new Color(textColor.getRed(), textColor.getGreen(), textColor.getBlue(), alpha)
             );
 
-             
             float barW2 = cardW - SPACING - 42f;
             float barH2 = 12f;
             float barX2 = posX + SPACING + 38f;
             float barY2 = posY + cardH - SPACING - barH2 - 1.5f;
 
-             
             Render2D.drawHudBarTrack(e.getContext().getMatrices(), barX2, barY2, barW2, barH2, 2f,
                     fadeAnimation.getValue());
-             
+
             float hpTargetPx2 = barW2 * hp01;
             float fillW = Math.max(0f, Math.min(barW2, hpAnimPx.animate(hpTargetPx2, 100)));
             Render2D.drawRoundedRect(e.getContext().getMatrices(), barX2, barY2, fillW, barH2, 2f,
                     themeManager.getCurrentTheme().getAccentColor());
 
-             
             int percent = (int) Math.round(hp01 * 100.0);
             String pct = percent + "%";
             float pctX = barX2 + (barW2 - Fonts.BOLD.getWidth(pct, 8.5f)) / 2f;
@@ -349,9 +333,6 @@ public class TargetHud extends HudElement implements ThemeManager.ThemeChangeLis
             return;
         }
 
-         
-         
-         
         Render2D.drawHudBackground(
                 e.getContext().getMatrices(),
                 posX, posY, WIDTH, HEIGHT, 9f,
@@ -361,13 +342,10 @@ public class TargetHud extends HudElement implements ThemeManager.ThemeChangeLis
         float headX = posX + SPACING + 2f;
         float headY = posY + SPACING + 2f;
         float barX = headX + HEAD + SPACING * 2;
-         
 
-         
         Render2D.drawRoundedRect(e.getContext().getMatrices(), headX, headY, HEAD, HEAD, 6f,
                 new Color(80, 80, 80, Math.min(200, alpha)));
 
-         
         if (previewMode && previewEntity instanceof PlayerEntity) {
             Color headColor = getHitColor(previewEntity, alpha);
             Render2D.drawTexture(
@@ -391,7 +369,7 @@ public class TargetHud extends HudElement implements ThemeManager.ThemeChangeLis
                     headColor
             );
         } else {
-             
+
             Render2D.drawFont(
                     e.getContext().getMatrices(),
                     Fonts.BOLD.getFont(8.5f),
@@ -402,12 +380,11 @@ public class TargetHud extends HudElement implements ThemeManager.ThemeChangeLis
             );
         }
 
-         
         float textX = headX + HEAD + SPACING * 2;
         float textY = posY + SPACING + 1f;
         String name = previewMode && previewEntity != null ? previewEntity.getName().getString() : ((target != null && !target.getName().getString().isEmpty())
                                                                                                     ? target.getName().getString() : "Unknown");
-         
+
         if (previewMode) {
             NameProtect np = NameProtect.getInstance();
             if (np != null && np.isToggled()) {
@@ -425,7 +402,6 @@ public class TargetHud extends HudElement implements ThemeManager.ThemeChangeLis
                 textY,
                 new Color(headerTextColor.getRed(), headerTextColor.getGreen(), headerTextColor.getBlue(), alpha));
 
-         
         int hpDisplay = Math.round(rawHp);
         String hpText = "HP: " + hpDisplay;
         float hpTextY = textY + Fonts.BOLD.getHeight(9f) + 1f;
@@ -437,7 +413,6 @@ public class TargetHud extends HudElement implements ThemeManager.ThemeChangeLis
                 hpTextY,
                 new Color(textColor.getRed(), textColor.getGreen(), textColor.getBlue(), Math.min(alpha, 200)));
 
-         
         float barY = hpTextY + Fonts.BOLD.getHeight(8f) + 2f;
         float barW = (posX + WIDTH - SPACING) - barX;
         float barH = 5f;
@@ -459,18 +434,15 @@ public class TargetHud extends HudElement implements ThemeManager.ThemeChangeLis
                     Math.min(2f, absPx / 2f), absorbColor);
         }
 
-         
         if (!previewMode && target != null && displayHudParticles.getValue()) {
-             
+
             if (target.hurtTime > prevHurtTime) {
-                 
+
                 int spawn = 24;
 
-                 
                 float centerX = headX + HEAD / 2f;
                 float centerY = headY + HEAD / 2f;
 
-                 
                 int perSideBase = Math.max(1, spawn / 4);
                 int remainder = spawn - perSideBase * 4;
                 for (int edge = 0; edge < 4; edge++) {
@@ -479,33 +451,31 @@ public class TargetHud extends HudElement implements ThemeManager.ThemeChangeLis
                         float spawnX;
                         float spawnY;
                         float t = (float) Math.random();
-                        if (edge == 0) {  
+                        if (edge == 0) {
                             spawnX = headX + t * HEAD;
                             spawnY = headY;
-                        } else if (edge == 1) {  
+                        } else if (edge == 1) {
                             spawnX = headX + HEAD;
                             spawnY = headY + t * HEAD;
-                        } else if (edge == 2) {  
+                        } else if (edge == 2) {
                             spawnX = headX + t * HEAD;
                             spawnY = headY + HEAD;
-                        } else {  
+                        } else {
                             spawnX = headX;
                             spawnY = headY + t * HEAD;
                         }
 
-                         
                         float baseAngle = (float) Math.atan2(spawnY - centerY, spawnX - centerX);
-                         
+
                         float jitter = (float) ((Math.random() - 0.5) * Math.toRadians(70));
                         float angle = baseAngle + jitter;
 
-                         
-                        float speed = 7f + (float) (Math.random() * 9f);  
+                        float speed = 7f + (float) (Math.random() * 9f);
                         float vx = (float) (Math.cos(angle) * speed);
                         float vy = (float) (Math.sin(angle) * speed);
 
                         float size = 5.5f + (float) (Math.random() * 3.5f);
-                        long lifeMs = 1200 + (int) (Math.random() * 1200);  
+                        long lifeMs = 1200 + (int) (Math.random() * 1200);
                         hudParticles.add(new HudParticle(spawnX, spawnY, vx, vy, size, lifeMs));
                     }
                 }
@@ -518,7 +488,6 @@ public class TargetHud extends HudElement implements ThemeManager.ThemeChangeLis
             prevHurtTime = 0;
         }
 
-         
         LivingEntity iconSource = previewMode ? previewEntity : target;
         if (iconSource != null) {
             ItemStack[] slotItems = new ItemStack[]{
@@ -546,7 +515,6 @@ public class TargetHud extends HudElement implements ThemeManager.ThemeChangeLis
             }
         }
 
-         
         if (!displayHudParticles.getValue()) {
             hudParticles.clear();
         }
@@ -574,13 +542,12 @@ public class TargetHud extends HudElement implements ThemeManager.ThemeChangeLis
         super.onRender2D(e);
     }
 
-     
     private String ellipsize(String text, float fontSize, float maxWidth) {
         if (text == null) return "";
         if (Fonts.BOLD.getWidth(text, fontSize) <= maxWidth) return text;
         String ellipsis = "...";
         float ellipsisW = Fonts.BOLD.getWidth(ellipsis, fontSize);
-        if (ellipsisW > maxWidth) return "";  
+        if (ellipsisW > maxWidth) return "";
         int lo = 0, hi = text.length();
         String best = "";
         while (lo <= hi) {
@@ -621,14 +588,14 @@ public class TargetHud extends HudElement implements ThemeManager.ThemeChangeLis
             long dtMs = (long) (dtSeconds * 1000f);
             this.ageMs += dtMs;
             float t = Math.max(0f, Math.min(1f, ageMs / (float) lifeMs));
-             
-            float dampingPerSecond = 0.88f;  
+
+            float dampingPerSecond = 0.88f;
             float factor = (float) Math.pow(dampingPerSecond, dtSeconds);
             this.vx *= factor;
             this.vy *= factor;
             this.x += vx * dtSeconds;
             this.y += vy * dtSeconds;
-             
+
             this.alpha = 1f - t;
             return ageMs >= lifeMs || alpha <= 0f;
         }
@@ -730,13 +697,11 @@ public class TargetHud extends HudElement implements ThemeManager.ThemeChangeLis
         }
     }
 
-      
     private void drawLiquidGlass(net.minecraft.client.util.math.MatrixStack matrices,
                                  float x, float y, float w, float h, float r, float fade) {
         Render2D.drawLiquidGlass(matrices, x, y, w, h, r, fade);
     }
 
-      
     private void drawGlassText(net.minecraft.client.util.math.MatrixStack matrices,
                                dev.darkvisuals.client.util.renderer.fonts.Font fontFamily, float fontSize,
                                String text, float x, float y, Color color) {

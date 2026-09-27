@@ -50,11 +50,11 @@ public class Zoom extends Module {
 	@Override
 	public void onDisable() {
 		super.onDisable();
-		 
+
 	}
 
 	public float applyZoom(float baseFov, float tickDelta) {
-		 
+
 		if (originalFov < 0.0f) originalFov = baseFov;
 
 		boolean active = isToggled();
@@ -62,9 +62,9 @@ public class Zoom extends Module {
 		float targetFov = active ? (originalFov / strength) : originalFov;
 
 		if (!smoothZoom.getValue()) {
-			 
+
 			currentFov = targetFov;
-			 
+
 			if (!active && Math.abs(currentFov - originalFov) <= 0.0001f) {
 				currentFov = -1.0f;
 				originalFov = -1.0f;
@@ -83,13 +83,11 @@ public class Zoom extends Module {
 
 		currentFov += (targetFov - currentFov) * alpha;
 
-		 
 		float epsilon = 0.0005f;
 		if (Math.abs(targetFov - currentFov) <= epsilon) {
 			currentFov = targetFov;
 		}
 
-		 
 		if (!active && currentFov == originalFov) {
 			currentFov = -1.0f;
 			originalFov = -1.0f;
@@ -98,4 +96,4 @@ public class Zoom extends Module {
 
 		return currentFov;
 	}
-} 
+}

@@ -16,7 +16,6 @@ import net.minecraft.util.math.Vec3d;
 
 import java.awt.Color;
 
- 
 public class HitRange extends Module {
 
     private final NumberSetting radius = new NumberSetting("setting.hitrange.radius", 3.0f, 1.0f, 6.0f, 0.5f);
@@ -47,18 +46,13 @@ public class HitRange extends Module {
             double z = player.prevZ + (player.getZ() - player.prevZ) * tickDelta;
 
             double r = radius.getValue();
-             
-             
+
             Vec3d center = new Vec3d(x, y + 0.02, z);
 
             boolean danger = isEntityInRange(player, r);
             Color base = danger ? dangerColor.getColor() : safeColor.getColor();
             int argb = base.getRGB();
 
-             
-             
-             
-             
             Render3D.DEBUG_LINE_WIDTH = lineWidth.getValue();
 
             int segs = Math.max(8, segments.getValue().intValue());
@@ -76,7 +70,6 @@ public class HitRange extends Module {
         }
     }
 
-      
     private boolean isEntityInRange(ClientPlayerEntity player, double r) {
         if (mc.world == null) return false;
 

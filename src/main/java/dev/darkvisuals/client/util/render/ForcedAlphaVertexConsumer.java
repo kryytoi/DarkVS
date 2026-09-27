@@ -2,10 +2,6 @@ package dev.darkvisuals.client.util.render;
 
 import net.minecraft.client.render.VertexConsumer;
 
-/**
- * Обёртка VertexConsumer, принудительно подменяющая альфу цвета вершин.
- * Позволяет рисовать модели блоков полупрозрачными («призраками»).
- */
 public final class ForcedAlphaVertexConsumer implements VertexConsumer {
 
     private final VertexConsumer delegate;

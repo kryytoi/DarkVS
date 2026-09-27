@@ -26,9 +26,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
-/**
- * EatingFX — крошки и кусочки еды, летящие изо рта при поедании.
- */
 public class EatingFX extends Module {
 
     private static final long CRUMB_TTL_MS = 700L;
@@ -38,7 +35,6 @@ public class EatingFX extends Module {
     private final NumberSetting size =
             new NumberSetting("Размер", 0.05f, 0.02f, 0.12f, 0.005f);
 
-    // тёплая «еда»-палитра
     private static final Color[] CRUMB_COLORS = {
             new Color(200, 140, 70), new Color(170, 110, 55),
             new Color(225, 180, 100), new Color(150, 95, 60)
@@ -94,7 +90,6 @@ public class EatingFX extends Module {
 
         if (!mc.player.isUsingItem()) return;
 
-        // точка «рта» — перед лицом игрока
         float yawRad = (float) Math.toRadians(mc.player.getYaw());
         float pitchRad = (float) Math.toRadians(mc.player.getPitch());
         Vec3d look = new Vec3d(

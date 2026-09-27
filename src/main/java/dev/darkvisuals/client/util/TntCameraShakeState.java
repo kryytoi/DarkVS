@@ -10,8 +10,7 @@ package dev.darkvisuals.client.util;
 
      public static void trigger(float magnitudeDegrees, long durationMillis) {
         if (magnitudeDegrees <= 0f || durationMillis <= 0L) return;
-         
-         
+
         float currentRemaining = getRemainingMagnitude();
         if (magnitudeDegrees >= currentRemaining) {
             startMs = System.currentTimeMillis();
@@ -34,7 +33,7 @@ package dev.darkvisuals.client.util;
         if (elapsed >= durationMs) return ZERO;
 
         float t = elapsed / (float) durationMs;
-         
+
         float envelope = magnitudeDeg * (1f - t) * (1f - t);
 
         double seconds = elapsed / 1000.0;

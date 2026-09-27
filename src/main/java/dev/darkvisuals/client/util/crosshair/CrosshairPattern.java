@@ -3,12 +3,11 @@ package dev.darkvisuals.client.util.crosshair;
 import java.nio.ByteBuffer;
 import java.util.Base64;
 
- 
 public class CrosshairPattern {
 
-    public static final int SIZE = 15;  
+    public static final int SIZE = 15;
 
-    private final int[] pixels;  
+    private final int[] pixels;
 
     public CrosshairPattern() {
         this.pixels = new int[SIZE * SIZE];
@@ -45,16 +44,12 @@ public class CrosshairPattern {
         return new CrosshairPattern(pixels.clone());
     }
 
-     
-
-      
     public String serialize() {
         ByteBuffer buf = ByteBuffer.allocate(pixels.length * 4);
         for (int p : pixels) buf.putInt(p);
         return "v1:" + Base64.getEncoder().encodeToString(buf.array());
     }
 
-      
     public static CrosshairPattern deserialize(String data) {
         if (data == null || data.isEmpty() || !data.startsWith("v1:")) return null;
         try {
@@ -69,7 +64,6 @@ public class CrosshairPattern {
         }
     }
 
-      
     public static CrosshairPattern defaultPattern() {
         CrosshairPattern p = new CrosshairPattern();
         int c = SIZE / 2;

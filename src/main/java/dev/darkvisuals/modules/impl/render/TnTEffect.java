@@ -38,41 +38,33 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
- 
 public class TnTEffect extends Module {
 
     private static final Identifier GLOW_TEXTURE = darkvisuals.id("hud/glow.png");
 
-     
     public final NumberSetting triggerRadius = new NumberSetting("setting.tnteffect.triggerRadius", 20f, 5f, 64f, 1f);
 
-     
     public final BooleanSetting screenFlash = new BooleanSetting("setting.tnteffect.screenFlash", true);
     public final NumberSetting flashDuration = new NumberSetting("setting.tnteffect.flashDuration", 400f, 300f, 500f, 10f, screenFlash::getValue);
     public final NumberSetting flashIntensity = new NumberSetting("setting.tnteffect.flashIntensity", 1.0f, 0.2f, 1.5f, 0.1f, screenFlash::getValue);
     public final ColorSetting flashColor = new ColorSetting("setting.tnteffect.flashColor", new Color(255, 245, 220, 255).getRGB());
 
-     
     public final BooleanSetting shockwaveParticles = new BooleanSetting("setting.tnteffect.shockwaveParticles", true);
     public final NumberSetting particleDensity = new NumberSetting("setting.tnteffect.particleDensity", 60f, 10f, 150f, 5f, shockwaveParticles::getValue);
     public final ColorSetting smokeColor = new ColorSetting("setting.tnteffect.smokeColor", new Color(90, 85, 80, 255).getRGB());
     public final ColorSetting emberColor = new ColorSetting("setting.tnteffect.emberColor", new Color(255, 170, 60, 255).getRGB());
 
-     
     public final BooleanSetting worldShockwave = new BooleanSetting("setting.tnteffect.worldShockwave", true);
     public final ColorSetting worldShockwaveColor = new ColorSetting("setting.tnteffect.worldShockwaveColor", new Color(255, 140, 40, 255).getRGB());
     public final NumberSetting worldShockwaveSpeed = new NumberSetting("setting.tnteffect.worldShockwaveSpeed", 45f, 10f, 120f, 5f, worldShockwave::getValue);
 
-     
     public final BooleanSetting tntDebris = new BooleanSetting("setting.tnteffect.tntDebris", true);
     public final NumberSetting debrisCount = new NumberSetting("setting.tnteffect.debrisCount", 24f, 4f, 60f, 2f, tntDebris::getValue);
 
-     
     public final BooleanSetting cameraShake = new BooleanSetting("setting.tnteffect.cameraShake", true);
     public final NumberSetting shakeIntensity = new NumberSetting("setting.tnteffect.shakeIntensity", 6f, 1f, 15f, 0.5f, cameraShake::getValue);
     public final NumberSetting shakeDuration = new NumberSetting("setting.tnteffect.shakeDuration", 500f, 200f, 1200f, 50f, cameraShake::getValue);
 
-     
     public final BooleanSetting fusePulse = new BooleanSetting("setting.tnteffect.fusePulse", true);
     public final NumberSetting fusePulseThreshold = new NumberSetting("setting.tnteffect.fusePulseThreshold", 30f, 10f, 60f, 5f, fusePulse::getValue);
     public final NumberSetting fusePulseAmplitude = new NumberSetting("setting.tnteffect.fusePulseAmplitude", 0.35f, 0.05f, 0.6f, 0.05f, fusePulse::getValue);
@@ -81,23 +73,18 @@ public class TnTEffect extends Module {
 
     private final Random rnd = new Random();
 
-     
     private final List<FlashPulse> flashes = new ArrayList<>();
-     
-     
+
     private final List<ShockParticle> particles = new ArrayList<>();
-     
-     
+
     private final List<FuseGlowRequest> fuseGlowQueue = new ArrayList<>();
-     
-     
-     
+
     private final List<WorldRing> worldRings = new ArrayList<>();
 
     private static final int RING_SEGMENTS = 96;
-      
+
     private static final long WORLD_SHOCKWAVE_TTL_MS = 5_000L;
-      
+
     private static final float WORLD_SHOCKWAVE_FADE_START = 0.7f;
 
     public TnTEffect() {
@@ -135,10 +122,6 @@ public class TnTEffect extends Module {
         super.onDisable();
     }
 
-     
-     
-     
-
     @EventHandler
     private void onExplosion(EventExplosion event) {
         if (fullNullCheck()) return;
@@ -149,7 +132,6 @@ public class TnTEffect extends Module {
             double radius = triggerRadius.getValue();
             if (distance > radius) return;
 
-             
             float proximity = (float) Math.max(0.0, Math.min(1.0, 1.0 - distance / radius));
             if (proximity <= 0f) return;
 
@@ -171,10 +153,6 @@ public class TnTEffect extends Module {
                 spawnDebris(event.getCenter(), proximity);
             }
 
-             
-             
-             
-             
             if (worldShockwave.getValue()) {
                 synchronized (worldRings) {
                     worldRings.add(new WorldRing(event.getCenter()));
@@ -183,7 +161,6 @@ public class TnTEffect extends Module {
         }
     }
 
- 
     private void spawnDebris(Vec3d center, float proximity) {
         if (mc.world == null) return;
         BlockStateParticleEffect effect = new BlockStateParticleEffect(ParticleTypes.BLOCK, Blocks.TNT.getDefaultState());
@@ -207,7 +184,7 @@ public class TnTEffect extends Module {
         int count = Math.max(4, Math.round(particleDensity.getValue() * (0.35f + 0.65f * proximity)));
 
         synchronized (particles) {
-             
+
             int ringCount = count;
             for (int i = 0; i < ringCount; i++) {
                 double angle = (Math.PI * 2 * i) / ringCount + rnd.nextDouble() * 0.15;
@@ -218,7 +195,6 @@ public class TnTEffect extends Module {
                 particles.add(new ShockParticle(ShockParticle.Type.EMBER, pos, velocity, emberColor.getColor(), 0.35f, life));
             }
 
-             
             int smokeCount = Math.max(3, count / 3);
             for (int i = 0; i < smokeCount; i++) {
                 double angle = rnd.nextDouble() * Math.PI * 2;
@@ -229,7 +205,6 @@ public class TnTEffect extends Module {
                 particles.add(new ShockParticle(ShockParticle.Type.SMOKE, pos, velocity, smokeColor.getColor(), 1.1f + rnd.nextFloat() * 0.6f, life));
             }
 
-             
             int flashCount = 2;
             for (int i = 0; i < flashCount; i++) {
                 particles.add(new ShockParticle(ShockParticle.Type.FLASH, center.add(0, 0.2, 0), Vec3d.ZERO, flashColor.getColor(), 2.2f, 180));
@@ -237,24 +212,17 @@ public class TnTEffect extends Module {
         }
     }
 
-     
-     
-     
-
- 
     public float getFusePulseScale(float fuse) {
         float threshold = fusePulseThreshold.getValue();
         if (fuse <= 0f || fuse > threshold) return 1f;
 
-        float intensity = 1f - (fuse / threshold);  
+        float intensity = 1f - (fuse / threshold);
         float freq = 2.0f + intensity * 6.0f;
         float amp = fusePulseAmplitude.getValue() * intensity;
-         
-         
+
         return 1f + (float) Math.sin(fuse * freq) * amp;
     }
 
-      
     public void queueFuseGlow(TntEntityRenderState state) {
         float threshold = fusePulseThreshold.getValue();
         if (state.fuse <= 0f || state.fuse > threshold) return;
@@ -262,10 +230,6 @@ public class TnTEffect extends Module {
         if (intensity <= 0.02f) return;
         fuseGlowQueue.add(new FuseGlowRequest(state.x, state.y + state.height * 0.5, state.z, intensity));
     }
-
-     
-     
-     
 
     @EventHandler
     private void onRender3D(EventRender3D.Game e) {
@@ -278,11 +242,6 @@ public class TnTEffect extends Module {
         }
     }
 
-     
-     
-     
-
- 
     private void renderWorldShockwave(MatrixStack matrices) {
         synchronized (worldRings) {
             worldRings.removeIf(WorldRing::isDead);
@@ -303,7 +262,6 @@ public class TnTEffect extends Module {
                 float t = ring.progress();
                 float radius = t * speed * (WORLD_SHOCKWAVE_TTL_MS / 1000f);
 
-                 
                 float fade = t < WORLD_SHOCKWAVE_FADE_START
                         ? 1f
                         : Easing.OUT_QUAD.apply(1f - (t - WORLD_SHOCKWAVE_FADE_START) / (1f - WORLD_SHOCKWAVE_FADE_START));
@@ -325,7 +283,6 @@ public class TnTEffect extends Module {
         }
     }
 
-      
     private void emitShockwaveRing(Matrix4f matrix, float radius, int r, int g, int b, int crestAlpha) {
         float border = Math.min(1.2f, radius * 0.5f);
         float borderInnerR = Math.max(0f, radius - border);
@@ -384,7 +341,6 @@ public class TnTEffect extends Module {
             for (ShockParticle particle : snapshot) {
                 particle.update();
 
-                 
                 if (particle.type == ShockParticle.Type.SMOKE) {
                     RenderSystem.defaultBlendFunc();
                 } else {
@@ -476,10 +432,6 @@ public class TnTEffect extends Module {
         RenderSystem.disableBlend();
     }
 
-     
-     
-     
-
     @EventHandler
     private void onRender2D(EventRender2D event) {
         if (!screenFlash.getValue()) return;
@@ -489,10 +441,9 @@ public class TnTEffect extends Module {
             if (flashes.isEmpty()) return;
 
             try (var __ = Perf.scopeCpu("TnTEffect.onRender2D")) {
-                 
-                 
+
                 float peak = 0f;
-                float progress = 1f;  
+                float progress = 1f;
                 for (FlashPulse pulse : flashes) {
                     float p = pulse.progress();
                     float strength = pulse.strength * (1f - p);
@@ -507,24 +458,17 @@ public class TnTEffect extends Module {
                 int height = event.getContext().getScaledWindowHeight();
                 float intensity = Math.min(1f, peak * flashIntensity.getValue());
 
-                 
-                 
-                 
                 float invertPhase = Easing.OUT_QUAD.apply(Math.max(0f, 1f - progress / 0.25f));
                 if (invertPhase > 0.02f) {
                     RenderSystem.enableColorLogicOp();
                     RenderSystem.logicOp(GlStateManager.LogicOp.INVERT);
-                     
-                     
-                     
+
                     if (invertPhase > 0.5f) {
                         event.getContext().fill(0, 0, width, height, 0xFFFFFFFF);
                     }
                     RenderSystem.disableColorLogicOp();
                 }
 
-                 
-                 
                 float fade = Easing.EASE_OUT_CIRC.apply(1f - progress);
                 Color base = flashColor.getColor();
                 int overlayAlpha = (int) (110 * intensity * fade);
@@ -543,9 +487,6 @@ public class TnTEffect extends Module {
         int maxAlpha = (int) (170 * strength);
         int band = Math.max(24, Math.round(Math.min(width, height) * 0.18f));
 
-         
-         
-         
         event.getContext().fillGradient(0, 0, width, band, band(maxAlpha), 0);
         event.getContext().fillGradient(0, height - band, width, height, 0, band(maxAlpha));
         event.getContext().fillGradient(0, 0, band, height, band(maxAlpha), 0);
@@ -556,16 +497,11 @@ public class TnTEffect extends Module {
         return (Math.max(0, Math.min(255, alpha)) << 24);
     }
 
-     
-     
-     
-
     private record FlashPulse(long startMs, long durationMs, float strength) {
         boolean isDead() {
             return System.currentTimeMillis() - startMs >= durationMs;
         }
 
-          
         float progress() {
             long elapsed = System.currentTimeMillis() - startMs;
             return Math.max(0f, Math.min(1f, elapsed / (float) durationMs));
@@ -622,7 +558,6 @@ public class TnTEffect extends Module {
 
     private record FuseGlowRequest(double x, double y, double z, float intensity) {}
 
-      
     private record WorldRing(Vec3d origin, long spawnTime) {
         WorldRing(Vec3d origin) {
             this(origin, System.currentTimeMillis());
@@ -633,7 +568,6 @@ public class TnTEffect extends Module {
 
         }
 
-          
         float progress() {
             long elapsed = System.currentTimeMillis() - spawnTime;
             return Math.max(0f, Math.min(1f, elapsed / (float) WORLD_SHOCKWAVE_TTL_MS));

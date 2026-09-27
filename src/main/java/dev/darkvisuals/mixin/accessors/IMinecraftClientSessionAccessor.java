@@ -13,5 +13,3 @@ public interface IMinecraftClientSessionAccessor {
     void darkvisuals$setSession(Session session);
 }
 
-
-

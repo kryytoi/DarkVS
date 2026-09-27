@@ -5,4 +5,3 @@ public final class HitColorTintState {
     public static final ThreadLocal<Boolean> SHOULD_TINT = ThreadLocal.withInitial(() -> false);
 }
 
-

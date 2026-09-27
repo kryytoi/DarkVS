@@ -47,10 +47,9 @@ public class HitSound extends Module {
         if (hit.getValue()) return "darkvisuals:hit";
         if (hit2.getValue()) return "darkvisuals:hit2";
         if (hit3.getValue()) return "darkvisuals:hit3";
-        return "darkvisuals:bell";  
+        return "darkvisuals:bell";
     }
 
-      
     private @NotNull String randomMoanSuffix() {
         return String.valueOf((int) (Math.random() * 4) + 1);
     }

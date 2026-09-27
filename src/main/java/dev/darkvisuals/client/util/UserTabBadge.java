@@ -12,12 +12,10 @@ import net.minecraft.util.Identifier;
 
     private UserTabBadge() {}
 
-      
     public static Text prefix() {
         return Text.literal(ICON_CHAR + " ").setStyle(ICON_STYLE);
     }
 
-      
     public static Text apply(Text original) {
         if (original == null) return null;
         return Text.empty().append(prefix()).append(original);

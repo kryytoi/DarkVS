@@ -23,9 +23,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-/**
- * DigitalRain — вертикальный «цифровой дождь» вокруг игрока.
- */
 public class DigitalRain extends Module {
 
     private final NumberSetting density = new NumberSetting("Плотность", 40f, 8f, 120f, 4f);

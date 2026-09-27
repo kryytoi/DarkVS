@@ -7,9 +7,6 @@ import java.util.List;
 public final class LyricLineSplitter {
     private LyricLineSplitter() {}
 
-    /**
-     * Splits long lyric lines (> 3-4 words) into shorter rhythmic chunks with micro-timings.
-     */
     public static List<LyricLine> splitLongLines(List<LyricLine> originalLines) {
         if (originalLines == null || originalLines.isEmpty()) {
             return Collections.emptyList();

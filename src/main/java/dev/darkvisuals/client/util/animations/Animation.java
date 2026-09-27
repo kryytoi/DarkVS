@@ -16,7 +16,7 @@ public class Animation {
         this.forward = forward;
         this.easing = easing;
     }
-    
+
     public void update(boolean forward) {
     	if (this.forward != forward) {
     		this.forward = forward;
@@ -55,7 +55,7 @@ public class Animation {
     public float getReversedValue() {
     	return 1 - getValue();
     }
-    
+
     public void reset() {
         timer.reset();
     }

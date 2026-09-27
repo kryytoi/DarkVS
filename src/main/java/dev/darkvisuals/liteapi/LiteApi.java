@@ -24,10 +24,9 @@ import java.util.concurrent.TimeUnit;
 
 public final class LiteApi {
 
-    /** Стабильный id мода. НЕ меняй между версиями — по нему хранятся персональные блокировки. */
     private static final String CLIENT_ID = "darkvisuals";
 
-    private static final long MIN_INTERVAL_MS = 10_000L; // rate limit: 1 запрос / 10 сек
+    private static final long MIN_INTERVAL_MS = 10_000L;
     private static final long TIMEOUT_SEC = 5L;
 
     private static final Map<String, CompletableFuture<JsonObject>> PENDING = new ConcurrentHashMap<>();
@@ -64,9 +63,8 @@ public final class LiteApi {
         return Collections.unmodifiableSet(BLOCKLIST);
     }
 
-    /** Проверка всех фич мода. Троттлится сама (не чаще 1 раза в 10 сек). */
     public static void checkAllFeatures() {
-        if (!ClientPlayNetworking.canSend(LiteApiPayload.ID)) return; // не HolyWorld — молча выходим
+        if (!ClientPlayNetworking.canSend(LiteApiPayload.ID)) return;
 
         long now = System.currentTimeMillis();
         if (now - lastRequestAt < MIN_INTERVAL_MS) return;
@@ -108,7 +106,7 @@ public final class LiteApi {
         } catch (Exception e) {
             return;
         }
-        if (root.has("event")) return; // push-событие, не ответ — игнорим
+        if (root.has("event")) return;
         if (!root.has("id") || !root.has("ok")) return;
         CompletableFuture<JsonObject> future = PENDING.get(root.get("id").getAsString());
         if (future != null) future.complete(root);
@@ -124,7 +122,7 @@ public final class LiteApi {
         for (JsonElement el : resp.getAsJsonObject("payload").getAsJsonArray("blocklist")) {
             BLOCKLIST.add(el.getAsString().toLowerCase(Locale.ROOT));
         }
-        // Выключаем заблокированное прямо сейчас
+
         for (Module m : darkvisuals.getInstance().getModuleManager().getModules()) {
             if (m.isToggled() && isBlocked(m.getName())) m.setToggled(false);
         }

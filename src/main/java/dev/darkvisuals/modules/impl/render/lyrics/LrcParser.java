@@ -7,16 +7,13 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public final class LrcParser {
-    // Таймкод в начале строки: [mm:ss.xx] или [mm:ss.xxx] (метаданные [ar:...] не матчатся)
-    private static final Pattern TIMESTAMP_PREFIX = Pattern.compile("\\[(\\d{2}):(\\d{2})\\.(\\d{2,3})\\]");
-    // Убираем enhanced-LRC словесные метки вида <00:12.34> внутри текста строки
-    private static final Pattern ENHANCED_WORD_TIMING = Pattern.compile("<\\d{2}:\\d{2}\\.\\d{2,3}>");
+
+    private static final Pattern TIMESTAMP_PREFIX = Pattern.compile("\\[(\\d{1,2}):(\\d{2})(?:[.:](\\d{1,3}))?\\]");
+
+    private static final Pattern ENHANCED_WORD_TIMING = Pattern.compile("<\\d{1,2}:\\d{2}(?:[.:]\\d{1,3})?>");
 
     private LrcParser() {}
 
-    /**
-     * Parses a raw LRC string into a chronologically sorted List of LyricLine.
-     */
     public static List<LyricLine> parse(String lrcContent) {
         if (lrcContent == null || lrcContent.isBlank()) {
             return Collections.emptyList();
@@ -29,7 +26,8 @@ public final class LrcParser {
             String trimmed = line.trim();
             if (trimmed.isEmpty()) continue;
 
-            // Строка может начинаться с нескольких таймкодов подряд: [00:12.00][00:15.00]text
+            if (trimmed.matches("^\\[[a-zA-Z]+:.*\\]$")) continue;
+
             String remaining = trimmed;
             List<Long> timestamps = new ArrayList<>();
 
@@ -44,9 +42,14 @@ public final class LrcParser {
                     long seconds = Long.parseLong(start.group(2));
                     String fractionStr = start.group(3);
 
-                    long millis = Long.parseLong(fractionStr);
-                    if (fractionStr.length() == 2) {
-                        millis *= 10;
+                    long millis = 0;
+                    if (fractionStr != null && !fractionStr.isEmpty()) {
+                        millis = Long.parseLong(fractionStr);
+                        if (fractionStr.length() == 1) {
+                            millis *= 100;
+                        } else if (fractionStr.length() == 2) {
+                            millis *= 10;
+                        }
                     }
 
                     timestamps.add((minutes * 60_000L) + (seconds * 1_000L) + millis);

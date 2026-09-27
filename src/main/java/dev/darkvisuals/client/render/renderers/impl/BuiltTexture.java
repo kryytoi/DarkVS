@@ -29,7 +29,7 @@ public record BuiltTexture(
     ) implements IRenderer {
 
     private static final ShaderProgramKey TEXTURE_SHADER_KEY = new ShaderProgramKey(ResourceProvider.getShaderIdentifier("texture"), VertexFormats.POSITION_TEXTURE_COLOR, Defines.EMPTY);
-    
+
     @Override
     public void render(Matrix4f matrix, float x, float y, float z) {
         RenderSystem.enableBlend();

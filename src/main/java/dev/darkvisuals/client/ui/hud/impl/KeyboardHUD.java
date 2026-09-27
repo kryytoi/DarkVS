@@ -16,21 +16,18 @@ import java.awt.Color;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
- 
 public class KeyboardHUD extends HudElement implements ThemeManager.ThemeChangeListener {
 
     private final ThemeManager themeManager;
     private Color accentColor;
 
-     
-    private static final float KEY = 20f;         
-    private static final float GAP = 3f;          
-    private static final float RADIUS = 4f;       
-    private static final float ROW_W = KEY * 3 + GAP * 2;  
-    private static final float MOUSE_H = 24f;     
-    private static final float SPACE_H = 8f;      
+    private static final float KEY = 20f;
+    private static final float GAP = 3f;
+    private static final float RADIUS = 4f;
+    private static final float ROW_W = KEY * 3 + GAP * 2;
+    private static final float MOUSE_H = 24f;
+    private static final float SPACE_H = 8f;
 
-     
     private final InfinityAnimation wAnim = new InfinityAnimation(Easing.OUT_QUAD);
     private final InfinityAnimation aAnim = new InfinityAnimation(Easing.OUT_QUAD);
     private final InfinityAnimation sAnim = new InfinityAnimation(Easing.OUT_QUAD);
@@ -39,7 +36,6 @@ public class KeyboardHUD extends HudElement implements ThemeManager.ThemeChangeL
     private final InfinityAnimation rmbAnim = new InfinityAnimation(Easing.OUT_QUAD);
     private final InfinityAnimation spaceAnim = new InfinityAnimation(Easing.OUT_QUAD);
 
-     
     private final Deque<Long> lmbClicks = new ArrayDeque<>();
     private final Deque<Long> rmbClicks = new ArrayDeque<>();
     private boolean lmbWasDown, rmbWasDown;
@@ -66,7 +62,6 @@ public class KeyboardHUD extends HudElement implements ThemeManager.ThemeChangeL
         super.onDisable();
     }
 
-     
     private boolean pressed(net.minecraft.client.option.KeyBinding key) {
         try {
             return key != null && key.isPressed();
@@ -77,10 +72,10 @@ public class KeyboardHUD extends HudElement implements ThemeManager.ThemeChangeL
 
     private int cps(Deque<Long> clicks, boolean down, boolean[] wasDown) {
         long now = System.currentTimeMillis();
-         
+
         if (down && !wasDown[0]) clicks.addLast(now);
         wasDown[0] = down;
-         
+
         while (!clicks.isEmpty() && now - clicks.peekFirst() > 1000L) clicks.pollFirst();
         return clicks.size();
     }
@@ -94,7 +89,6 @@ public class KeyboardHUD extends HudElement implements ThemeManager.ThemeChangeL
             MatrixStack matrices = e.getContext().getMatrices();
             boolean chatOpen = mc.currentScreen instanceof ChatScreen;
 
-             
             boolean wDown = !chatOpen && pressed(mc.options.forwardKey);
             boolean aDown = !chatOpen && pressed(mc.options.leftKey);
             boolean sDown = !chatOpen && pressed(mc.options.backKey);
@@ -103,7 +97,6 @@ public class KeyboardHUD extends HudElement implements ThemeManager.ThemeChangeL
             boolean lmbDown = !chatOpen && pressed(mc.options.attackKey);
             boolean rmbDown = !chatOpen && pressed(mc.options.useKey);
 
-             
             boolean[] lw = {lmbWasDown};
             boolean[] rw = {rmbWasDown};
             int lmbCps = cps(lmbClicks, lmbDown, lw);
@@ -111,7 +104,6 @@ public class KeyboardHUD extends HudElement implements ThemeManager.ThemeChangeL
             lmbWasDown = lw[0];
             rmbWasDown = rw[0];
 
-             
             long dur = 120;
             wAnim.animate(wDown ? 1f : 0f, dur);
             aAnim.animate(aDown ? 1f : 0f, dur);
@@ -125,22 +117,19 @@ public class KeyboardHUD extends HudElement implements ThemeManager.ThemeChangeL
             float y = getY();
             float fade = toggledAnimation.getValue();
 
-             
-             
             float wX = x + (ROW_W - KEY) / 2f;
             float row1Y = y;
-             
+
             float row2Y = row1Y + KEY + GAP;
-             
+
             float row3Y = row2Y + KEY + GAP;
             float mouseW = (ROW_W - GAP) / 2f;
-             
+
             float row4Y = row3Y + MOUSE_H + GAP;
 
             float totalW = ROW_W;
             float totalH = (row4Y + SPACE_H) - y;
 
-             
             drawKey(matrices, wX, row1Y, KEY, KEY, "W", wAnim.getValue(), fade, 7f, null);
 
             drawKey(matrices, x, row2Y, KEY, KEY, "A", aAnim.getValue(), fade, 7f, null);
@@ -157,14 +146,11 @@ public class KeyboardHUD extends HudElement implements ThemeManager.ThemeChangeL
         }
     }
 
- 
     private void drawKey(MatrixStack matrices, float kx, float ky, float kw, float kh,
                          String label, float press, float fade, float fontSize, String subLabel) {
 
-         
         Render2D.drawHudBackground(matrices, kx, ky, kw, kh, RADIUS, fade);
 
-         
         if (press > 0.001f) {
             Color liveAccent = themeManager.getCurrentTheme().getAccentColor();
             int a = Math.max(0, Math.min(255, (int) (255 * press * fade)));
@@ -172,7 +158,6 @@ public class KeyboardHUD extends HudElement implements ThemeManager.ThemeChangeL
                     new Color(liveAccent.getRed(), liveAccent.getGreen(), liveAccent.getBlue(), a));
         }
 
-         
         if (label.isEmpty()) {
             float lineW = kw * 0.35f;
             float lineH = 1.6f;
@@ -186,7 +171,7 @@ public class KeyboardHUD extends HudElement implements ThemeManager.ThemeChangeL
         Color txt = textColorFor(press, fade);
 
         if (subLabel != null) {
-             
+
             Font small = Fonts.MEDIUM;
             float subSize = 5f;
             float labelH = font.getHeight(fontSize);
@@ -210,7 +195,6 @@ public class KeyboardHUD extends HudElement implements ThemeManager.ThemeChangeL
         }
     }
 
-      
     private Color textColorFor(float press, float fade) {
         int alpha = Math.max(0, Math.min(255, (int) (255 * fade)));
         if (press <= 0.5f) return new Color(255, 255, 255, alpha);

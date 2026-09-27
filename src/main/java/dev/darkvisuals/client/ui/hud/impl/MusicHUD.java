@@ -25,18 +25,14 @@ import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 
- 
 public class MusicHUD extends HudElement implements ThemeManager.ThemeChangeListener {
 
-     
-     
-     
     public enum Source { MUSIC, RECORD, UNKNOWN }
 
     public static final class Track {
         public final SoundInstance instance;
-        public final String title;       
-        public final String subtitle;    
+        public final String title;
+        public final String subtitle;
         public final Source source;
         public final long detectedAtMs;
 
@@ -49,14 +45,8 @@ public class MusicHUD extends HudElement implements ThemeManager.ThemeChangeList
         }
     }
 
-      
     private static volatile Track currentTrack = null;
 
-     
-     
-     
-
-      
     public static void onSoundPlayed(SoundInstance sound) {
         try {
             if (sound == null) return;
@@ -79,11 +69,10 @@ public class MusicHUD extends HudElement implements ThemeManager.ThemeChangeList
                 currentTrack = new Track(sound, title, subtitle, Source.MUSIC);
             }
         } catch (Throwable ignored) {
-             
+
         }
     }
 
-      
     public static void onSoundStopped(SoundInstance sound) {
         Track track = currentTrack;
         if (track != null && track.instance == sound) {
@@ -91,12 +80,10 @@ public class MusicHUD extends HudElement implements ThemeManager.ThemeChangeList
         }
     }
 
-      
     public static void onAllSoundsStopped() {
         currentTrack = null;
     }
 
-      
     private static String prettify(String raw) {
         if (raw == null || raw.isEmpty()) return "";
         String[] words = raw.replace('_', ' ').trim().split(" ");
@@ -110,7 +97,6 @@ public class MusicHUD extends HudElement implements ThemeManager.ThemeChangeList
         return sb.toString();
     }
 
- 
     private static Track validatedTrack() {
         Track track = currentTrack;
         if (track == null) return null;
@@ -124,14 +110,11 @@ public class MusicHUD extends HudElement implements ThemeManager.ThemeChangeList
         return track;
     }
 
-     
-     
-     
     private static AbstractTexture prevTexture;
     private static AbstractTexture nextTexture;
     private static AbstractTexture playTexture;
     private static AbstractTexture pauseTexture;
-    private static AbstractTexture noteTexture;  
+    private static AbstractTexture noteTexture;
 
     private static AbstractTexture prevIcon()  { if (prevTexture == null)  prevTexture  = makeIcon("prev");  return prevTexture; }
     private static AbstractTexture nextIcon()  { if (nextTexture == null)  nextTexture  = makeIcon("next");  return nextTexture; }
@@ -169,7 +152,7 @@ public class MusicHUD extends HudElement implements ThemeManager.ThemeChangeList
                     break;
                 }
                 case "note": {
-                     
+
                     g.fillOval(14, 40, 14, 11);
                     g.fillOval(38, 36, 14, 11);
                     g.setStroke(new BasicStroke(5f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
@@ -186,9 +169,6 @@ public class MusicHUD extends HudElement implements ThemeManager.ThemeChangeList
         }
     }
 
-     
-     
-     
     private final ThemeManager themeManager;
     private Color bgColor;
     private Color textColor;
@@ -202,8 +182,6 @@ public class MusicHUD extends HudElement implements ThemeManager.ThemeChangeList
     public final BooleanSetting showControls = new BooleanSetting("ShowControls", true);
     public final BooleanSetting showAppIcon = new BooleanSetting("ShowAppIcon", true);
 
-     
-     
     private final float[] prevRect = new float[4];
     private final float[] midRect = new float[4];
     private final float[] nextRect = new float[4];
@@ -243,12 +221,10 @@ public class MusicHUD extends HudElement implements ThemeManager.ThemeChangeList
         Perf.tryBeginFrame();
         try (var __ = Perf.scopeCpu("MusicHUD.onRender2D")) {
 
-             
             NowPlayingBridge.ensureStarted();
 
             boolean chatOpen = mc.currentScreen instanceof net.minecraft.client.gui.screen.ChatScreen;
 
-             
             NowPlayingBridge.Snapshot system = NowPlayingBridge.getCurrent();
             Track ingame = system == null ? validatedTrack() : null;
 
@@ -263,7 +239,6 @@ public class MusicHUD extends HudElement implements ThemeManager.ThemeChangeList
             boolean hasAny = system != null || ingame != null;
             boolean previewMode = chatOpen && !hasAny;
 
-             
             if (!hasAny && !previewMode) {
                 fadeAnimation.animate(0f, 160);
                 if (fadeAnimation.getValue() <= 0.01f) {
@@ -295,7 +270,7 @@ public class MusicHUD extends HudElement implements ThemeManager.ThemeChangeList
                 positionSec = 70;
                 durationSec = 75;
             } else {
-                 
+
                 title = "";
                 artist = "";
                 playing = false;
@@ -307,7 +282,6 @@ public class MusicHUD extends HudElement implements ThemeManager.ThemeChangeList
             int contentAlpha = (int) (255 * fade);
             Color white = new Color(255, 255, 255, contentAlpha);
 
-             
             float posX = getX();
             float posY = getY();
             float padding = 8f;
@@ -321,7 +295,6 @@ public class MusicHUD extends HudElement implements ThemeManager.ThemeChangeList
             float controlH = 9f;
             float textGap = 7f;
 
-             
             float titleW = Fonts.MEDIUM.getWidth(title, titleFontSize);
             float artistW = Fonts.REGULAR.getWidth(artist, artistFontSize);
             float contentTextW = Math.max(titleW, artistW);
@@ -341,10 +314,8 @@ public class MusicHUD extends HudElement implements ThemeManager.ThemeChangeList
             e.getContext().getMatrices().push();
             var matrices = e.getContext().getMatrices();
 
-             
             drawLiquidGlass(matrices, posX, posY, width, height, 9f, fade);
 
-             
             float artX = posX + padding;
             float artY = posY + padding;
             if (artTexture != null) {
@@ -359,7 +330,6 @@ public class MusicHUD extends HudElement implements ThemeManager.ThemeChangeList
                 }
             }
 
-             
             float appIconX = posX + width - padding - appIconSize;
             if (showAppIcon.getValue()) {
                 if (appIconTexture != null) {
@@ -376,7 +346,6 @@ public class MusicHUD extends HudElement implements ThemeManager.ThemeChangeList
                 }
             }
 
-             
             float textX = artX + artSize + textGap;
             float textAreaW = (showAppIcon.getValue() ? appIconX - 4f : posX + width - padding) - textX;
 
@@ -398,7 +367,6 @@ public class MusicHUD extends HudElement implements ThemeManager.ThemeChangeList
 
             float cursorY = posY + padding + artSize;
 
-             
             if (showProgress.getValue()) {
                 cursorY += 6f;
 
@@ -408,7 +376,6 @@ public class MusicHUD extends HudElement implements ThemeManager.ThemeChangeList
                 float elapsedW = Fonts.REGULAR.getWidth(elapsedText, timeFontSize) + 6f;
                 float durationW = Fonts.REGULAR.getWidth(durationText, timeFontSize) + 6f;
 
-                 
                 Render2D.drawHudPill(matrices, posX + padding, cursorY, elapsedW, pillH, pillH / 2f, fade);
                 Render2D.drawHudPill(matrices, posX + width - padding - durationW, cursorY, durationW, pillH, pillH / 2f, fade);
 
@@ -418,7 +385,6 @@ public class MusicHUD extends HudElement implements ThemeManager.ThemeChangeList
                 drawGlassText(matrices, Fonts.REGULAR.getFont(timeFontSize), durationText,
                         posX + width - padding - durationW + 3f, timeTextY, new Color(235, 238, 245, contentAlpha));
 
-                 
                 float barX = posX + padding + elapsedW + 5f;
                 float barW = (posX + width - padding - durationW - 5f) - barX;
                 float barY = cursorY + (pillH - progressH) / 2f;
@@ -437,7 +403,6 @@ public class MusicHUD extends HudElement implements ThemeManager.ThemeChangeList
                 cursorY += pillH;
             }
 
-             
             if (showControls.getValue()) {
                 cursorY += 5f;
 
@@ -472,35 +437,26 @@ public class MusicHUD extends HudElement implements ThemeManager.ThemeChangeList
 
             e.getContext().getMatrices().pop();
 
-             
-             
             super.onRender2D(e);
         }
     }
 
-     
-     
-     
-     
     @Override
     public void onMouse(dev.darkvisuals.client.events.impl.EventMouse e) {
         if (fullNullCheck()) return;
         if (!(mc.currentScreen instanceof net.minecraft.client.gui.screen.ChatScreen)) return;
 
-         
-         
-         
         if (controlsClickable && e.getAction() == 1 && e.getButton() == 0) {
             float mx = mouseX();
             float my = mouseY();
 
             if (inRect(prevRect, mx, my)) {
                 NowPlayingBridge.sendCommand("prev");
-                return;  
+                return;
             }
             if (inRect(midRect, mx, my)) {
                 NowPlayingBridge.sendCommand("playpause");
-                NowPlayingBridge.optimisticTogglePlaying();  
+                NowPlayingBridge.optimisticTogglePlaying();
                 return;
             }
             if (inRect(nextRect, mx, my)) {
@@ -509,7 +465,6 @@ public class MusicHUD extends HudElement implements ThemeManager.ThemeChangeList
             }
         }
 
-         
         super.onMouse(e);
     }
 
@@ -524,10 +479,6 @@ public class MusicHUD extends HudElement implements ThemeManager.ThemeChangeList
         rect[2] = w;
         rect[3] = h;
     }
-
-     
-     
-     
 
     private static String truncateToWidth(String text, float fontSize, float maxWidth, boolean bold) {
         if (text == null) return "";
@@ -547,13 +498,11 @@ public class MusicHUD extends HudElement implements ThemeManager.ThemeChangeList
         return String.format("%d:%02d", minutes, seconds % 60L);
     }
 
-      
     private void drawLiquidGlass(net.minecraft.client.util.math.MatrixStack matrices,
                                  float x, float y, float w, float h, float r, float fade) {
         Render2D.drawHudBackground(matrices, x, y, w, h, r, fade);
     }
 
-      
     private void drawGlassText(net.minecraft.client.util.math.MatrixStack matrices,
                                Object font, String text, float x, float y, Color color) {
         Render2D.drawHudText(matrices, (Instance) font, text, x, y, color);

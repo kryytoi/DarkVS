@@ -13,25 +13,23 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RotationAxis;
 import org.joml.Matrix4f;
 
- 
 @Environment(EnvType.CLIENT)
 public class OwlModel {
 
     private static final Identifier TEXTURE = Identifier.of("darkvisuals", "textures/owl_white.png");
 
-     
-    private static final float[] BODY   = {0.30F, 0.23F, 0.40F};  
-    private static final float[] WING   = {0.24F, 0.18F, 0.34F};  
-    private static final float[] FACE   = {0.42F, 0.33F, 0.55F};  
-    private static final float[] CHEST  = {0.61F, 0.53F, 0.76F};  
-    private static final float[] CHEST2 = {0.72F, 0.64F, 0.85F};  
-    private static final float[] EYE    = {0.97F, 0.96F, 0.99F};  
-    private static final float[] PUPIL  = {0.10F, 0.08F, 0.13F};  
-    private static final float[] ORANGE = {0.91F, 0.58F, 0.23F};  
-    private static final float[] ROPE   = {0.85F, 0.76F, 0.58F};  
-    private static final float[] HANDLE = {0.55F, 0.42F, 0.28F};  
+    private static final float[] BODY   = {0.30F, 0.23F, 0.40F};
+    private static final float[] WING   = {0.24F, 0.18F, 0.34F};
+    private static final float[] FACE   = {0.42F, 0.33F, 0.55F};
+    private static final float[] CHEST  = {0.61F, 0.53F, 0.76F};
+    private static final float[] CHEST2 = {0.72F, 0.64F, 0.85F};
+    private static final float[] EYE    = {0.97F, 0.96F, 0.99F};
+    private static final float[] PUPIL  = {0.10F, 0.08F, 0.13F};
+    private static final float[] ORANGE = {0.91F, 0.58F, 0.23F};
+    private static final float[] ROPE   = {0.85F, 0.76F, 0.58F};
+    private static final float[] HANDLE = {0.55F, 0.42F, 0.28F};
 
-    private static final float WING_LEN = 6.5F * 0.0625F;  
+    private static final float WING_LEN = 6.5F * 0.0625F;
 
     private float headYaw;
     private float headPitch;
@@ -54,11 +52,9 @@ public class OwlModel {
         this.ropeAmount = brain.getRopeAmount(tickDelta);
         this.ropeAngle  = brain.getRopePhase(tickDelta);
 
-         
         leftLegX  = MathHelper.cos(swing * 0.9F)                   * 1.1F * amount;
         rightLegX = MathHelper.cos(swing * 0.9F + (float) Math.PI) * 1.1F * amount;
 
-         
         float foldedL =  0.28F + MathHelper.cos(swing * 0.9F) * 0.35F * amount;
         float foldedR = -0.28F - MathHelper.cos(swing * 0.9F) * 0.35F * amount;
         float raisedL =  2.35F + MathHelper.sin(ropeAngle) * 0.08F;
@@ -66,11 +62,9 @@ public class OwlModel {
         leftWingZ  = MathHelper.lerp(ropeAmount, foldedL, raisedL);
         rightWingZ = MathHelper.lerp(ropeAmount, foldedR, raisedR);
 
-         
         float hop = Math.max(0.0F, MathHelper.cos(ropeAngle));
         hopY = ropeAmount * hop * hop * 0.20F;
 
-         
         bodyRoll = MathHelper.cos(swing * 0.9F) * 0.09F * amount * (1.0F - ropeAmount);
     }
 
@@ -79,13 +73,12 @@ public class OwlModel {
         int overlay = OverlayTexture.DEFAULT_UV;
 
         ms.push();
-         
+
         ms.translate(0.0, 0.58F + hopY, 0.0);
         ms.multiply(RotationAxis.POSITIVE_X.rotationDegrees(180.0F));
         ms.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(bodyYaw));
         ms.multiply(RotationAxis.POSITIVE_Z.rotation(bodyRoll));
 
-         
         if (ropeAmount < 0.5F) {
             float jumpPitch = (float) MathHelper.clamp(brain.getVelocityY() * -25.0, -30.0, 30.0);
             ms.multiply(RotationAxis.POSITIVE_X.rotationDegrees(jumpPitch));
@@ -104,37 +97,29 @@ public class OwlModel {
 
     private void renderHead(MatrixStack ms, VertexConsumer vc, int light, int overlay) {
         ms.push();
-        ms.translate(0.0F, 0.156F, 0.0F);  
+        ms.translate(0.0F, 0.156F, 0.0F);
         ms.multiply(RotationAxis.POSITIVE_Y.rotation(headYaw));
         ms.multiply(RotationAxis.POSITIVE_X.rotation(headPitch * 0.6F));
 
-         
         cube(ms, vc, light, overlay, -3.5F, -2.5F, -3.0F, 7.0F, 5.0F, 6.0F, BODY);
 
-         
         cube(ms, vc, light, overlay, -3.4F, -3.6F, -1.2F, 1.6F, 1.3F, 2.4F, WING);
         cube(ms, vc, light, overlay,  1.8F, -3.6F, -1.2F, 1.6F, 1.3F, 2.4F, WING);
 
-         
         cube(ms, vc, light, overlay, -3.2F, -2.3F, -3.3F, 6.4F, 4.3F, 0.5F, FACE);
 
-         
         cube(ms, vc, light, overlay, -3.0F, -1.9F, -3.55F, 2.7F, 2.8F, 0.5F, EYE);
         cube(ms, vc, light, overlay,  0.3F, -1.9F, -3.55F, 2.7F, 2.8F, 0.5F, EYE);
 
-         
         cube(ms, vc, light, overlay, -2.1F, -1.0F, -3.75F, 1.3F, 1.6F, 0.4F, PUPIL);
         cube(ms, vc, light, overlay,  0.8F, -1.0F, -3.75F, 1.3F, 1.6F, 0.4F, PUPIL);
 
-         
         cube(ms, vc, light, overlay, -1.7F, -0.8F, -3.9F, 0.5F, 0.5F, 0.3F, EYE);
         cube(ms, vc, light, overlay,  1.2F, -0.8F, -3.9F, 0.5F, 0.5F, 0.3F, EYE);
 
-         
         cube(ms, vc, light, overlay, -3.1F, -2.5F, -3.6F, 2.9F, 0.7F, 0.5F, WING);
         cube(ms, vc, light, overlay,  0.2F, -2.5F, -3.6F, 2.9F, 0.7F, 0.5F, WING);
 
-         
         cube(ms, vc, light, overlay, -0.7F, 0.6F, -3.95F, 1.4F, 1.5F, 1.1F, ORANGE);
 
         ms.pop();
@@ -144,30 +129,27 @@ public class OwlModel {
         ms.push();
         ms.translate(0.0F, 0.344F, 0.0F);
 
-         
         cube(ms, vc, light, overlay, -3.0F, -1.0F, -2.5F, 6.0F, 4.2F, 5.0F, BODY);
 
-         
         cube(ms, vc, light, overlay, -2.2F, -1.0F, -2.8F, 4.4F, 3.7F, 0.5F, CHEST);
-         
+
         cube(ms, vc, light, overlay, -1.3F, -0.2F, -3.0F, 2.6F, 2.3F, 0.4F, CHEST2);
 
         ms.pop();
     }
 
     private void renderWings(MatrixStack ms, VertexConsumer vc, int light, int overlay) {
-         
+
         ms.push();
         ms.translate(-0.19F, 0.30F, 0.0F);
         ms.multiply(RotationAxis.POSITIVE_Z.rotation(leftWingZ));
         cube(ms, vc, light, overlay, -0.75F, 0.0F, -1.2F, 1.5F, 6.5F, 2.4F, WING);
-         
+
         if (ropeAmount > 0.05F) {
             cube(ms, vc, light, overlay, -0.5F, 6.3F, -0.6F, 1.0F, 1.6F, 1.2F, HANDLE);
         }
         ms.pop();
 
-         
         ms.push();
         ms.translate(0.19F, 0.30F, 0.0F);
         ms.multiply(RotationAxis.POSITIVE_Z.rotation(rightWingZ));
@@ -200,9 +182,8 @@ public class OwlModel {
         ms.pop();
     }
 
- 
     private void renderRope(MatrixStack ms, VertexConsumer vc, int light, int overlay) {
-         
+
         float a = Math.abs(leftWingZ);
         float tipX = 0.19F + WING_LEN * MathHelper.sin(a);
         float tipY = 0.30F + WING_LEN * MathHelper.cos(a);
@@ -211,10 +192,10 @@ public class OwlModel {
         int segments = 15;
 
         for (int i = 0; i <= segments; i++) {
-            float t = (i / (float) segments) * 2.0F - 1.0F;  
+            float t = (i / (float) segments) * 2.0F - 1.0F;
             float x = -t * tipX;
             float r = ropeRadius * MathHelper.cos(t * (float) (Math.PI / 2.0));
-             
+
             float offY = r * MathHelper.cos(ropeAngle);
             float offZ = r * MathHelper.sin(ropeAngle);
 

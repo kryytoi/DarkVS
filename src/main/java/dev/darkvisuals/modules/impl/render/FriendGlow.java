@@ -26,12 +26,6 @@ import org.joml.Matrix4f;
 
 import java.awt.Color;
 
-/**
- * FriendGlow - свечение/аура для друзей отдельным цветом.
- *
- * Под каждым другом рисуется светящееся кольцо (аддитивный блендинг),
- * плюс опциональный контур по хитбоксу. Цвет настраивается отдельно от темы.
- */
 public class FriendGlow extends Module {
 
     private static final int RING_SEGMENTS = 48;
@@ -82,7 +76,6 @@ public class FriendGlow extends Module {
                 double dist = pos.distanceTo(cam);
                 if (dist > maxRange) continue;
 
-                // Плавное появление с расстоянием
                 float fade = 1f - MathHelper.clamp((float) (dist / maxRange), 0f, 1f) * 0.55f;
                 Color c = new Color(base.getRed(), base.getGreen(), base.getBlue(),
                         Math.max(20, (int) (base.getAlpha() * fade)));
@@ -99,7 +92,6 @@ public class FriendGlow extends Module {
         }
     }
 
-    /** Светящееся кольцо на земле под игроком (аддитивный блендинг). */
     private void drawRing(MatrixStack matrices, Vec3d cam, Vec3d pos, Color color, float time) {
         float r = ringRadius.getValue();
         float rot = spin.getValue() ? time * 50f : 0f;
@@ -128,7 +120,7 @@ public class FriendGlow extends Module {
             float angle = rot * ((float) Math.PI / 180f) + (i / (float) RING_SEGMENTS) * (float) (Math.PI * 2);
             float cos = MathHelper.cos(angle);
             float sin = MathHelper.sin(angle);
-            // Внешний край почти прозрачный, внутренний ярче - эффект свечения
+
             buffer.vertex(matrix, outer * cos, 0f, outer * sin).color(cr, cg, cb, a * 0.15f);
             buffer.vertex(matrix, inner * cos, 0f, inner * sin).color(cr, cg, cb, a * 0.85f);
         }
@@ -142,7 +134,6 @@ public class FriendGlow extends Module {
         RenderSystem.disableBlend();
     }
 
-    /** Тонкий контур по хитбоксу друга. */
     private void drawOutline(MatrixStack matrices, Vec3d cam, net.minecraft.util.math.Box box, Color color) {
         Matrix4f matrix = matrices.peek().getPositionMatrix();
 

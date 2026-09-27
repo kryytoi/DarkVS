@@ -35,7 +35,7 @@ public abstract class ItemEntityRendererMixin {
 			at = @At("RETURN")
 	)
 	private void onUpdateRenderState(ItemEntity entity, ItemEntityRenderState state, float tickDelta, CallbackInfo ci) {
-		 
+
 		if (itemPhysicsEnabled()) {
 			state.uniqueOffset = 0f;
 		}
@@ -63,7 +63,6 @@ public abstract class ItemEntityRendererMixin {
 
 		float scaleY = itemEntityRenderState.itemRenderState.getTransformation().scale.y();
 
-		 
 		float g = MathHelperSin(itemEntityRenderState.age, itemEntityRenderState.uniqueOffset);
 
 		ItemPhysic module = ItemPhysic.get();
@@ -72,7 +71,7 @@ public abstract class ItemEntityRendererMixin {
 		if (!enabled) {
 			matrices.translate(0.0F, g + 0.25F * scaleY, 0.0F);
 		} else {
-			 
+
 			matrices.translate(0.0F, 0.06F * scaleY, 0.0F);
 		}
 
@@ -81,8 +80,7 @@ public abstract class ItemEntityRendererMixin {
 		if (!enabled) {
 			matrices.multiply(RotationAxis.POSITIVE_Y.rotation(rotation));
 		} else {
-			 
-			 
+
 			matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(-90.0F));
 		}
 

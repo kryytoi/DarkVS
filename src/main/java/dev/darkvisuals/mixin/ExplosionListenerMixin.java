@@ -17,8 +17,7 @@ public abstract class ExplosionListenerMixin {
         try {
             darkvisuals.post(new EventExplosion(packet.center()));
         } catch (Throwable ignored) {
-             
-             
+
         }
     }
 }

@@ -26,12 +26,12 @@ public class CustomFog extends Module {
     }
 
     public Color getSkyColor() {
-         
+
         return themeManager.getCurrentTheme().getBackgroundColor();
     }
 
     public Color getSkyColorSecondary() {
-         
+
         return themeManager.getCurrentTheme().getSecondaryBackgroundColor();
     }
 

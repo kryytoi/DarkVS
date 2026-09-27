@@ -11,12 +11,6 @@ import net.minecraft.text.Text;
 
 import java.awt.*;
 
-/**
- * Экран Structure Visualer: кнопка «Сделай дом» переносит игрока в пространство
- * стройки (креатив, полёт), где дом строится по-настоящему. После ESC дом
- * сохраняется и этот экран открывается снова — «Сохранить и перенести»
- * ставит построенный дом голограммой к прицелу.
- */
  public class StructureEditorScreen extends Screen {
 
     private static final Color BG_DIM = new Color(0, 0, 0, 140);
@@ -78,22 +72,18 @@ import java.awt.*;
         Color accent = ThemeManager.getInstance().getCurrentTheme().getAccentColor();
         layout();
 
-        // затемнение мира + панель
         Render2D.drawRect(ms, 0, 0, width, height, BG_DIM);
         Render2D.drawRoundedRect(ms, panelX, panelY, panelW, panelH, 12f, BG_PANEL);
         Render2D.drawBorder(ms, panelX, panelY, panelW, panelH, 12f, 1f, 1f,
                 new Color(accent.getRed(), accent.getGreen(), accent.getBlue(), 90));
 
-        // заголовок
         Render2D.drawFont(ms, Fonts.SEMIBOLD.getFont(12.5f), "Structure Visualer",
                 panelX + 24f, panelY + 20f, Color.WHITE);
 
-        // инфо о доме
         Render2D.drawFont(ms, Fonts.REGULAR.getFont(8.5f),
                 "Блоков в доме: " + data.size(),
                 panelX + 24f, panelY + 46f, new Color(190, 190, 205));
 
-        // подсказка
         float ty = panelY + 66f;
         String[] hint = {
                 "Нажмите «Сделай дом» — вас перенесёт в пространство, где",
@@ -133,12 +123,12 @@ import java.awt.*;
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (button == 0) {
             if (hover(mouseX, mouseY, btnX, buildY, btnW, btnH)) {
-                // закрывает экран и входит в пространство стройки
+
                 module.startBuilding();
                 return true;
             }
             if (hover(mouseX, mouseY, btnX, transferY, btnW, btnH)) {
-                // при пустом доме только покажем уведомление, экран не закрываем
+
                 module.applyStructure(data);
                 if (!data.isEmpty()) client.setScreen(null);
                 return true;

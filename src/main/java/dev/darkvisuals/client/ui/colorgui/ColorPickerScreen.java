@@ -13,15 +13,12 @@ public class ColorPickerScreen extends Screen {
     private final ColorSetting setting;
     private float hue, saturation, brightness;
 
-     
     private boolean draggingSquare = false;
     private boolean draggingHue = false;
 
-     
     private final int squareSize = 150;
     private final int hueWidth = 15;
 
-     
     private int[] squarePixels;
 
     public ColorPickerScreen(ColorSetting setting) {
@@ -43,28 +40,22 @@ public class ColorPickerScreen extends Screen {
         int centerX = this.width / 2;
         int centerY = this.height / 2;
 
- 
         Render2D.drawStyledRect(context.getMatrices(),
                 centerX - squareSize - hueWidth - 20, centerY - squareSize / 2 - 20,
                 squareSize + hueWidth + 40, squareSize + 60, 5f,
                 new Color(0, 0, 0, 180), 255);
 
- 
         Render2D.drawFont(context.getMatrices(), Fonts.SEMIBOLD.getFont(12f),
                 "Color Picker", centerX - 30, centerY - squareSize / 2 - 10, Color.WHITE);
 
- 
         drawColorSquare(context, centerX - squareSize / 2 - 20, centerY - squareSize / 2);
 
- 
         drawHueBar(context, centerX + squareSize / 2, centerY - squareSize / 2, hueWidth, squareSize);
 
- 
         Color preview = Color.getHSBColor(hue, saturation, brightness);
         Render2D.drawStyledRect(context.getMatrices(),
                 centerX - 30, centerY + squareSize / 2 + 10, 60, 20, 3f, preview, 255);
 
- 
         Render2D.drawStyledRect(context.getMatrices(),
                 centerX - 30, centerY + squareSize / 2 + 40, 60, 16, 3f,
                 new Color(100, 20, 20, 180), 255);
@@ -86,7 +77,7 @@ public class ColorPickerScreen extends Screen {
     }
 
     private void drawColorSquare(DrawContext context, int x, int y) {
-        int step = 2;  
+        int step = 2;
         for (int i = 0; i < squareSize; i += step) {
             for (int j = 0; j < squareSize; j += step) {
                 int rgb = squarePixels[j * squareSize + i];
@@ -94,11 +85,9 @@ public class ColorPickerScreen extends Screen {
             }
         }
 
- 
         int markerX = x + (int) (saturation * squareSize);
         int markerY = y + (int) ((1 - brightness) * squareSize);
 
- 
         int crossSize = 6;
         Render2D.drawRect(context.getMatrices(), markerX - crossSize, markerY - 1, crossSize * 2, 2, Color.BLACK);
         Render2D.drawRect(context.getMatrices(), markerX - 1, markerY - crossSize, 2, crossSize * 2, Color.BLACK);
@@ -113,7 +102,6 @@ public class ColorPickerScreen extends Screen {
             Render2D.drawRect(context.getMatrices(), x, y + j, w, 1, c);
         }
 
- 
         int markerY = y + (int) (hue * h);
         Render2D.drawRect(context.getMatrices(), x - 1, markerY - 1, w + 2, 2, Color.BLACK);
         Render2D.drawRect(context.getMatrices(), x - 1, markerY, w + 2, 1, new Color(220, 220, 220, 200));
@@ -130,20 +118,17 @@ public class ColorPickerScreen extends Screen {
         int hueX = centerX + squareSize / 2;
         int hueY = centerY - squareSize / 2;
 
- 
         if (isHovered(mouseX, mouseY, centerX - 30, centerY + squareSize / 2 + 40, 60, 16)) {
             this.close();
             return true;
         }
 
- 
         if (isHovered(mouseX, mouseY, squareX, squareY, squareSize, squareSize)) {
             draggingSquare = true;
             updateSquare(mouseX, mouseY, squareX, squareY, squareSize, squareSize);
             return true;
         }
 
- 
         if (isHovered(mouseX, mouseY, hueX, hueY, hueWidth, squareSize)) {
             draggingHue = true;
             updateHue(mouseY, hueY, squareSize);
@@ -190,7 +175,7 @@ public class ColorPickerScreen extends Screen {
     private void updateHue(double mouseY, int y, int h) {
         float value = (float) (mouseY - y) / (float) h;
         hue = Math.max(0f, Math.min(1f, value));
-        generateSquareBuffer();  
+        generateSquareBuffer();
         updateColor();
     }
 
@@ -210,11 +195,11 @@ public class ColorPickerScreen extends Screen {
 
     @Override
     public void renderBackground(DrawContext context, int mouseX, int mouseY, float delta) {
- 
+
     }
 
     @Override
     public boolean shouldPause() {
-        return false;  
+        return false;
     }
 }

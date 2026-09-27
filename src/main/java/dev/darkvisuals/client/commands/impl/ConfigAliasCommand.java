@@ -9,19 +9,18 @@ import dev.darkvisuals.darkvisuals;
 import net.minecraft.command.CommandSource;
 
 public class ConfigAliasCommand extends Command {
-    
+
     public ConfigAliasCommand() {
         super("config");
     }
-    
+
     @Override
     public void execute(com.mojang.brigadier.builder.LiteralArgumentBuilder<CommandSource> builder) {
         builder.executes(context -> {
             showHelp();
             return 1;
         });
-        
-         
+
         builder.then(literal("save")
                 .then(arg("название", StringArgumentType.string())
                         .executes(context -> {
@@ -29,8 +28,7 @@ public class ConfigAliasCommand extends Command {
                             saveConfig(configName);
                             return 1;
                         })));
-        
-         
+
         builder.then(literal("load")
                 .executes(context -> {
                     ChatUtils.sendMessage("§cУкажите название");
@@ -46,22 +44,19 @@ public class ConfigAliasCommand extends Command {
                             loadConfig(configName);
                             return 1;
                         })));
-        
-         
+
         builder.then(literal("list")
                 .executes(context -> {
                     listConfigs();
                     return 1;
                 }));
-        
-         
+
         builder.then(literal("dir")
                 .executes(context -> {
                     showConfigDirectory();
                     return 1;
                 }));
-        
-         
+
         builder.then(literal("delete")
                 .then(arg("название", StringArgumentType.string())
                         .executes(context -> {
@@ -69,8 +64,7 @@ public class ConfigAliasCommand extends Command {
                             deleteConfig(configName);
                             return 1;
                         })));
-        
-         
+
         builder.then(literal("info")
                 .then(arg("название", StringArgumentType.string())
                         .executes(context -> {
@@ -78,10 +72,9 @@ public class ConfigAliasCommand extends Command {
                             showConfigInfo(configName);
                             return 1;
                         })));
-        
 
     }
-    
+
     private void showHelp() {
         ChatUtils.sendMessage("§6=== Config Manager Help ===");
         ChatUtils.sendMessage("§e.config save <название> §7- Сохранить текущую конфигурацию");
@@ -92,15 +85,15 @@ public class ConfigAliasCommand extends Command {
         ChatUtils.sendMessage("§e.config info <название> §7- Показать информацию о конфигурации");
         ChatUtils.sendMessage("§7Алиасы: §e.cfg §7(вместо .config)");
     }
-    
+
     private void saveConfig(String configName) {
         if (configName == null || configName.trim().isEmpty()) {
             ChatUtils.sendMessage("§cОшибка: Укажите название конфигурации");
             return;
         }
-        
+
         ChatUtils.sendMessage("§aСохранение конфигурации '" + configName + "'...");
-        
+
         ConfigManager configManager = darkvisuals.getInstance().getConfigManager();
         configManager.saveConfig(configName).thenAccept(success -> {
             if (success) {
@@ -110,21 +103,21 @@ public class ConfigAliasCommand extends Command {
             }
         });
     }
-    
+
     private void loadConfig(String configName) {
         if (configName == null || configName.trim().isEmpty()) {
             ChatUtils.sendMessage("§cУкажите название");
             return;
         }
-        
+
         ConfigManager configManager = darkvisuals.getInstance().getConfigManager();
         if (!configManager.configExists(configName)) {
             ChatUtils.sendMessage("§cКонфигурация '" + configName + "' не найдена");
             return;
         }
-        
+
         ChatUtils.sendMessage("§aЗагрузка конфигурации '" + configName + "'...");
-        
+
         configManager.loadConfig(configName).thenAccept(success -> {
             if (success) {
                 ChatUtils.sendMessage("§aКонфигурация '" + configName + "' успешно загружена!");
@@ -133,30 +126,30 @@ public class ConfigAliasCommand extends Command {
             }
         });
     }
-    
+
     private void listConfigs() {
         ConfigManager configManager = darkvisuals.getInstance().getConfigManager();
         String[] configs = configManager.getConfigList();
-        
+
         if (configs.length == 0) {
             ChatUtils.sendMessage("§eСписок конфигураций пуст");
             return;
         }
-        
+
         ChatUtils.sendMessage("§6=== Доступные конфигурации ===");
         for (String config : configs) {
             ChatUtils.sendMessage("§7- §e" + config);
         }
         ChatUtils.sendMessage("§7Всего: §e" + configs.length + " §7конфигураций");
     }
-    
+
     private void showConfigDirectory() {
         ConfigManager configManager = darkvisuals.getInstance().getConfigManager();
         String directory = configManager.getConfigsDirectory();
         ChatUtils.sendMessage("§6Папка конфигураций: §e" + directory);
-        
+
         try {
-             
+
             java.io.File dirFile = new java.io.File(directory);
             if (!dirFile.exists()) {
                 dirFile.mkdirs();
@@ -192,19 +185,19 @@ public class ConfigAliasCommand extends Command {
             ChatUtils.sendMessage("§cНе удалось открыть папку: " + e.getMessage());
         }
     }
-    
+
     private void deleteConfig(String configName) {
         if (configName == null || configName.trim().isEmpty()) {
             ChatUtils.sendMessage("§cОшибка: Укажите название конфигурации");
             return;
         }
-        
+
         ConfigManager configManager = darkvisuals.getInstance().getConfigManager();
         if (!configManager.configExists(configName)) {
             ChatUtils.sendMessage("§cКонфигурация '" + configName + "' не найдена");
             return;
         }
-        
+
         boolean deleted = configManager.deleteConfig(configName);
         if (deleted) {
             ChatUtils.sendMessage("§aКонфигурация '" + configName + "' успешно удалена!");
@@ -212,30 +205,30 @@ public class ConfigAliasCommand extends Command {
             ChatUtils.sendMessage("§cОшибка при удалении конфигурации '" + configName + "'");
         }
     }
-    
+
     private void showConfigInfo(String configName) {
         if (configName == null || configName.trim().isEmpty()) {
             ChatUtils.sendMessage("§cОшибка: Укажите название конфигурации");
             return;
         }
-        
+
         ConfigManager configManager = darkvisuals.getInstance().getConfigManager();
         if (!configManager.configExists(configName)) {
             ChatUtils.sendMessage("§cКонфигурация '" + configName + "' не найдена");
             return;
         }
-        
+
         ChatUtils.sendMessage("§6=== Информация о конфигурации '" + configName + "' ===");
         ChatUtils.sendMessage("§7Файл: §e" + configName + ".simple");
         ChatUtils.sendMessage("§7Путь: §e" + configManager.getConfigsDirectory() + "/" + configName + ".simple");
         ChatUtils.sendMessage("§7Статус: §aСуществует");
     }
-    
+
     private void suggestConfigs(SuggestionsBuilder suggestionsBuilder) {
         String[] configs = darkvisuals.getInstance().getConfigManager().getConfigList();
         for (String cfg : configs) {
             suggestionsBuilder.suggest(cfg);
         }
     }
-    
-} 
+
+}

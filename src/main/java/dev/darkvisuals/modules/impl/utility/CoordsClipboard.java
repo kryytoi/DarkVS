@@ -8,10 +8,6 @@ import dev.darkvisuals.modules.api.Module;
 import dev.darkvisuals.modules.settings.impl.BooleanSetting;
 import net.minecraft.util.math.BlockPos;
 
-/**
- * CoordsClipboard — копирование координат в буфер обмена по бинду.
- * Срабатывает один раз и выключается.
- */
 public class CoordsClipboard extends Module {
 
     private final BooleanSetting tpCommand = new BooleanSetting("Формат /tp", false);

@@ -27,10 +27,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
-/**
- * SprintFX — скоростные линии-полосы вокруг игрока при спринте.
- * Полосы вытянуты вдоль направления движения и быстро гаснут.
- */
 public class SprintFX extends Module {
 
     private static final long STREAK_TTL_MS = 320L;
@@ -49,7 +45,7 @@ public class SprintFX extends Module {
 
     private static final class Streak {
         Vec3d pos;
-        final Vec3d dir; // нормализованное направление движения
+        final Vec3d dir;
         final long birth;
         final float sizeMul;
 
@@ -102,7 +98,7 @@ public class SprintFX extends Module {
         int target = (int) (float) density.getValue();
         int spawn = Math.max(1, target / 3);
         for (int i = 0; i < spawn && streaks.size() < target; i++) {
-            // полосы появляются вокруг игрока и позади него
+
             double behind = 0.6 + rnd.nextDouble() * spread.getValue() * 0.5;
             double offSide = (rnd.nextDouble() - 0.5) * spread.getValue();
             double offY = (rnd.nextDouble() - 0.35) * 1.6;

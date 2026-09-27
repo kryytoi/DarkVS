@@ -17,7 +17,7 @@ public class NameProtect extends Module {
 
     @Getter
     private final StringSetting customName = new StringSetting("Замена ника", "Protected", false);
-    
+
     @Getter
     private final BooleanSetting protectFriends = new BooleanSetting("Скрывать ники друзей", true);
 
@@ -30,15 +30,13 @@ public class NameProtect extends Module {
 
      public String getProtectedName(String name) {
         if (!isToggled() || name == null) return name;
-        
+
         MinecraftClient mc = MinecraftClient.getInstance();
 
-         
         if (mc.player != null && name.equals(mc.player.getGameProfile().getName())) {
             return customName.getValue();
         }
 
-         
         if (protectFriends.getValue() && FriendsManager.checkFriend(name)) {
             return "[Friend]";
         }
@@ -48,23 +46,21 @@ public class NameProtect extends Module {
 
      public String replaceNames(String text) {
         if (!isToggled() || text == null) return text;
-        
+
         String modified = text;
         MinecraftClient mc = MinecraftClient.getInstance();
-        
-         
+
         if (mc.player != null) {
             String playerName = mc.player.getGameProfile().getName();
             modified = replaceExactName(modified, playerName, customName.getValue());
         }
 
-         
         if (protectFriends.getValue()) {
             for (String friend : FriendsManager.getFriends()) {
                 modified = replaceExactName(modified, friend, "[Friend]");
             }
         }
-        
+
         return modified;
     }
 

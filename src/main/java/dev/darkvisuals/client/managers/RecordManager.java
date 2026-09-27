@@ -13,12 +13,10 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.concurrent.*;
 
- 
 public class RecordManager implements Wrapper {
 
     public enum State { IDLE, RECORDING, PAUSED }
 
-     
     private static final String FFMPEG_PATH = "ffmpeg";
     private static final int TARGET_FPS = 30;
 
@@ -39,14 +37,12 @@ public class RecordManager implements Wrapper {
     public boolean isPaused() { return state == State.PAUSED; }
     public boolean isActive() { return state != State.IDLE; }
 
-      
     public long getElapsedMs() {
         if (state == State.IDLE) return 0;
         long pausedNow = (state == State.PAUSED) ? (System.currentTimeMillis() - pauseStartedMs) : 0;
         return System.currentTimeMillis() - recordStartMs - pausedAccumMs - pausedNow;
     }
 
-      
     public boolean start() {
         if (state != State.IDLE) return false;
         if (mc.getWindow() == null) return false;
@@ -94,25 +90,22 @@ public class RecordManager implements Wrapper {
             return true;
         } catch (IOException e) {
             state = State.IDLE;
-            return false;  
+            return false;
         }
     }
 
-      
     public void pause() {
         if (state != State.RECORDING) return;
         state = State.PAUSED;
         pauseStartedMs = System.currentTimeMillis();
     }
 
-      
     public void resume() {
         if (state != State.PAUSED) return;
         pausedAccumMs += System.currentTimeMillis() - pauseStartedMs;
         state = State.RECORDING;
     }
 
-      
     public void stop() {
         if (state == State.IDLE) return;
         state = State.IDLE;
@@ -148,11 +141,10 @@ public class RecordManager implements Wrapper {
             }
             ffmpegStdin.flush();
         } catch (IOException | InterruptedException ignored) {
-             
+
         }
     }
 
- 
     public void captureFrame() {
         if (state != State.RECORDING) return;
         if (frameQueue == null) return;
@@ -162,7 +154,6 @@ public class RecordManager implements Wrapper {
         if (lastFrameTimeNs != 0 && now - lastFrameTimeNs < frameIntervalNs) return;
         lastFrameTimeNs = now;
 
-         
         int curW = mc.getWindow().getFramebufferWidth();
         int curH = mc.getWindow().getFramebufferHeight();
         if (curW != width || curH != height) {
@@ -179,7 +170,6 @@ public class RecordManager implements Wrapper {
 
         GL30.glBindFramebuffer(GL30.GL_READ_FRAMEBUFFER, prevReadFb);
 
-         
         byte[] flipped = new byte[width * height * 4];
         int rowBytes = width * 4;
         byte[] row = new byte[rowBytes];
@@ -189,7 +179,6 @@ public class RecordManager implements Wrapper {
             System.arraycopy(row, 0, flipped, (height - 1 - y) * rowBytes, rowBytes);
         }
 
-         
         frameQueue.offer(flipped);
     }
 }

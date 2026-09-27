@@ -19,8 +19,7 @@ public abstract class LightmapTextureManagerMixin {
 
     @Inject(method = "update", at = @At("HEAD"), cancellable = true)
     public void darkvisuals$slowerLight(float delta, CallbackInfo ci) {
-         
-         
+
         Optimization optimization = darkvisuals.getInstance().getModuleManager().getModule(Optimization.class);
         if (optimization != null && optimization.isToggled() && optimization.slowerLight.getValue()) {
             Optimization.lightFrameCounter++;

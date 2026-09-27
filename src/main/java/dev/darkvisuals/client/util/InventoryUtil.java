@@ -1,7 +1,3 @@
- 
- 
- 
- 
 
 package dev.darkvisuals.client.util;
 
@@ -11,7 +7,6 @@ import net.minecraft.network.packet.c2s.play.UpdateSelectedSlotC2SPacket;
 import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.util.Hand;
 
-  
 @Deprecated
 public class InventoryUtil implements Wrapper {
     public static int findItem(Item item) {

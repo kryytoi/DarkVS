@@ -10,14 +10,13 @@ import meteordevelopment.orbit.EventHandler;
 import net.minecraft.client.resource.language.I18n;
 import org.lwjgl.glfw.GLFW;
 
- 
 public class Macros extends Module {
 
     public static final int MAX_MACROS = 50;
 
     private final BindSetting[] binds = new BindSetting[MAX_MACROS];
     private final StringSetting[] messages = new StringSetting[MAX_MACROS];
-    private final boolean[] latch = new boolean[MAX_MACROS];  
+    private final boolean[] latch = new boolean[MAX_MACROS];
 
     public Macros() {
         super("Macros", Category.Utility, "Пишет команду по бинду");
@@ -38,7 +37,7 @@ public class Macros extends Module {
     @EventHandler
     public void onKey(EventKey e) {
         if (!isToggled() || fullNullCheck()) return;
-        if (mc.currentScreen != null) return;  
+        if (mc.currentScreen != null) return;
 
         for (int i = 0; i < MAX_MACROS; i++) {
             Bind bind = binds[i].getValue();
@@ -56,7 +55,6 @@ public class Macros extends Module {
         }
     }
 
- 
     private void execute(String raw) {
         if (raw == null) return;
         String text = raw.trim();
