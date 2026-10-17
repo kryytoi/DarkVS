@@ -9,6 +9,7 @@ import dev.darkvisuals.client.render.builders.states.QuadRadiusState;
 import dev.darkvisuals.client.render.builders.states.SizeState;
 import dev.darkvisuals.client.util.animations.Animation;
 import dev.darkvisuals.client.util.animations.Easing;
+import dev.darkvisuals.client.util.renderer.Render2D;
 import dev.darkvisuals.client.util.renderer.fonts.Fonts;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
@@ -112,109 +113,159 @@ public class AltManagerScreen extends Screen {
 
 	@Override
 	public boolean charTyped(char chr, int modifiers) {
-		if (Character.isISOControl(chr)) return false;
-		insertText(String.valueOf(chr));
-		return true;
+		try {
+			if (!inputFocused) return false;
+			if (Character.isISOControl(chr)) return false;
+			insertText(String.valueOf(chr));
+			return true;
+		} catch (Throwable ignored) {
+			return false;
+		}
 	}
 
 	@Override
 	public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-		boolean ctrl = hasControlDown();
-		boolean shift = hasShiftDown();
-
-		if (ctrl && keyCode == GLFW.GLFW_KEY_V) {
-			String clip = this.client != null && this.client.keyboard != null ? this.client.keyboard.getClipboard() : null;
-			if (clip != null && !clip.isEmpty()) insertText(clip);
-			return true;
-		}
-		if (ctrl && keyCode == GLFW.GLFW_KEY_C) {
-			String sel = getSelectedText();
-			if (sel != null && this.client != null && this.client.keyboard != null) this.client.keyboard.setClipboard(sel);
-			return true;
-		}
-		if (ctrl && keyCode == GLFW.GLFW_KEY_X) {
-			String sel = getSelectedText();
-			if (sel != null && this.client != null && this.client.keyboard != null) {
-				this.client.keyboard.setClipboard(sel);
-				deleteSelection();
-			}
-			return true;
-		}
-		if (ctrl && keyCode == GLFW.GLFW_KEY_A) {
-			selectionStart = 0;
-			caretIndex = inputBuffer.length();
-			return true;
-		}
-
-		if (keyCode == GLFW.GLFW_KEY_BACKSPACE) {
-			if (!deleteSelection()) {
-				if (caretIndex > 0 && !inputBuffer.isEmpty()) {
-					inputBuffer = inputBuffer.substring(0, caretIndex - 1) + inputBuffer.substring(caretIndex);
-					caretIndex--;
+		try {
+			if (keyCode == GLFW.GLFW_KEY_F11) {
+				if (this.client != null && this.client.getWindow() != null) {
+					this.client.getWindow().toggleFullscreen();
+					this.client.options.getFullscreen().setValue(this.client.getWindow().isFullscreen());
+					return true;
 				}
 			}
-			return true;
-		}
-		if (keyCode == GLFW.GLFW_KEY_DELETE) {
-			if (!deleteSelection()) {
-				if (caretIndex < inputBuffer.length()) {
-					inputBuffer = inputBuffer.substring(0, caretIndex) + inputBuffer.substring(caretIndex + 1);
-				}
-			}
-			return true;
-		}
-		if (keyCode == GLFW.GLFW_KEY_LEFT) {
-			moveCaret(-1, shift);
-			return true;
-		}
-		if (keyCode == GLFW.GLFW_KEY_RIGHT) {
-			moveCaret(1, shift);
-			return true;
-		}
 
-		if (keyCode == GLFW.GLFW_KEY_ENTER) {
-			if (!inputBuffer.isEmpty()) {
-				if (AltManager.addNickname(inputBuffer)) {
-					inputBuffer = "";
-					caretIndex = 0;
+			if (inputFocused) {
+				boolean ctrl = hasControlDown();
+				boolean shift = hasShiftDown();
+
+				if (ctrl && keyCode == GLFW.GLFW_KEY_V) {
+					String clip = this.client != null && this.client.keyboard != null ? this.client.keyboard.getClipboard() : null;
+					if (clip != null && !clip.isEmpty()) insertText(clip);
+					return true;
+				}
+				if (ctrl && keyCode == GLFW.GLFW_KEY_C) {
+					String sel = getSelectedText();
+					if (sel != null && this.client != null && this.client.keyboard != null) this.client.keyboard.setClipboard(sel);
+					return true;
+				}
+				if (ctrl && keyCode == GLFW.GLFW_KEY_X) {
+					String sel = getSelectedText();
+					if (sel != null && this.client != null && this.client.keyboard != null) {
+						this.client.keyboard.setClipboard(sel);
+						deleteSelection();
+					}
+					return true;
+				}
+				if (ctrl && keyCode == GLFW.GLFW_KEY_A) {
+					selectionStart = 0;
+					caretIndex = inputBuffer.length();
+					return true;
+				}
+
+				if (keyCode == GLFW.GLFW_KEY_BACKSPACE) {
+					if (!deleteSelection()) {
+						caretIndex = Math.max(0, Math.min(caretIndex, inputBuffer.length()));
+						if (caretIndex > 0 && !inputBuffer.isEmpty()) {
+							inputBuffer = inputBuffer.substring(0, caretIndex - 1) + inputBuffer.substring(caretIndex);
+							caretIndex--;
+						}
+					}
+					return true;
+				}
+				if (keyCode == GLFW.GLFW_KEY_DELETE) {
+					if (!deleteSelection()) {
+						caretIndex = Math.max(0, Math.min(caretIndex, inputBuffer.length()));
+						if (caretIndex < inputBuffer.length()) {
+							inputBuffer = inputBuffer.substring(0, caretIndex) + inputBuffer.substring(caretIndex + 1);
+						}
+					}
+					return true;
+				}
+				if (keyCode == GLFW.GLFW_KEY_LEFT) {
+					moveCaret(-1, shift);
+					return true;
+				}
+				if (keyCode == GLFW.GLFW_KEY_RIGHT) {
+					moveCaret(1, shift);
+					return true;
+				}
+				if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
+					inputFocused = false;
 					selectionStart = -1;
+					return true;
+				}
+				if (keyCode == GLFW.GLFW_KEY_ENTER) {
+					if (!inputBuffer.isEmpty()) {
+						if (AltManager.addNickname(inputBuffer)) {
+							inputBuffer = "";
+							caretIndex = 0;
+							selectionStart = -1;
+							init();
+						}
+					}
+					return true;
+				}
+				return true;
+			}
+
+			if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
+				if (this.client != null) {
+					this.client.setScreen(parent);
+				}
+				return true;
+			}
+
+			if (keyCode == GLFW.GLFW_KEY_ENTER) {
+				if (selectedIndex >= 0 && selectedIndex < filteredAlts.size()) {
+					AltManager.applyNickname(filteredAlts.get(selectedIndex));
 					init();
 				}
-			} else if (selectedIndex >= 0 && selectedIndex < filteredAlts.size()) {
-				AltManager.applyNickname(filteredAlts.get(selectedIndex));
-				init();
+				return true;
 			}
-			return true;
-		}
 
-		if (keyCode == GLFW.GLFW_KEY_DELETE && selectedIndex >= 0 && selectedIndex < filteredAlts.size()) {
-            String target = filteredAlts.get(selectedIndex);
-            if (AltManager.removeNickname(target)) {
-                selectedIndex = -1;
-                init();
-            }
-            return true;
-        }
-
-		if (keyCode == GLFW.GLFW_KEY_UP) {
-			if (selectedIndex > 0) {
-				selectedIndex--;
-			} else if (filteredAlts.size() > 0) {
-				selectedIndex = filteredAlts.size() - 1;
+			if (keyCode == GLFW.GLFW_KEY_DELETE && selectedIndex >= 0 && selectedIndex < filteredAlts.size()) {
+				String target = filteredAlts.get(selectedIndex);
+				if (AltManager.removeNickname(target)) {
+					selectedIndex = -1;
+					init();
+				}
+				return true;
 			}
-			return true;
-		}
 
-		if (keyCode == GLFW.GLFW_KEY_DOWN) {
-			if (selectedIndex < filteredAlts.size() - 1) {
-				selectedIndex++;
-			} else {
-				selectedIndex = 0;
+			if (keyCode == GLFW.GLFW_KEY_UP) {
+				if (selectedIndex > 0) {
+					selectedIndex--;
+				} else if (filteredAlts.size() > 0) {
+					selectedIndex = filteredAlts.size() - 1;
+				}
+				return true;
 			}
-			return true;
-		}
 
-		return super.keyPressed(keyCode, scanCode, modifiers);
+			if (keyCode == GLFW.GLFW_KEY_DOWN) {
+				if (selectedIndex < filteredAlts.size() - 1) {
+					selectedIndex++;
+				} else {
+					selectedIndex = 0;
+				}
+				return true;
+			}
+
+			return false;
+		} catch (Throwable ignored) {
+			return false;
+		}
+	}
+
+	@Override
+	public void resize(net.minecraft.client.MinecraftClient client, int width, int height) {
+		if (width <= 0 || height <= 0) return;
+		try {
+			super.resize(client, width, height);
+		} catch (Throwable t) {
+			this.width = width;
+			this.height = height;
+			this.init();
+		}
 	}
 
 	@Override
@@ -258,6 +309,7 @@ public class AltManagerScreen extends Screen {
 			return true;
 		}
         inputFocused = false;
+        selectionStart = -1;
         inputFocusAnimation.update(false);
 
         for (MainMenu.AnimatedButton btn : buttons) {
@@ -285,7 +337,8 @@ public class AltManagerScreen extends Screen {
 
     @Override
     public void render(DrawContext drawContext, int mouseX, int mouseY, float delta) {
-        Matrix4f matrix = drawContext.getMatrices().peek().getPositionMatrix();
+        try {
+            Matrix4f matrix = drawContext.getMatrices().peek().getPositionMatrix();
 
         new RectangleBuilder()
                 .size(new SizeState(this.width, this.height))
@@ -345,46 +398,35 @@ public class AltManagerScreen extends Screen {
 
         if (inputBuffer.isEmpty() && !inputFocused) {
             String placeholder = I18n.translate("darkvisuals.alt.placeholder");
-            new TextBuilder()
-                    .font(Fonts.REGULAR.font())
-                    .text(placeholder)
-                    .size(7f)
-                    .color(new Color(120, 120, 140))
-                    .smoothness(0.5f)
-                    .build()
-                    .render(matrix, inputX + 6, inputY + 5, 0f);
+            try {
+                Render2D.drawFont(drawContext.getMatrices(), Fonts.REGULAR.getFont(7f), placeholder, inputX + 6, inputY + 5, new Color(120, 120, 140));
+            } catch (Throwable t) {
+                drawContext.drawText(this.textRenderer, placeholder, (int)(inputX + 6), (int)(inputY + 5), 0xFF78788C, false);
+            }
         } else if (!inputBuffer.isEmpty()) {
-            new TextBuilder()
-                    .font(Fonts.REGULAR.font())
-                    .text(inputBuffer)
-                    .size(7f)
-                    .color(new Color(230, 230, 240))
-                    .smoothness(0.5f)
-                    .build()
-                    .render(matrix, inputX + 6, inputY + 5, 0f);
+            try {
+                Render2D.drawFont(drawContext.getMatrices(), Fonts.REGULAR.getFont(7f), inputBuffer, inputX + 6, inputY + 5, new Color(230, 230, 240));
+            } catch (Throwable t) {
+                drawContext.drawText(this.textRenderer, inputBuffer, (int)(inputX + 6), (int)(inputY + 5), 0xFFE6E6F0, false);
+            }
         }
 
         if (selectionStart != -1 && selectionStart != caretIndex && !inputBuffer.isEmpty()) {
-            int a = Math.min(selectionStart, caretIndex);
-            int b = Math.max(selectionStart, caretIndex);
-            float ax = inputX + 6 + Fonts.REGULAR.getWidth(inputBuffer.substring(0, a), 7f);
-            float bx = inputX + 6 + Fonts.REGULAR.getWidth(inputBuffer.substring(0, b), 7f);
-            new RectangleBuilder()
-                    .size(new SizeState(Math.max(1, bx - ax), Fonts.REGULAR.getHeight(7f)))
-                    .radius(new QuadRadiusState(2))
-                    .color(new QuadColorState(new Color(80, 120, 200, 120)))
-                    .build()
-                    .render(matrix, ax, inputY + 5, 0f);
+            int a = Math.max(0, Math.min(Math.min(selectionStart, caretIndex), inputBuffer.length()));
+            int b = Math.max(0, Math.min(Math.max(selectionStart, caretIndex), inputBuffer.length()));
+            if (a < b) {
+                float ax = inputX + 6 + Fonts.REGULAR.getWidth(inputBuffer.substring(0, a), 7f);
+                float bx = inputX + 6 + Fonts.REGULAR.getWidth(inputBuffer.substring(0, b), 7f);
+                drawContext.fill((int) ax, (int) (inputY + 4), (int) bx, (int) (inputY + 4 + Fonts.REGULAR.getHeight(7f)), 0x775078C8);
+            }
         }
 
-        if (!inputBuffer.isEmpty() || selectionStart == -1) {
-            float caretX = inputX + 6 + Fonts.REGULAR.getWidth(inputBuffer.substring(0, Math.min(caretIndex, inputBuffer.length())), 7f);
-            new RectangleBuilder()
-                    .size(new SizeState(1, Fonts.REGULAR.getHeight(7f)))
-                    .radius(new QuadRadiusState(0))
-                    .color(new QuadColorState(new Color(230, 230, 240, (int) (200 * (0.5f + 0.5f * (float)Math.sin(System.currentTimeMillis() / 200.0))))))
-                    .build()
-                    .render(matrix, caretX, inputY + 5, 0f);
+        if (inputFocused) {
+            int safeCaret = Math.max(0, Math.min(caretIndex, inputBuffer.length()));
+            float caretX = inputX + 6 + Fonts.REGULAR.getWidth(inputBuffer.substring(0, safeCaret), 7f);
+            int alpha = (int) (220 * (0.5f + 0.5f * (float) Math.sin(System.currentTimeMillis() / 180.0)));
+            int color = (Math.max(40, alpha) << 24) | 0x00E6E6F0;
+            drawContext.fill((int) caretX, (int) (inputY + 4), (int) caretX + 1, (int) (inputY + 4 + Fonts.REGULAR.getHeight(7f)), color);
         }
 
         float listWidth = 220f;
@@ -456,66 +498,17 @@ public class AltManagerScreen extends Screen {
         }
         drawContext.disableScissor();
 
-        new RectangleBuilder()
-                .size(new SizeState(inputWidth, inputHeight))
-                .radius(new QuadRadiusState(8))
-                .color(new QuadColorState(new Color(24, 24, 30, 255)))
-                .build()
-                .render(matrix, inputX, inputY, 0f);
-
-        if (inputBuffer.isEmpty() && !inputFocused) {
-            String placeholderTop = I18n.translate("darkvisuals.alt.placeholder");
-            new TextBuilder()
-                    .font(Fonts.REGULAR.font())
-                    .text(placeholderTop)
-                    .size(7f)
-                    .color(new Color(120, 120, 140))
-                    .smoothness(0.5f)
-                    .build()
-                    .render(matrix, inputX + 6, inputY + 5, 0f);
-        } else if (!inputBuffer.isEmpty()) {
-            new TextBuilder()
-                    .font(Fonts.REGULAR.font())
-                    .text(inputBuffer)
-                    .size(7f)
-                    .color(new Color(230, 230, 240))
-                    .smoothness(0.5f)
-                    .build()
-                    .render(matrix, inputX + 6, inputY + 5, 0f);
-        }
-
-        if (selectionStart != -1 && selectionStart != caretIndex && !inputBuffer.isEmpty()) {
-            int aTop = Math.min(selectionStart, caretIndex);
-            int bTop = Math.max(selectionStart, caretIndex);
-            float axTop = inputX + 6 + Fonts.REGULAR.getWidth(inputBuffer.substring(0, aTop), 7f);
-            float bxTop = inputX + 6 + Fonts.REGULAR.getWidth(inputBuffer.substring(0, bTop), 7f);
-            new RectangleBuilder()
-                    .size(new SizeState(Math.max(1, bxTop - axTop), Fonts.REGULAR.getHeight(7f)))
-                    .radius(new QuadRadiusState(2))
-                    .color(new QuadColorState(new Color(80, 120, 200, 120)))
-                    .build()
-                    .render(matrix, axTop, inputY + 5, 0f);
-        }
-
-        if (!inputBuffer.isEmpty() || selectionStart == -1) {
-            float caretXTop = inputX + 6 + Fonts.REGULAR.getWidth(inputBuffer.substring(0, Math.min(caretIndex, inputBuffer.length())), 7f);
-            new RectangleBuilder()
-                    .size(new SizeState(1, Fonts.REGULAR.getHeight(7f)))
-                    .radius(new QuadRadiusState(0))
-                    .color(new QuadColorState(new Color(230, 230, 240, (int) (200 * (0.5f + 0.5f * (float)Math.sin(System.currentTimeMillis() / 200.0))))))
-                    .build()
-                    .render(matrix, caretXTop, inputY + 5, 0f);
-        }
-
-        for (MainMenu.AnimatedButton btn : buttons) {
-            btn.render(drawContext, mouseX, mouseY, delta, 1.0f);
-        }
+            for (MainMenu.AnimatedButton btn : buttons) {
+                btn.render(drawContext, mouseX, mouseY, delta, 1.0f);
+            }
+        } catch (Throwable ignored) {}
     }
 
     @Override
     public boolean shouldCloseOnEsc() { return true; }
 
     private void moveCaret(int delta, boolean keepSelection) {
+        caretIndex = Math.max(0, Math.min(caretIndex, inputBuffer.length()));
         int newIndex = Math.max(0, Math.min(inputBuffer.length(), caretIndex + delta));
         if (keepSelection) {
             if (selectionStart == -1) selectionStart = caretIndex;
@@ -535,37 +528,46 @@ public class AltManagerScreen extends Screen {
             if ((c >= 'A' && c <= 'Z') ||
                 (c >= 'a' && c <= 'z') ||
                 (c >= '0' && c <= '9') ||
+                (c >= 'А' && c <= 'Я') ||
+                (c >= 'а' && c <= 'я') ||
+                c == 'Ё' || c == 'ё' ||
                 c == '_' || c == '.' || c == '-') {
                 sb.append(c);
             }
         }
         String filtered = sb.toString();
         if (filtered.isEmpty()) return;
-        if (!deleteSelection()) {
-            String left = inputBuffer.substring(0, caretIndex);
-            String right = inputBuffer.substring(caretIndex);
-            inputBuffer = left + filtered + right;
-            caretIndex += filtered.length();
-        }
+        deleteSelection();
+        caretIndex = Math.max(0, Math.min(caretIndex, inputBuffer.length()));
+        String left = inputBuffer.substring(0, caretIndex);
+        String right = inputBuffer.substring(caretIndex);
+        inputBuffer = left + filtered + right;
+        caretIndex += filtered.length();
+        selectionStart = -1;
     }
 
     private boolean deleteSelection() {
         if (selectionStart != -1 && selectionStart != caretIndex) {
-            int a = Math.min(selectionStart, caretIndex);
-            int b = Math.max(selectionStart, caretIndex);
-            inputBuffer = inputBuffer.substring(0, a) + inputBuffer.substring(b);
-            caretIndex = a;
+            int a = Math.max(0, Math.min(Math.min(selectionStart, caretIndex), inputBuffer.length()));
+            int b = Math.max(0, Math.min(Math.max(selectionStart, caretIndex), inputBuffer.length()));
+            if (a < b) {
+                inputBuffer = inputBuffer.substring(0, a) + inputBuffer.substring(b);
+                caretIndex = a;
+            }
             selectionStart = -1;
             return true;
         }
+        selectionStart = -1;
         return false;
     }
 
     private String getSelectedText() {
         if (selectionStart != -1 && selectionStart != caretIndex) {
-            int a = Math.min(selectionStart, caretIndex);
-            int b = Math.max(selectionStart, caretIndex);
-            return inputBuffer.substring(a, b);
+            int a = Math.max(0, Math.min(Math.min(selectionStart, caretIndex), inputBuffer.length()));
+            int b = Math.max(0, Math.min(Math.max(selectionStart, caretIndex), inputBuffer.length()));
+            if (a < b) {
+                return inputBuffer.substring(a, b);
+            }
         }
         return null;
     }
@@ -580,12 +582,12 @@ public class AltManagerScreen extends Screen {
             float w = Fonts.REGULAR.getWidth(inputBuffer.substring(0, i), 7f);
             if (w >= target) {
 
-                return (target - lastWidth) < (w - target) ? i - 1 : i;
+                return Math.max(0, (target - lastWidth) < (w - target) ? i - 1 : i);
             }
             lastWidth = w;
             idx = i;
         }
-        return idx;
+        return Math.max(0, Math.min(idx, inputBuffer.length()));
     }
 
     private static float clamp(float v, float min, float max) {

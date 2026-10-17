@@ -133,12 +133,14 @@ public class ArmorHUD extends HudElement implements ThemeManager.ThemeChangeList
             float totalHeight = 0f;
 
             e.getContext().getMatrices().push();
+            pushScale(e.getContext().getMatrices());
 
             float cursorY = posY;
             float cursorX = posX;
 
             if (HudStyle.isMinimalistic()) {
                 renderMinimalistic(e, armorItems, previewMode, posX, posY, fadeAnimation.getValue());
+                popScale(e.getContext().getMatrices());
                 e.getContext().getMatrices().pop();
                 super.onRender2D(e);
                 return;
@@ -304,6 +306,7 @@ public class ArmorHUD extends HudElement implements ThemeManager.ThemeChangeList
                 totalHeight += heightV - padding;
             }
 
+            popScale(e.getContext().getMatrices());
             e.getContext().getMatrices().pop();
 
             if (totalWidth <= 0f) totalWidth = iconSize * 4 + padding * 3;

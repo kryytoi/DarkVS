@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import net.minecraft.client.gui.DrawContext;
 
 public class    ThemeManager {
     private static ThemeManager instance;
@@ -16,6 +17,8 @@ public class    ThemeManager {
     private final List<Theme> customThemes = new ArrayList<>();
     private final File customThemesFile =
             new File(dev.darkvisuals.darkvisuals.getInstance().getGlobalsDir(), "custom_themes.txt");
+    private long themePulseStart = 0L;
+    private Color themePulseColor = null;
 
     private ThemeManager() {
         this.currentTheme = new LightTheme();
@@ -33,9 +36,35 @@ public class    ThemeManager {
     public void setTheme(Theme theme) {
         this.currentTheme = theme;
         Color bg = theme.getBackgroundColor();
+        this.themePulseStart = System.currentTimeMillis();
+        this.themePulseColor = theme.getAccentColor() != null ? theme.getAccentColor() : bg;
         System.out.println("Theme changed to: " + theme.getName() +
                 " | BackgroundColor: " + bg.getRed() + ", " + bg.getGreen() + ", " + bg.getBlue() + ", " + bg.getAlpha());
         notifyListeners();
+    }
+
+    public void renderThemePulse(DrawContext context) {
+        if (themePulseStart <= 0L || themePulseColor == null || context == null) return;
+        long elapsed = System.currentTimeMillis() - themePulseStart;
+        if (elapsed > 600L) {
+            themePulseStart = 0L;
+            return;
+        }
+        float t = elapsed / 600f;
+        float pulse = (float) Math.sin(t * Math.PI);
+        int rgb = themePulseColor.getRGB() & 0x00FFFFFF;
+        int maxAlpha = (int) (185 * pulse);
+        int centerAlpha = (int) (40 * pulse);
+        int w = context.getScaledWindowWidth();
+        int h = context.getScaledWindowHeight();
+        int band = Math.max(50, (int) (Math.min(w, h) * 0.38f));
+
+        context.fill(0, 0, w, h, rgb | (centerAlpha << 24));
+        int edgeArgb = rgb | (maxAlpha << 24);
+        context.fillGradient(0, 0, w, band, edgeArgb, rgb);
+        context.fillGradient(0, h - band, w, h, rgb, edgeArgb);
+        context.fillGradient(0, 0, band, h, edgeArgb, rgb);
+        context.fillGradient(w - band, 0, w, h, rgb, edgeArgb);
     }
 
     public void addThemeChangeListener(ThemeChangeListener listener) {

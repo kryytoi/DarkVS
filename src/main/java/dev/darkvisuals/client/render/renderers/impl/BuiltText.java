@@ -33,37 +33,50 @@ public record BuiltText(
 
 	@Override
 	public void render(Matrix4f matrix, float x, float y, float z) {
-		RenderSystem.enableBlend();
-		RenderSystem.defaultBlendFunc();
-		RenderSystem.disableCull();
-		RenderSystem.setShaderTexture(0, this.font.getTextureId());
+		if (this.font == null || this.font.getAtlas() == null) return;
+		if (this.text == null || this.text.isEmpty() || this.font.getWidth(this.text, this.size) <= 0.0f) return;
 
-		boolean outlineEnabled = (this.outlineThickness > 0.0f);
+		try {
+			RenderSystem.enableBlend();
+			RenderSystem.defaultBlendFunc();
+			RenderSystem.disableCull();
+			RenderSystem.setShaderTexture(0, this.font.getTextureId());
 
-		ShaderProgram shader = RenderSystem.setShader(MSDF_FONT_SHADER_KEY);
-		shader.getUniform("Range").set(this.font.getAtlas().range());
-		shader.getUniform("Thickness").set(this.thickness);
-		shader.getUniform("Smoothness").set(this.smoothness);
-		shader.getUniform("Outline").set(outlineEnabled ? 1 : 0);
+			boolean outlineEnabled = (this.outlineThickness > 0.0f);
 
-		if (outlineEnabled) {
-			shader.getUniform("OutlineThickness").set(this.outlineThickness);
-			float[] outlineComponents = ColorProvider.normalize(this.outlineColor);
-			shader.getUniform("OutlineColor").set(outlineComponents[0], outlineComponents[1], outlineComponents[2], outlineComponents[3]);
+			ShaderProgram shader = RenderSystem.setShader(MSDF_FONT_SHADER_KEY);
+			if (shader != null) {
+				var rangeU = shader.getUniform("Range");
+				if (rangeU != null) rangeU.set(this.font.getAtlas().range());
+				var thickU = shader.getUniform("Thickness");
+				if (thickU != null) thickU.set(this.thickness);
+				var smoothU = shader.getUniform("Smoothness");
+				if (smoothU != null) smoothU.set(this.smoothness);
+				var outlU = shader.getUniform("Outline");
+				if (outlU != null) outlU.set(outlineEnabled ? 1 : 0);
+
+				if (outlineEnabled) {
+					var outThickU = shader.getUniform("OutlineThickness");
+					if (outThickU != null) outThickU.set(this.outlineThickness);
+					float[] outlineComponents = ColorProvider.normalize(this.outlineColor);
+					var outColU = shader.getUniform("OutlineColor");
+					if (outColU != null) outColU.set(outlineComponents[0], outlineComponents[1], outlineComponents[2], outlineComponents[3]);
+				}
+			}
+
+			BufferBuilder builder = Tessellator.getInstance().begin(DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
+			this.font.applyGlyphs(matrix, builder, this.text, this.size, (this.thickness + this.outlineThickness * 0.5f) * 0.5f * this.size, this.spacing, x, y + this.font.getMetrics().baselineHeight() * this.size, z, this.color);
+			var built = builder.endNullable();
+			if (built != null) {
+				BufferRenderer.drawWithGlobalProgram(built);
+			}
+		} catch (Throwable ignored) {
+		} finally {
+			try {
+				RenderSystem.setShaderTexture(0, 0);
+				RenderSystem.enableCull();
+				RenderSystem.disableBlend();
+			} catch (Throwable ignored) {}
 		}
-
-		if (this.text == null || this.text.isEmpty() || this.font.getWidth(this.text, this.size) <= 0.0f) {
-			RenderSystem.setShaderTexture(0, 0);
-			RenderSystem.enableCull();
-			RenderSystem.disableBlend();
-			return;
-		}
-
-		BufferBuilder builder = Tessellator.getInstance().begin(DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
-		this.font.applyGlyphs(matrix, builder, this.text, this.size, (this.thickness + this.outlineThickness * 0.5f) * 0.5f * this.size, this.spacing, x, y + this.font.getMetrics().baselineHeight() * this.size, z, this.color);
-		BufferRenderer.drawWithGlobalProgram(builder.end());
-		RenderSystem.setShaderTexture(0, 0);
-		RenderSystem.enableCull();
-		RenderSystem.disableBlend();
 	}
 }

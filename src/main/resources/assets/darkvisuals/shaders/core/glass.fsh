@@ -23,7 +23,7 @@ const float DPI = 6.28318530718;
 
 float roundedBoxSDF(vec2 p, vec2 b, vec4 r) {
     r.xy = (p.x > 0.0) ? r.yz : r.xw;
-    r.x  = (p.y > 0.0) ? r.y : r.x;
+    r.x = (p.y > 0.0) ? r.y : r.x;
 
     vec2 q = abs(p) - b + r.x;
     return min(max(q.x, q.y), 0.0) + length(max(q, 0.0)) - r.x;
@@ -35,7 +35,7 @@ float cornerCutSDF(vec2 p, vec2 halfSize, vec4 cuts) {
 
     float c;
     if (sgn.x > 0.0) c = (sgn.y > 0.0) ? cuts.z : cuts.y;
-    else             c = (sgn.y > 0.0) ? cuts.w : cuts.x;
+    else c = (sgn.y > 0.0) ? cuts.w : cuts.x;
 
     if (c <= 0.0) return -1e6;
 
@@ -80,7 +80,6 @@ vec2 glassDistortion(vec2 uv, vec2 shapeSize, float dist) {
     return wave + lens;
 }
 
-// мягкий дискретный блюр фона — 17 сэмплов по двум кольцам
 vec3 blurredBackdrop(vec2 uv) {
     float radius = max(blurRadius, 0.0);
     vec2 px = texelSize * radius;
@@ -118,16 +117,30 @@ void main() {
     float edgeWidth = max(glass.z, 0.0);
     float depthStrength = max(glass.w, 0.0);
     float fillAlpha = 1.0 - smoothstep(-smoothing, smoothing, dist);
-    float outerEdge = edgeWidth > 0.0 ? 1.0 - smoothstep(0.0, edgeWidth, abs(dist)) : 0.0;
-    float innerEdge = edgeWidth > 0.0 ? 1.0 - smoothstep(0.0, edgeWidth * 1.75, -dist) : 0.0;
-    float alpha = max(fillAlpha, outerEdge * 0.42);
 
-    if (alpha < 0.01) {
+    float shadowDist = rectSDF(screenCoord - vec2(0.0, 3.5), blob0, cornerRadii + vec4(1.0), cutSizes);
+    if (blobs.x > 1.5) {
+        float sDist1 = rectSDF(screenCoord - vec2(0.0, 3.5), blob1, cornerRadii + vec4(1.0), cutSizes);
+        shadowDist = smoothUnion(shadowDist, sDist1, blobs.y);
+    }
+    float shadow = (1.0 - smoothstep(0.0, 12.0, shadowDist)) * (1.0 - fillAlpha) * 0.42;
+
+    float innerEdge = edgeWidth > 0.0 ? 1.0 - smoothstep(0.0, edgeWidth * 1.85, -dist) : 0.0;
+    float alpha = fillAlpha;
+    float totalAlpha = max(alpha, shadow);
+
+    if (totalAlpha < 0.005) {
         discard;
     }
 
-    vec2 glassCoord = texCoord;
+    float globalAlpha = clamp(globalAlphaIn, 0.0, 1.0);
 
+    if (dist > 0.0) {
+        fragColor = vec4(vec3(0.015, 0.02, 0.04), shadow * globalAlpha);
+        return;
+    }
+
+    vec2 glassCoord = texCoord;
     if (glass.x > 0.0) {
         vec2 distortion = glassDistortion(rectUv(screenCoord, blob0), blob0.zw, dist);
         if (blobs.x > 1.5) {
@@ -138,24 +151,25 @@ void main() {
         }
         glassCoord += distortion;
     }
-
     glassCoord = clamp(glassCoord, vec2(0.0), vec2(1.0));
 
     vec3 blurred = blurredBackdrop(glassCoord);
-    vec3 finalColor = mix(blurred, tintColor.rgb, tintColor.a);
+    vec3 baseTint = tintColor.rgb;
+    float tintA = tintColor.a > 0.0 ? tintColor.a : 0.22;
+    vec3 finalColor = mix(blurred, baseTint, tintA);
+
+    float normDistY = clamp((screenCoord.y - blob0.y) / max(blob0.w, 1.0), 0.0, 1.0);
+    float topGradient = (1.0 - normDistY) * 0.08;
+    finalColor += vec3(topGradient);
 
     vec2 normal = normalize(vec2(dFdx(dist), dFdy(dist)) + vec2(0.0001));
-    float topLight = clamp(dot(normal, normalize(vec2(-0.65, -0.95))), 0.0, 1.0);
-    float bottomShade = clamp(dot(normal, normalize(vec2(0.65, 0.95))), 0.0, 1.0);
-    float rimLight = outerEdge * (0.35 + topLight * 0.65);
-    float rimShade = outerEdge * bottomShade;
-    float innerGlow = innerEdge * max(0.0, 1.0 - fillAlpha) * 0.45;
+    float topLight = clamp(dot(normal, normalize(vec2(-0.45, -0.9))), 0.0, 1.0);
+    float bevelGroove = smoothstep(0.0, 1.2, -dist) * (1.0 - smoothstep(1.2, 2.5, -dist));
+    float innerGlow = innerEdge * 0.15;
 
-    finalColor += vec3(1.0) * rimLight * depthStrength * 0.16;
-    finalColor += vec3(0.55, 0.78, 1.0) * innerGlow * depthStrength * 0.10;
-    finalColor -= vec3(0.05, 0.09, 0.12) * rimShade * depthStrength * 0.18;
+    finalColor -= vec3(0.05, 0.07, 0.10) * bevelGroove * depthStrength;
+    finalColor += baseTint * innerGlow * depthStrength * 0.3;
+
     finalColor = clamp(finalColor, vec3(0.0), vec3(1.0));
-
-    float globalAlpha = clamp(globalAlphaIn, 0.0, 1.0);
-    fragColor = vec4(finalColor, alpha * globalAlpha);
+    fragColor = vec4(finalColor, fillAlpha * globalAlpha);
 }

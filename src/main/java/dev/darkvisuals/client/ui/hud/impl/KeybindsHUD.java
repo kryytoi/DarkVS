@@ -103,6 +103,7 @@ public class KeybindsHUD extends HudElement implements ThemeManager.ThemeChangeL
             float fade = toggledAnimation.getValue();
 
             setBounds(x, y, w, h);
+            pushScale(matrices);
             Render2D.drawHudBackground(matrices, x, y, w, h, 8f, fade);
 
             String title = I18n.hasTranslation("hud.keybinds.title")
@@ -135,6 +136,7 @@ public class KeybindsHUD extends HudElement implements ThemeManager.ThemeChangeL
                 curY += rowH + 2f;
             }
 
+            popScale(matrices);
             super.onRender2D(e);
         }
     }

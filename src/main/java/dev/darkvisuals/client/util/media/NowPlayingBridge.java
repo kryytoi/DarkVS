@@ -64,6 +64,8 @@ public final class NowPlayingBridge {
 
     private static final String SCRIPT = String.join("\n",
             "$ErrorActionPreference = 'SilentlyContinue'",
+            "[Console]::OutputEncoding = [System.Text.Encoding]::UTF8",
+            "[Console]::InputEncoding = [System.Text.Encoding]::UTF8",
             "Add-Type -AssemblyName System.Runtime.WindowsRuntime",
             "Add-Type -AssemblyName System.Drawing",
             "",

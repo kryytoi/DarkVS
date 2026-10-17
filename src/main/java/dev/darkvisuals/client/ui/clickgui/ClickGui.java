@@ -82,6 +82,8 @@ public class ClickGui extends Screen {
             renderer.render(context, mouseX, mouseY, delta, window, state, progress);
         }
 
+        dev.darkvisuals.client.managers.ThemeManager.getInstance().renderThemePulse(context);
+
         if (closing && progress <= 0.02f) {
             closing = false;
             openAnimation.snapTo(0f);

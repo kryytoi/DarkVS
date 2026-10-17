@@ -12,6 +12,7 @@ import dev.darkvisuals.client.util.renderer.fonts.Fonts;
 import dev.darkvisuals.client.util.renderer.fonts.Font;
 import dev.darkvisuals.client.util.perf.Perf;
 import dev.darkvisuals.modules.impl.render.HUD;
+import dev.darkvisuals.client.ui.hud.WatermarkStyle;
 
 import net.minecraft.client.network.PlayerListEntry;
 import net.minecraft.client.util.math.MatrixStack;
@@ -34,6 +35,8 @@ public class Watermark extends HudElement implements ThemeManager.ThemeChangeLis
     private float displayPing = 0f;
 
     private final Animation wmHover = new Animation(300, 1f, false, Easing.SMOOTH_STEP);
+    private double discoAngle = 0.0;
+    private long lastDiscoTime = System.currentTimeMillis();
 
     public Watermark() {
         super("Watermark");
@@ -91,7 +94,11 @@ public class Watermark extends HudElement implements ThemeManager.ThemeChangeLis
             displayFps += (mc.getCurrentFps() - displayFps) * 0.15f;
             displayPing += (getPing() - displayPing) * 0.12f;
 
-            if (HudStyle.isMinimalistic()) {
+            HUD hud = HUD.getInstance();
+            WatermarkStyle wmStyle = hud != null ? hud.getWatermarkStyle() : WatermarkStyle.DEFAULT;
+            if (wmStyle == WatermarkStyle.DISCO) {
+                renderDisco(e);
+            } else if (HudStyle.isMinimalistic()) {
                 renderMinimalistic(e);
             } else {
                 renderGlowing(e);
@@ -106,7 +113,7 @@ public class Watermark extends HudElement implements ThemeManager.ThemeChangeLis
 
         matrices.push();
         float slide = (1f - fade) * 7f;
-        float scale = 1f + 0.03f * wmHover.getValue();
+        float scale = (1f + 0.03f * wmHover.getValue()) * getScale();
         matrices.translate(getX() + getWidth() / 2f, getY() + getHeight() / 2f, 0f);
         matrices.scale(scale, scale, 1f);
         matrices.translate(-(getX() + getWidth() / 2f), -(getY() + getHeight() / 2f), 0f);
@@ -308,5 +315,84 @@ public class Watermark extends HudElement implements ThemeManager.ThemeChangeLis
         Color c = new Color(accent.getRed(), accent.getGreen(), accent.getBlue(), (int) (255 * fade * (0.55f + 0.45f * pulse)));
         Render2D.drawRoundedRect(matrices, dotX, dotY, dot, dot, dot / 2f, c);
         return dotX + dot + dotGap;
+    }
+
+    private void renderDisco(EventRender2D e) {
+        var matrices = e.getContext().getMatrices();
+        Font font = Fonts.MEDIUM;
+
+        long now = System.currentTimeMillis();
+        long dt = now - lastDiscoTime;
+        lastDiscoTime = now;
+        discoAngle += dt * 0.0025;
+
+        float hue = (float)((now % 3000L) / 3000.0);
+        Color rainbowBg = Color.getHSBColor(hue, 0.7f, 0.15f);
+        Color rainbowAccent = Color.getHSBColor(hue, 0.9f, 1.0f);
+
+        String title = wmTitle();
+        float fontSize = 7f;
+        float dotRadius = 2.5f;
+        int len = title.length();
+
+        float totalWidth = Math.max(80f, len * 12f + 20f);
+        float totalHeight = 22f;
+
+        setBounds(getX(), getY(), totalWidth, totalHeight);
+
+        float x = getX(), y = getY();
+        float fade = toggledAnimation.getValue();
+        if (fade <= 0f) return;
+
+        pushEntrance(matrices, fade);
+
+        Color bgColor = new Color(rainbowBg.getRed(), rainbowBg.getGreen(), rainbowBg.getBlue(), (int)(220 * fade));
+        float r = totalHeight / 2f;
+        Render2D.drawRoundedRect(matrices, x, y, totalWidth, totalHeight, r, bgColor);
+
+        Color borderColor = new Color(rainbowAccent.getRed(), rainbowAccent.getGreen(), rainbowAccent.getBlue(), (int)(180 * fade));
+        Render2D.drawRoundedRect(matrices, x, y, totalWidth, 1f, 0f, borderColor);
+        Render2D.drawRoundedRect(matrices, x, y + totalHeight - 1f, totalWidth, 1f, 0f, borderColor);
+
+        float centerX = x + totalWidth / 2f;
+        float centerY = y + totalHeight / 2f;
+        float orbitW = (totalWidth / 2f - 10f) * 0.85f;
+        float orbitH = (totalHeight / 2f - 2f) * 0.75f;
+
+        for (int i = 0; i < len; i++) {
+            float charAngle = (float)(discoAngle + (i * 2.0 * Math.PI / len));
+            float cx = centerX + orbitW * (float)Math.cos(charAngle);
+            float cy = centerY + orbitH * (float)Math.sin(charAngle);
+
+            float charHue = (hue + i * (1.0f / Math.max(1, len))) % 1.0f;
+            Color dotColor = Color.getHSBColor(charHue, 0.9f, 1.0f);
+            Color dotColorFaded = new Color(dotColor.getRed(), dotColor.getGreen(), dotColor.getBlue(), (int)(255 * fade));
+
+            float pulse = 1f + 0.25f * (float)Math.sin(discoAngle * 3 + i);
+            float dr = dotRadius * pulse;
+            Render2D.drawRoundedRect(matrices, cx - dr, cy - dr, dr * 2, dr * 2, dr, dotColorFaded);
+
+            String ch = String.valueOf(title.charAt(i));
+            float chW = font.getWidth(ch, 5f);
+            float chH = font.getHeight(5f);
+            Color textColorDisco = new Color(255, 255, 255, (int)(220 * fade));
+            Render2D.drawHudText(matrices, font.getFont(5f), ch, cx - chW / 2f, cy - chH / 2f, textColorDisco);
+        }
+
+        for (int i = 0; i < 6; i++) {
+            float sparkAngle = (float)(discoAngle * 0.7 + i * Math.PI / 3.0);
+            float sr = orbitW * 0.45f;
+            float sx = centerX + sr * (float)Math.cos(sparkAngle);
+            float sy = centerY + (orbitH * 0.5f) * (float)Math.sin(sparkAngle * 1.5f);
+            if (sx < x + 2 || sx > x + totalWidth - 2) continue;
+            if (sy < y + 2 || sy > y + totalHeight - 2) continue;
+            float sparkHue = (hue + i * (1f / 6f)) % 1.0f;
+            Color sparkColor = Color.getHSBColor(sparkHue, 1f, 1f);
+            Color sparkFaded = new Color(sparkColor.getRed(), sparkColor.getGreen(), sparkColor.getBlue(), (int)(100 * fade));
+            float sd = 1.0f;
+            Render2D.drawRoundedRect(matrices, sx - sd, sy - sd, sd * 2, sd * 2, sd, sparkFaded);
+        }
+
+        matrices.pop();
     }
 }

@@ -166,12 +166,14 @@ public class Potions extends HudElement implements ThemeManager.ThemeChangeListe
 			}
 
 			e.getContext().getMatrices().push();
+			pushScale(e.getContext().getMatrices());
 			var matrices = e.getContext().getMatrices();
 			float radius = 9f * uiScale;
 
 			if (HudStyle.isMinimalistic()) {
 				renderMinimalistic(matrices, posX, posY, currentWidth, currentHeight, headerH, spacing, rowH, pad, icon, font, titleFont,
 						keys, texts, icons, effects, previewMode, contentHudAlpha, uiScale, yAdjust);
+				popScale(e.getContext().getMatrices());
 				e.getContext().getMatrices().pop();
 				super.onRender2D(e);
 				return;
@@ -237,6 +239,7 @@ public class Potions extends HudElement implements ThemeManager.ThemeChangeListe
 				curY += rowH;
 			}
 
+			popScale(e.getContext().getMatrices());
 			e.getContext().getMatrices().pop();
 			super.onRender2D(e);
 		}

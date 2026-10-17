@@ -59,7 +59,53 @@ public abstract class ChatScreenMixin {
 					rwHelper.notifyBlockedWord(blocked);
 					if (addToHistory) MinecraftClient.getInstance().inGameHud.getChatHud().addToMessageHistory(message);
 					ci.cancel();
+					return;
 				}
+			}
+
+			dev.darkvisuals.modules.impl.utility.CommandSave cmdSave = dev.darkvisuals.modules.impl.utility.CommandSave.getInstance();
+			if (cmdSave != null && cmdSave.shouldBlockCommand(message)) {
+				if (addToHistory) MinecraftClient.getInstance().inGameHud.getChatHud().addToMessageHistory(message);
+				ci.cancel();
+				return;
+			}
+		}
+	}
+
+	@Inject(method = "render", at = @At("TAIL"))
+	private void onRenderChatScreen(net.minecraft.client.gui.DrawContext context, int mouseX, int mouseY, float delta, CallbackInfo ci) {
+		var client = MinecraftClient.getInstance();
+		if (client == null || client.getWindow() == null) return;
+		int sw = client.getWindow().getScaledWidth();
+		int btnW = 108;
+		int btnH = 20;
+		int btnX = sw - btnW - 10;
+		int btnY = 8;
+
+		boolean hovered = mouseX >= btnX && mouseX <= btnX + btnW && mouseY >= btnY && mouseY <= btnY + btnH;
+		int bgColor = hovered ? 0xD0181822 : 0x90101018;
+		int accent = dev.darkvisuals.client.managers.ThemeManager.getInstance().getCurrentTheme().getAccentColor().getRGB() | 0xFF000000;
+		int borderColor = hovered ? accent : 0x35FFFFFF;
+
+		context.fill(btnX, btnY, btnX + btnW, btnY + btnH, bgColor);
+		context.drawBorder(btnX, btnY, btnW, btnH, borderColor);
+		context.drawCenteredTextWithShadow(client.textRenderer, "⛶ HUD Редактор", btnX + btnW / 2, btnY + 6, hovered ? accent : 0xFFEEEEEE);
+	}
+
+	@Inject(method = "mouseClicked", at = @At("HEAD"), cancellable = true)
+	private void onChatMouseClicked(double mouseX, double mouseY, int button, org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable<Boolean> cir) {
+		if (button == 0) {
+			var client = MinecraftClient.getInstance();
+			if (client == null || client.getWindow() == null) return;
+			int sw = client.getWindow().getScaledWidth();
+			int btnW = 108;
+			int btnH = 20;
+			int btnX = sw - btnW - 10;
+			int btnY = 8;
+
+			if (mouseX >= btnX && mouseX <= btnX + btnW && mouseY >= btnY && mouseY <= btnY + btnH) {
+				client.setScreen(new dev.darkvisuals.client.ui.hud.HudEditorScreen());
+				cir.setReturnValue(true);
 			}
 		}
 	}

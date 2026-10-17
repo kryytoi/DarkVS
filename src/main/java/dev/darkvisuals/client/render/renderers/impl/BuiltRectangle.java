@@ -29,16 +29,23 @@ public record BuiltRectangle(
 
     @Override
     public void render(Matrix4f matrix, float x, float y, float z) {
+        float width = this.size.width(), height = this.size.height();
+        if (width <= 0f || height <= 0f) return;
+
+        ShaderProgram shader = null;
+        try {
+            shader = RenderSystem.setShader(RECTANGLE_SHADER_KEY);
+        } catch (Throwable ignored) {
+        }
+        if (shader == null) return;
+
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
         RenderSystem.disableCull();
 
-        float width = this.size.width(), height = this.size.height();
-
-        ShaderProgram shader = RenderSystem.setShader(RECTANGLE_SHADER_KEY);
-        shader.getUniform("Size").set(width, height);
-        shader.getUniform("Radius").set(this.radius.radius1(), this.radius.radius2(), this.radius.radius3(), this.radius.radius4());
-        shader.getUniform("Smoothness").set(this.smoothness);
+        if (shader.getUniform("Size") != null) shader.getUniform("Size").set(width, height);
+        if (shader.getUniform("Radius") != null) shader.getUniform("Radius").set(this.radius.radius1(), this.radius.radius2(), this.radius.radius3(), this.radius.radius4());
+        if (shader.getUniform("Smoothness") != null) shader.getUniform("Smoothness").set(this.smoothness);
 
         BufferBuilder builder = Tessellator.getInstance().begin(DrawMode.QUADS, VertexFormats.POSITION_COLOR);
         builder.vertex(matrix, x, y, z).color(this.color.color1());

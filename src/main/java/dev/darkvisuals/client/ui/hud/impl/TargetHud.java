@@ -13,6 +13,7 @@ import dev.darkvisuals.client.managers.ThemeManager;
 import dev.darkvisuals.client.util.renderer.fonts.Instance;
 import dev.darkvisuals.modules.settings.impl.BooleanSetting;
 import dev.darkvisuals.modules.settings.impl.ListSetting;
+import dev.darkvisuals.modules.settings.impl.NumberSetting;
 import dev.darkvisuals.modules.impl.utility.NameProtect;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.entity.EquipmentSlot;
@@ -43,6 +44,7 @@ public class TargetHud extends HudElement implements ThemeManager.ThemeChangeLis
 
     private final BooleanSetting displayAbsorption = new BooleanSetting("displayAbsorption", true);
     private final BooleanSetting displayHudParticles = new BooleanSetting("hudParticles", true);
+    private final NumberSetting hpCircleSize = new NumberSetting("targethud.hp.size", 18f, 10f, 34f, 1f);
     private final ListSetting style;
 
     public TargetHud() {
@@ -57,6 +59,7 @@ public class TargetHud extends HudElement implements ThemeManager.ThemeChangeLis
 
         getSettings().add(displayAbsorption);
         getSettings().add(displayHudParticles);
+        getSettings().add(hpCircleSize);
         getSettings().add(style);
     }
 
@@ -222,9 +225,10 @@ public class TargetHud extends HudElement implements ThemeManager.ThemeChangeLis
         float slideX = 16f * slideAnimation.getValue() * animationDirectionX;
         float slideY = 16f * slideAnimation.getValue() * animationDirectionY;
 
+        float totalScale = scale * getScale();
         e.getContext().getMatrices().push();
         e.getContext().getMatrices().translate(posX + WIDTH / 2f + slideX, posY + HEIGHT / 2f + slideY, 0f);
-        e.getContext().getMatrices().scale(scale, scale, 1f);
+        e.getContext().getMatrices().scale(totalScale, totalScale, 1f);
         e.getContext().getMatrices().translate(-(posX + WIDTH / 2f), -(posY + HEIGHT / 2f), 0f);
 
         if (HudStyle.isMinimalistic()) {
@@ -603,12 +607,14 @@ public class TargetHud extends HudElement implements ThemeManager.ThemeChangeLis
     private void renderMinimalistic(EventRender2D e, float posX, float posY,
                                     LivingEntity target, LivingEntity previewEntity, boolean previewMode,
                                     float rawHp, int alpha, float fade) {
-        float cardW = 118f;
-        float cardH = 36f;
         float pad = 5f;
         float avatar = 26f;
-        float badge = 18f;
+        float badge = getHpCircleSize();
         float itemSize = 12f;
+
+        float minCardH = Math.max(avatar, badge) + pad * 2f;
+        float cardH = Math.max(36f, minCardH);
+        float cardW = Math.max(118f, pad + avatar + pad + 45f + badge + pad);
 
         setBounds(posX, posY, cardW, cardH + 18f);
 
@@ -706,5 +712,28 @@ public class TargetHud extends HudElement implements ThemeManager.ThemeChangeLis
                                dev.darkvisuals.client.util.renderer.fonts.Font fontFamily, float fontSize,
                                String text, float x, float y, Color color) {
         Render2D.drawHudText(matrices, (Instance) fontFamily.getFont(fontSize), text, x, y, color);
+    }
+
+    public float getHpCircleSize() {
+        return hpCircleSize.getValue();
+    }
+
+    public void setHpCircleSize(float size) {
+        hpCircleSize.setValue(Math.max(10f, Math.min(34f, (float) Math.round(size))));
+        try {
+            var asm = darkvisuals.getInstance().getAutoSaveManager();
+            if (asm != null) asm.scheduleAutoSave();
+        } catch (Throwable ignored) {}
+    }
+
+    public float getHpCircleRelX() {
+        float cardW = 118f;
+        float pad = 5f;
+        return cardW - pad - getHpCircleSize();
+    }
+
+    public float getHpCircleRelY() {
+        float cardH = 36f;
+        return (cardH - getHpCircleSize()) / 2f;
     }
 }

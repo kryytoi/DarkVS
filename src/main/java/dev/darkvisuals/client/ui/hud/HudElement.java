@@ -11,6 +11,7 @@ import dev.darkvisuals.darkvisuals;
 import dev.darkvisuals.modules.settings.Setting;
 import dev.darkvisuals.modules.settings.api.Position;
 import dev.darkvisuals.modules.settings.impl.BooleanSetting;
+import dev.darkvisuals.modules.settings.impl.NumberSetting;
 import dev.darkvisuals.modules.settings.impl.PositionSetting;
 import dev.darkvisuals.modules.api.Category;
 import dev.darkvisuals.modules.api.Module;
@@ -32,6 +33,7 @@ import java.util.List;
 public abstract class HudElement extends Module {
 
     private final PositionSetting position = new PositionSetting("setting.position", new Position(0, 0));
+    private final NumberSetting scale = new NumberSetting("setting.scale", 1.0f, 0.4f, 2.5f, 0.05f);
     private final Animation hoverAnimation = new Animation(300, 1f, false, Easing.SMOOTH_STEP);
     private final Animation cornerAnimation = new Animation(200, 1f, false, Easing.OUT_QUART);
     protected final Animation toggledAnimation = new Animation(300, 1f, false, Easing.BOTH_SINE);
@@ -43,12 +45,14 @@ public abstract class HudElement extends Module {
     public HudElement(String name) {
         super(name, Category.Utility);
         settings.add(position);
+        settings.add(scale);
         setToggled(true);
     }
 
     @EventHandler
     public void onRender2D(EventRender2D e) {
         if (fullNullCheck()) return;
+        if (HudEditorScreen.isOpen()) return;
 
         hoverAnimation.update(MathUtils.isHovered(getX(), getY(), getWidth(), getHeight(), mouseX(), mouseY()) && window == null || button || dragging);
         cornerAnimation.update(hoverAnimation.getValue() > 0);
@@ -218,7 +222,7 @@ public abstract class HudElement extends Module {
 
     @EventHandler
     public void onMouse(EventMouse e) {
-        if (!isEditContext() || fullNullCheck()) return;
+        if (!isEditContext() || fullNullCheck() || HudEditorScreen.isOpen()) return;
 
         if (e.getAction() == 0) {
             button = false;
@@ -265,6 +269,40 @@ public abstract class HudElement extends Module {
         return mc.currentScreen instanceof ChatScreen || HudEditorScreen.isOpen();
     }
 
+    public float getScale() {
+        return scale != null && scale.getValue() != null ? scale.getValue() : 1.0f;
+    }
+
+    public void setScale(float val) {
+        if (scale != null) {
+            float clamped = Math.max(scale.getMin(), Math.min(scale.getMax(), Math.round(val * 20f) / 20f));
+            scale.setValue(clamped);
+            try {
+                dev.darkvisuals.client.managers.AutoSaveManager asm = darkvisuals.getInstance().getAutoSaveManager();
+                if (asm != null) asm.scheduleAutoSave();
+            } catch (Throwable ignored) {}
+        }
+    }
+
+    public void pushScale(net.minecraft.client.util.math.MatrixStack matrices) {
+        float s = getScale();
+        if (Math.abs(s - 1.0f) > 0.001f) {
+            matrices.push();
+            float originX = getX();
+            float originY = getY();
+            matrices.translate(originX, originY, 0f);
+            matrices.scale(s, s, 1f);
+            matrices.translate(-originX, -originY, 0f);
+        }
+    }
+
+    public void popScale(net.minecraft.client.util.math.MatrixStack matrices) {
+        float s = getScale();
+        if (Math.abs(s - 1.0f) > 0.001f) {
+            matrices.pop();
+        }
+    }
+
     public float getX() {
         return mc.getWindow().getScaledWidth() * position.getValue().getX();
     }
@@ -274,10 +312,18 @@ public abstract class HudElement extends Module {
     }
 
     public float getWidth() {
-        return width;
+        return width * getScale();
     }
 
     public float getHeight() {
+        return height * getScale();
+    }
+
+    public float getBaseWidth() {
+        return width;
+    }
+
+    public float getBaseHeight() {
         return height;
     }
 

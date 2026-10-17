@@ -234,9 +234,6 @@ public class NounClickGuiRenderer {
 
         if (isLiquidGlass()) {
             Render2D.drawGlass(ms, fx, fy, FRAME_W, FRAME_H, fade, FRAME_R, glassTint(0.20f * fade), 8f, 3f, 3.5f, 2f);
-            Render2D.drawGradientRect(ms, fx + FRAME_R, fy + 0.5f, FRAME_W - FRAME_R * 2f, 1f,
-                    new Color(255, 255, 255, (int) (120f * fade)),
-                    new Color(255, 255, 255, (int) (20f * fade)), true);
         } else {
             rect(context, fx, fy, FRAME_W, FRAME_H, FRAME_R, withAlpha(C_BG, (int) (255f * fade)));
         }

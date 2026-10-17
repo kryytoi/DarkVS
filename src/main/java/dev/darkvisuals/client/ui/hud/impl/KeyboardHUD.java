@@ -130,6 +130,8 @@ public class KeyboardHUD extends HudElement implements ThemeManager.ThemeChangeL
             float totalW = ROW_W;
             float totalH = (row4Y + SPACE_H) - y;
 
+            pushScale(matrices);
+
             drawKey(matrices, wX, row1Y, KEY, KEY, "W", wAnim.getValue(), fade, 7f, null);
 
             drawKey(matrices, x, row2Y, KEY, KEY, "A", aAnim.getValue(), fade, 7f, null);
@@ -140,6 +142,8 @@ public class KeyboardHUD extends HudElement implements ThemeManager.ThemeChangeL
             drawKey(matrices, x + mouseW + GAP, row3Y, mouseW, MOUSE_H, "RMB", rmbAnim.getValue(), fade, 7f, rmbCps + " CPS");
 
             drawKey(matrices, x, row4Y, ROW_W, SPACE_H, "", spaceAnim.getValue(), fade, 6f, null);
+
+            popScale(matrices);
 
             setBounds(x, y, totalW, totalH);
             super.onRender2D(e);

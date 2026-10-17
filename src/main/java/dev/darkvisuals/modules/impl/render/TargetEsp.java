@@ -43,6 +43,7 @@ public class TargetEsp extends Module implements ThemeManager.ThemeChangeListene
     private final BooleanSetting modeJello = new BooleanSetting("mode.circle", false, () -> false);
     private final BooleanSetting modeCrystals = new BooleanSetting("mode.crystals", false, () -> false);
     private final BooleanSetting modeSvenya = new BooleanSetting("mode.svenya", false, () -> false);
+    private final BooleanSetting modeLightning = new BooleanSetting("mode.lightning", false, () -> false);
 
     private final BooleanSetting modeMarkerOld = new BooleanSetting("old", false, () -> false);
     private final BooleanSetting modeMarkerNew = new BooleanSetting("new", true, () -> false);
@@ -50,7 +51,7 @@ public class TargetEsp extends Module implements ThemeManager.ThemeChangeListene
     private final ListSetting mode = new ListSetting(
             I18n.translate("setting.animationMode"),
             true,
-            modeMarker, modeGhosts, modeJello, modeCrystals, modeSvenya
+            modeMarker, modeGhosts, modeJello, modeCrystals, modeSvenya, modeLightning
     );
 
     private final NumberSetting markerScale = new NumberSetting("setting.markerSize", 3.0f, 0.5f, 8.0f, 0.1f);
@@ -138,6 +139,7 @@ public class TargetEsp extends Module implements ThemeManager.ThemeChangeListene
     private final Animation jelloAnimation = new Animation(500, 1f, true, Easing.BOTH_SINE);
     private final Animation crystalsAnimation = new Animation(500, 1f, true, Easing.BOTH_SINE);
     private final Animation svenyaAnimation = new Animation(500, 1f, true, Easing.BOTH_SINE);
+    private final Animation lightningAnimation = new Animation(500, 1f, true, Easing.BOTH_SINE);
 
     private LivingEntity lastTarget = null;
     private LivingEntity fadingTarget = null;
@@ -303,38 +305,51 @@ public class TargetEsp extends Module implements ThemeManager.ThemeChangeListene
         jelloAnimation.update(grow);
         crystalsAnimation.update(grow);
         svenyaAnimation.update(grow);
+        lightningAnimation.update(grow);
 
-        if (modeMarker.getValue() && (modeGhosts.getValue() || modeJello.getValue() || modeCrystals.getValue() || modeSvenya.getValue())) {
+        if (modeMarker.getValue() && (modeGhosts.getValue() || modeJello.getValue() || modeCrystals.getValue() || modeSvenya.getValue() || modeLightning.getValue())) {
+            modeGhosts.setValue(false);
+            modeJello.setValue(false);
+            modeCrystals.setValue(false);
+            modeSvenya.setValue(false);
+            modeLightning.setValue(false);
+        }
+        if (modeGhosts.getValue() && (modeMarker.getValue() || modeJello.getValue() || modeCrystals.getValue() || modeSvenya.getValue() || modeLightning.getValue())) {
+            modeMarker.setValue(false);
+            modeJello.setValue(false);
+            modeCrystals.setValue(false);
+            modeSvenya.setValue(false);
+            modeLightning.setValue(false);
+        }
+        if (modeJello.getValue() && (modeMarker.getValue() || modeGhosts.getValue() || modeCrystals.getValue() || modeSvenya.getValue() || modeLightning.getValue())) {
+            modeMarker.setValue(false);
+            modeGhosts.setValue(false);
+            modeCrystals.setValue(false);
+            modeSvenya.setValue(false);
+            modeLightning.setValue(false);
+        }
+        if (modeCrystals.getValue() && (modeMarker.getValue() || modeGhosts.getValue() || modeJello.getValue() || modeSvenya.getValue() || modeLightning.getValue())) {
+            modeMarker.setValue(false);
+            modeGhosts.setValue(false);
+            modeJello.setValue(false);
+            modeSvenya.setValue(false);
+            modeLightning.setValue(false);
+        }
+        if (modeSvenya.getValue() && (modeMarker.getValue() || modeGhosts.getValue() || modeJello.getValue() || modeCrystals.getValue() || modeLightning.getValue())) {
+            modeMarker.setValue(false);
+            modeGhosts.setValue(false);
+            modeJello.setValue(false);
+            modeCrystals.setValue(false);
+            modeLightning.setValue(false);
+        }
+        if (modeLightning.getValue() && (modeMarker.getValue() || modeGhosts.getValue() || modeJello.getValue() || modeCrystals.getValue() || modeSvenya.getValue())) {
+            modeMarker.setValue(false);
             modeGhosts.setValue(false);
             modeJello.setValue(false);
             modeCrystals.setValue(false);
             modeSvenya.setValue(false);
         }
-        if (modeGhosts.getValue() && (modeMarker.getValue() || modeJello.getValue() || modeCrystals.getValue() || modeSvenya.getValue())) {
-            modeMarker.setValue(false);
-            modeJello.setValue(false);
-            modeCrystals.setValue(false);
-            modeSvenya.setValue(false);
-        }
-        if (modeJello.getValue() && (modeMarker.getValue() || modeGhosts.getValue() || modeCrystals.getValue() || modeSvenya.getValue())) {
-            modeMarker.setValue(false);
-            modeGhosts.setValue(false);
-            modeCrystals.setValue(false);
-            modeSvenya.setValue(false);
-        }
-        if (modeCrystals.getValue() && (modeMarker.getValue() || modeGhosts.getValue() || modeJello.getValue() || modeSvenya.getValue())) {
-            modeMarker.setValue(false);
-            modeGhosts.setValue(false);
-            modeJello.setValue(false);
-            modeSvenya.setValue(false);
-        }
-        if (modeSvenya.getValue() && (modeMarker.getValue() || modeGhosts.getValue() || modeJello.getValue() || modeCrystals.getValue())) {
-            modeMarker.setValue(false);
-            modeGhosts.setValue(false);
-            modeJello.setValue(false);
-            modeCrystals.setValue(false);
-        }
-        if (!modeMarker.getValue() && !modeGhosts.getValue() && !modeJello.getValue() && !modeCrystals.getValue() && !modeSvenya.getValue()) {
+        if (!modeMarker.getValue() && !modeGhosts.getValue() && !modeJello.getValue() && !modeCrystals.getValue() && !modeSvenya.getValue() && !modeLightning.getValue()) {
             modeMarker.setValue(true);
         }
 
@@ -359,6 +374,10 @@ public class TargetEsp extends Module implements ThemeManager.ThemeChangeListene
             fadingTarget = null;
         }
         if (svenyaAnimation.getValue() <= 0 && forceFade && modeSvenya.getValue()) {
+            fadeOrigin = null;
+            fadingTarget = null;
+        }
+        if (lightningAnimation.getValue() <= 0 && forceFade && modeLightning.getValue()) {
             fadeOrigin = null;
             fadingTarget = null;
         }
@@ -396,6 +415,10 @@ public class TargetEsp extends Module implements ThemeManager.ThemeChangeListene
         } else if (modeSvenya.getValue()) {
             if (lastTarget != null || (fadingTarget != null && svenyaAnimation.getValue() > 0)) {
                 renderSvenya(e);
+            }
+        } else if (modeLightning.getValue()) {
+            if (lastTarget != null || (fadingTarget != null && lightningAnimation.getValue() > 0)) {
+                renderLightningRing(e);
             }
         }
     }
@@ -653,6 +676,143 @@ public class TargetEsp extends Module implements ThemeManager.ThemeChangeListene
         com.mojang.blaze3d.systems.RenderSystem.enableCull();
         com.mojang.blaze3d.systems.RenderSystem.depthMask(true);
         com.mojang.blaze3d.systems.RenderSystem.enableDepthTest();
+        com.mojang.blaze3d.systems.RenderSystem.defaultBlendFunc();
+        com.mojang.blaze3d.systems.RenderSystem.disableBlend();
+    }
+
+    private void renderLightningRing(EventRender3D.Game e) {
+        float alpha = lightningAnimation.getValue();
+        if (alpha <= 0.0F) return;
+
+        LivingEntity targetToRender = fadingTarget != null ? fadingTarget : lastTarget;
+        if (targetToRender == null || mc.player == null) return;
+
+        net.minecraft.client.util.math.MatrixStack matrices = e.getMatrices();
+        Vec3d camPos = mc.gameRenderer.getCamera().getPos();
+
+        double x, y, z;
+        if (fadingTarget != null && fadeOrigin != null) {
+            x = fadeOrigin.x;
+            y = fadeOrigin.y - lastKnownHeight * 0.5;
+            z = fadeOrigin.z;
+        } else {
+            Vec3d lp = targetToRender.getLerpedPos(e.getTickDelta());
+            x = lp.x;
+            y = lp.y;
+            z = lp.z;
+        }
+
+        float radius = Math.max(0.45f, lastKnownWidth * 0.85f);
+        float centerY = lastKnownHeight * 0.38f;
+
+        Color col = getMarkerColor();
+        int cr = col.getRed(), cg = col.getGreen(), cb = col.getBlue();
+
+        com.mojang.blaze3d.systems.RenderSystem.enableBlend();
+        com.mojang.blaze3d.systems.RenderSystem.defaultBlendFunc();
+        com.mojang.blaze3d.systems.RenderSystem.disableCull();
+        com.mojang.blaze3d.systems.RenderSystem.enableDepthTest();
+        com.mojang.blaze3d.systems.RenderSystem.depthMask(false);
+        com.mojang.blaze3d.systems.RenderSystem.setShader(net.minecraft.client.gl.ShaderProgramKeys.POSITION_COLOR);
+
+        matrices.push();
+        matrices.translate(x - camPos.x, y - camPos.y + centerY, z - camPos.z);
+
+        long now = System.currentTimeMillis();
+        float rot = (now % 360000L) * 0.08f;
+        matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(rot));
+
+        org.joml.Matrix4f matrix = matrices.peek().getPositionMatrix();
+
+        int segments = 32;
+        int seed = (int) (now / 45);
+
+        float[] px = new float[segments + 1];
+        float[] py = new float[segments + 1];
+        float[] pz = new float[segments + 1];
+
+        for (int i = 0; i <= segments; i++) {
+            float ang = (float) (i * 2.0 * Math.PI / segments);
+            float baseR = radius;
+            long segSeed = (long) seed * 31 + i * 17L;
+            float jitterR = (((segSeed ^ (segSeed >>> 16)) & 0xFF) / 255.0f - 0.5f) * 0.22f;
+            float jitterY = ((((segSeed * 37) ^ (segSeed >>> 12)) & 0xFF) / 255.0f - 0.5f) * 0.18f;
+
+            if (i == segments) {
+                px[i] = px[0];
+                py[i] = py[0];
+                pz[i] = pz[0];
+            } else {
+                px[i] = (float) Math.cos(ang) * (baseR + jitterR);
+                py[i] = jitterY;
+                pz[i] = (float) Math.sin(ang) * (baseR + jitterR);
+            }
+        }
+
+        int haloA = (int) Math.min(255, alpha * 140);
+        int haloColor = (haloA << 24) | (cr << 16) | (cg << 8) | cb;
+        int coreA = (int) Math.min(255, alpha * 240);
+        int coreColor = (coreA << 24) | (255 << 16) | (255 << 8) | 255;
+
+        net.minecraft.client.render.BufferBuilder lineBuf = net.minecraft.client.render.Tessellator.getInstance().begin(
+                net.minecraft.client.render.VertexFormat.DrawMode.QUADS, net.minecraft.client.render.VertexFormats.POSITION_COLOR);
+
+        float hw = 0.05f;
+        for (int i = 0; i < segments; i++) {
+            float x1 = px[i], y1 = py[i], z1 = pz[i];
+            float x2 = px[i + 1], y2 = py[i + 1], z2 = pz[i + 1];
+
+            lineBuf.vertex(matrix, x1, y1 - hw, z1).color(haloColor);
+            lineBuf.vertex(matrix, x1, y1 + hw, z1).color(haloColor);
+            lineBuf.vertex(matrix, x2, y2 + hw, z2).color(haloColor);
+            lineBuf.vertex(matrix, x2, y2 - hw, z2).color(haloColor);
+
+            lineBuf.vertex(matrix, x1 - hw, y1, z1).color(haloColor);
+            lineBuf.vertex(matrix, x1 + hw, y1, z1).color(haloColor);
+            lineBuf.vertex(matrix, x2 + hw, y2, z2).color(haloColor);
+            lineBuf.vertex(matrix, x2 - hw, y2, z2).color(haloColor);
+        }
+
+        float cw = 0.018f;
+        for (int i = 0; i < segments; i++) {
+            float x1 = px[i], y1 = py[i], z1 = pz[i];
+            float x2 = px[i + 1], y2 = py[i + 1], z2 = pz[i + 1];
+
+            lineBuf.vertex(matrix, x1, y1 - cw, z1).color(coreColor);
+            lineBuf.vertex(matrix, x1, y1 + cw, z1).color(coreColor);
+            lineBuf.vertex(matrix, x2, y2 + cw, z2).color(coreColor);
+            lineBuf.vertex(matrix, x2, y2 - cw, z2).color(coreColor);
+
+            lineBuf.vertex(matrix, x1 - cw, y1, z1).color(coreColor);
+            lineBuf.vertex(matrix, x1 + cw, y1, z1).color(coreColor);
+            lineBuf.vertex(matrix, x2 + cw, y2, z2).color(coreColor);
+            lineBuf.vertex(matrix, x2 - cw, y2, z2).color(coreColor);
+        }
+
+        net.minecraft.client.render.BufferRenderer.drawWithGlobalProgram(lineBuf.end());
+
+        try {
+            com.mojang.blaze3d.systems.RenderSystem.setShader(net.minecraft.client.gl.ShaderProgramKeys.POSITION_TEX_COLOR);
+            com.mojang.blaze3d.systems.RenderSystem.setShaderTexture(0, darkvisuals.id("hud/glow.png"));
+            net.minecraft.client.render.BufferBuilder sparkBuf = net.minecraft.client.render.Tessellator.getInstance().begin(
+                    net.minecraft.client.render.VertexFormat.DrawMode.QUADS, net.minecraft.client.render.VertexFormats.POSITION_TEXTURE_COLOR);
+
+            float gSz = 0.16f;
+            int gCol = ((int)(alpha * 180) << 24) | (cr << 16) | (cg << 8) | cb;
+            for (int i = 0; i < segments; i += 3) {
+                float sx = px[i], sy = py[i], sz = pz[i];
+                sparkBuf.vertex(matrix, sx - gSz, sy - gSz, sz).texture(0f, 0f).color(gCol);
+                sparkBuf.vertex(matrix, sx + gSz, sy - gSz, sz).texture(1f, 0f).color(gCol);
+                sparkBuf.vertex(matrix, sx + gSz, sy + gSz, sz).texture(1f, 1f).color(gCol);
+                sparkBuf.vertex(matrix, sx - gSz, sy + gSz, sz).texture(0f, 1f).color(gCol);
+            }
+            net.minecraft.client.render.BufferRenderer.drawWithGlobalProgram(sparkBuf.end());
+        } catch (Throwable ignored) {}
+
+        matrices.pop();
+
+        com.mojang.blaze3d.systems.RenderSystem.enableCull();
+        com.mojang.blaze3d.systems.RenderSystem.depthMask(true);
         com.mojang.blaze3d.systems.RenderSystem.defaultBlendFunc();
         com.mojang.blaze3d.systems.RenderSystem.disableBlend();
     }

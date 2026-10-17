@@ -1,214 +1,92 @@
 package dev.darkvisuals.client.ui.mainmenu;
 
-import dev.darkvisuals.darkvisuals;
+import com.mojang.blaze3d.systems.RenderSystem;
 import dev.darkvisuals.client.util.Wrapper;
 import dev.darkvisuals.client.util.animations.Animation;
 import dev.darkvisuals.client.util.animations.Easing;
 import dev.darkvisuals.client.util.renderer.Render2D;
-import dev.darkvisuals.client.util.achievements.Achievement;
-import dev.darkvisuals.client.util.achievements.AchievementManager;
 import dev.darkvisuals.client.util.renderer.fonts.Fonts;
+import dev.darkvisuals.darkvisuals;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen;
 import net.minecraft.client.gui.screen.option.OptionsScreen;
 import net.minecraft.client.gui.screen.world.SelectWorldScreen;
-import net.minecraft.client.texture.AbstractTexture;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.math.RotationAxis;
+import org.lwjgl.glfw.GLFW;
 
-import javax.imageio.ImageIO;
 import java.awt.Color;
-import java.awt.FileDialog;
-import java.util.ArrayList;
-import java.util.List;
-import java.awt.image.BufferedImage;
-import java.io.File;
 
 public class MainMenu extends Screen implements Wrapper {
 
-    private Animation entrance     = new Animation(500L, 1.0, true, Easing.EASE_OUT_CUBIC);
-    private final Animation mpHover   = new Animation(150L, 1.0, false, Easing.EASE_OUT_CUBIC);
-    private final Animation spHover   = new Animation(150L, 1.0, false, Easing.EASE_OUT_CUBIC);
-    private final Animation accHover  = new Animation(150L, 1.0, false, Easing.EASE_OUT_CUBIC);
-    private final Animation setHover  = new Animation(150L, 1.0, false, Easing.EASE_OUT_CUBIC);
-    private final Animation exitHover = new Animation(150L, 1.0, false, Easing.EASE_OUT_CUBIC);
-    private final Animation logoHover = new Animation(150L, 1.0, false, Easing.EASE_OUT_CUBIC);
+    public static int menuMode = 3;
+    public static boolean themePickerOpen = false;
+
+    private static final Identifier BG_MODE_2 = Identifier.of("darkvisuals", "textures/background.png");
+    private static final Identifier BG_MODE_3 = Identifier.of("darkvisuals", "textures/background2.png");
+    private static final Identifier BG_MODE_4 = Identifier.of("darkvisuals", "textures/background4.png");
+    private static final Identifier BG_MODE_5 = Identifier.of("darkvisuals", "textures/background5.png");
+
+    private static final Identifier ICO_SOLO    = Identifier.of("darkvisuals", "textures/mainmenu/solo.png");
+    private static final Identifier ICO_MULTI   = Identifier.of("darkvisuals", "textures/mainmenu/multi.png");
+    private static final Identifier ICO_OPTIONS = Identifier.of("darkvisuals", "textures/mainmenu/options.png");
+    private static final Identifier ICO_EXIT    = Identifier.of("darkvisuals", "textures/mainmenu/exit.png");
+    private static final Identifier ICO_PENCIL  = Identifier.of("darkvisuals", "textures/mainmenu/pencil.png");
+    private static final Identifier ICO_BRUSH   = Identifier.of("darkvisuals", "textures/mainmenu/brush.png");
+
+    private static final Color BG_BASE = new Color(12, 9, 19);
 
     private long shownAtMs = 0L;
 
-    private static final Identifier ICO_MULTI   = Identifier.of("darkvisuals", "textures/mainmenu/multi.png");
-    private static final Identifier ICO_SOLO    = Identifier.of("darkvisuals", "textures/mainmenu/solo.png");
-    private static final Identifier ICO_ACCOUNT = Identifier.of("darkvisuals", "textures/mainmenu/account.png");
-    private static final Identifier ICO_OPTIONS = Identifier.of("darkvisuals", "textures/mainmenu/options.png");
-    private static final Identifier ICO_EXIT    = Identifier.of("darkvisuals", "textures/mainmenu/exit.png");
-    private static final Identifier ICO_LOGO    = Identifier.of("darkvisuals", "textures/mainmenu/logo.png");
+    private float lastB1X, lastB1Y;
+    private float lastB2X, lastB2Y;
+    private float lastB3X, lastB3Y;
+    private float lastB4X, lastB4Y;
+    private float lastBtnW = 160f, lastBtnH = 24f;
 
-    private static final String LOGO_FILE_NAME = "custom_logo.png";
-    private static AbstractTexture customLogoTexture = null;
-    private static boolean logoLoadAttempted = false;
+    private float lastB5X, lastB5Y;
+    private float lastB6X, lastB6Y;
+    private float lastSmallSize = 24f;
 
-    private static final float PANEL_W       = 480f;
-    private static final float PANEL_PAD_X   = 34f;
-    private static final float PANEL_PAD_TOP = 30f;
-    private static final float PANEL_PAD_BOT = 30f;
-    private static final float PANEL_RADIUS  = 18f;
-
-    private static final float HEADER_LOGO_SIZE = 36f;
-    private static final float HEADER_GAP       = 44f;
-
-    private static final float BTN_H      = 34f;
-    private static final float ROW_GAP    = 10f;
-    private static final float COL_GAP    = 10f;
-    private static final float RADIUS     = 8f;
-
-    private static final Color BG_BASE        = new Color(12, 9, 19);
-    private static final Color PANEL_TINT     = new Color(12, 9, 20, 78);
-    private static final Color GLASS_DARK     = new Color(18, 13, 28, 52);
-    private static final Color GLASS_PURPLE   = new Color(153, 0, 255, 90);
-    private static final Color GLASS_BTN_TEXT = new Color(235, 235, 240, 255);
-    private static final Color MUTED_TEXT     = new Color(200, 200, 210, 210);
-    private static final Color ACCENT_PURPLE  = new Color(0x99, 0x00, 0xFF);
-    private static final Color ACCENT_SOFT    = new Color(0xB8, 0x64, 0xFF);
-
-    private static final float SUN_CORE_R     = 48f;
-    private static final int   SUN_RAYS        = 14;
-    private static final float SUN_RAY_LONG    = 300f;
-    private static final float SUN_RAY_SHORT   = 180f;
-    private static final float SUN_SPIN_SPEED  = 0.055f;
-
-    private static final Color TITLE_PURPLE = new Color(122, 44, 172);
-    private static final Color TITLE_GRAY   = new Color(96, 96, 106);
-    private static final float SHIMMER_PERIOD = 1600f;
-
-    private static final String TITLE   = "Dark Visuals Recode";
-    private static final String VERSION = "darkvisuals recode v1.0";
-
-    private float lastPanelX, lastPanelY, lastPanelW, lastPanelH;
-    private float lastLogoX, lastLogoY;
-    private float lastY1, lastY2, lastY3;
-    private float lastBtnH = BTN_H;
-    private float lastColX1, lastColX2, lastColW1, lastColW2;
-    private float lastExitX, lastExitY, lastExitW, lastExitH;
-    private float lastAchX, lastAchY;
-    private final List<float[]> lastAchievementHitboxes = new ArrayList<>();
-    private final List<Achievement> lastAchievementList = new ArrayList<>();
-    private static final float ACH_ICON_SIZE = 18f;
-    private static final float ACH_ICON_GAP  = 6f;
+    private float lastPopupStartX, lastPopupStartY;
+    private float lastCardW = 110f, lastCardH = 60f;
+    private float lastCardGapX = 12f, lastCardGapY = 12f;
 
     public MainMenu() {
-        super(Text.of(TITLE));
+        super(Text.literal("Main Menu"));
     }
 
     @Override
     protected void init() {
         super.init();
-        entrance = new Animation(500L, 1.0, true, Easing.EASE_OUT_CUBIC);
         shownAtMs = System.currentTimeMillis();
-        loadCustomLogoIfNeeded();
-        AchievementManager.loadIfNeeded();
     }
 
-    private static float entranceStep(long elapsedMs, long delayMs) {
-        float v = (elapsedMs - delayMs) / 450f;
-        return Math.max(0f, Math.min(1f, v));
-    }
-
-    @Override
-    public boolean shouldCloseOnEsc() { return false; }
-
-    @Override
-    public boolean shouldPause() { return false; }
-
-    private static File[] logoDirCandidates() {
-        return new File[] {
-                new File("C:\\Users\\NewDarko\\Desktop\\1.21.4-Stable-main\\src\\main\\resources\\assets\\darkvisuals\\textures\\mainmenu"),
-                new File(mc.runDirectory, ".." + File.separator + "src" + File.separator + "main"
-                        + File.separator + "resources" + File.separator + "assets"
-                        + File.separator + "darkvisuals" + File.separator + "textures"
-                        + File.separator + "mainmenu"),
-                new File(mc.runDirectory, "darkvisuals")
+    private Color getRecodeColor(float t, float shimmer) {
+        return switch (menuMode) {
+            case 1 -> lerpColor(new Color(236, 72, 153), new Color(168, 85, 247), shimmer);
+            case 2 -> new Color(168, 85, 247);
+            case 3 -> new Color(250, 204, 21);
+            case 4 -> new Color(56, 189, 248);
+            case 5 -> new Color(249, 115, 22);
+            default -> new Color(250, 204, 21);
         };
-    }
-
-    private static File findSavedLogo() {
-        for (File dir : logoDirCandidates()) {
-            File f = new File(dir, LOGO_FILE_NAME);
-            if (f.isFile()) return f;
-        }
-        return null;
-    }
-
-    private static void loadCustomLogoIfNeeded() {
-        if (logoLoadAttempted) return;
-        logoLoadAttempted = true;
-        try {
-            File saved = findSavedLogo();
-            if (saved == null) return;
-            BufferedImage img = ImageIO.read(saved);
-            if (img != null) {
-                customLogoTexture = Render2D.convert(img);
-            }
-        } catch (Throwable ignored) {
-        }
-    }
-
-    private static void saveLogoFile(BufferedImage img) {
-        File[] dirs = logoDirCandidates();
-        for (int i = 0; i < dirs.length; i++) {
-            File dir = dirs[i];
-            boolean isFallback = (i == dirs.length - 1);
-            if (!dir.isDirectory()) {
-                if (!isFallback) continue;
-                if (!dir.mkdirs()) continue;
-            }
-            try {
-                File target = new File(dir, LOGO_FILE_NAME);
-                ImageIO.write(img, "PNG", target);
-                return;
-            } catch (Throwable ignored) {
-            }
-        }
-    }
-
-    private void openLogoChooser() {
-        new Thread(() -> {
-            try {
-                System.setProperty("java.awt.headless", "false");
-                FileDialog fd = new FileDialog((java.awt.Frame) null, "Выбор логотипа", FileDialog.LOAD);
-                fd.setFile("*.png;*.jpg;*.jpeg");
-                fd.setVisible(true);
-                String dir = fd.getDirectory();
-                String file = fd.getFile();
-                fd.dispose();
-                if (dir == null || file == null) return;
-
-                BufferedImage img = ImageIO.read(new File(dir, file));
-                if (img == null) return;
-
-                saveLogoFile(img);
-
-                mc.execute(() -> customLogoTexture = Render2D.convert(img));
-            } catch (Throwable ignored) {
-            }
-        }, "MainMenu-LogoChooser").start();
     }
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+        if (this.width <= 0 || this.height <= 0) return;
 
         if (!Fonts.isLoaded() && !Fonts.load()) {
             try {
-                this.renderBackground(context, mouseX, mouseY, delta);
+                Render2D.drawRect(context.getMatrices(), 0, 0, this.width, this.height, BG_BASE);
                 if (this.textRenderer != null) {
-                    String msg = "Dark Visuals Recode: загрузка шрифтов…";
-                    context.drawCenteredTextWithShadow(this.textRenderer, msg,
+                    context.drawCenteredTextWithShadow(this.textRenderer, "Dark Visuals: загрузка шрифтов…",
                             this.width / 2, this.height / 2, 0xFFFFFFFF);
                 }
             } catch (Throwable ignored) {
-
             }
             return;
         }
@@ -217,502 +95,353 @@ public class MainMenu extends Screen implements Wrapper {
             renderMenu(context, mouseX, mouseY, delta);
         } catch (Throwable t) {
             darkvisuals.LOGGER.error("[DarkVisuals] Ошибка отрисовки главного меню:", t);
-            try { this.renderBackground(context, mouseX, mouseY, delta); } catch (Throwable ignored) {}
+            try {
+                Render2D.drawRect(context.getMatrices(), 0, 0, this.width, this.height, BG_BASE);
+            } catch (Throwable ignored) {}
         }
     }
 
     private void renderMenu(DrawContext context, int mouseX, int mouseY, float delta) {
-        float t = (float) entrance.getValue();
-
+        if (shownAtMs == 0L) shownAtMs = System.currentTimeMillis();
+        float t = Math.min(1.0f, Math.max(0.1f, (System.currentTimeMillis() - shownAtMs) / 300.0f));
         MatrixStack stack = context.getMatrices();
-
         int W = this.width, H = this.height;
 
-        Render2D.drawRect(stack, 0, 0, W, H, BG_BASE);
+        float shimmer = 0.5f + 0.5f * (float) Math.sin((System.currentTimeMillis() - shownAtMs) / 1600.0);
+        Color recodeColor = getRecodeColor(t, shimmer);
 
-        Render2D.drawGradientRect(stack, 0, 0, W, H * 0.30f,
-                new Color(0, 0, 0, 120), new Color(0, 0, 0, 0), false);
-        Render2D.drawGradientRect(stack, 0, H * 0.70f, W, H * 0.30f,
-                new Color(0, 0, 0, 0), new Color(0, 0, 0, 150), false);
-
-        drawSun(stack, W, H, t);
-
-        Identifier introFrame = dev.darkvisuals.client.util.IntroManager.currentFrame();
-        if (introFrame != null) {
-            Render2D.drawTexture(stack, 0, 0, W, H, 0f, introFrame, Color.WHITE);
+        if (menuMode == 1) {
+            Render2D.drawRect(stack, 0, 0, W, H, BG_BASE);
+            Render2D.drawGradientRect(stack, 0, 0, W, H * 0.4f,
+                    new Color(0, 0, 0, 140), new Color(0, 0, 0, 0), false);
+            Render2D.drawGradientRect(stack, 0, H * 0.6f, W, H * 0.4f,
+                    new Color(0, 0, 0, 0), new Color(0, 0, 0, 170), false);
+        } else {
+            Identifier bgTex = switch (menuMode) {
+                case 2 -> BG_MODE_2;
+                case 3 -> BG_MODE_3;
+                case 4 -> BG_MODE_4;
+                case 5 -> BG_MODE_5;
+                default -> BG_MODE_3;
+            };
+            Render2D.drawTexture(stack, 0, 0, W, H, 0f, bgTex, Color.WHITE);
+            Render2D.drawRect(stack, 0, 0, W, H, new Color(0, 0, 0, 60));
         }
 
-        float panelW = Math.min(PANEL_W, W - 40f);
+        float titleX = 26f;
+        float titleY = 22f;
 
-        float headerH   = HEADER_LOGO_SIZE;
-        float contentH  = PANEL_PAD_TOP + headerH + HEADER_GAP
-                + BTN_H + ROW_GAP
-                + BTN_H + ROW_GAP
-                + BTN_H
-                + PANEL_PAD_BOT;
+        float darkVisSz = 17f;
+        String darkVisText = "DARK VISUALS";
+        Render2D.drawFont(stack, Fonts.BOLD.getFont(darkVisSz), darkVisText,
+                titleX, titleY, withAlpha(new Color(245, 245, 250), (int) (250 * t)));
 
-        float panelX = (W - panelW) / 2f;
-        float panelY = (H - contentH) / 2f;
+        float recodeSz = 22f;
+        String recodeText = "RECODE";
+        float recodeY = titleY + Fonts.BOLD.getHeight(darkVisSz) + 1f;
 
         stack.push();
-        stack.translate(W / 2f, H / 2f, 0f);
-        float panelScale = 0.965f + 0.035f * t;
-        stack.scale(panelScale, panelScale, 1f);
-        stack.translate(-W / 2f, -H / 2f, 0f);
-        stack.translate(0f, (1f - t) * 16f, 0f);
-
-        Render2D.drawBlurredRect(stack, panelX - 6f, panelY - 6f, panelW + 12f, contentH + 12f,
-                PANEL_RADIUS + 6f, 16f, withAlpha(ACCENT_PURPLE, (int) (42f * t)));
-
-        drawGlass(stack, panelX, panelY, panelW, contentH, PANEL_RADIUS, 14f, t, PANEL_TINT);
-
-        float accentPulse = 0.55f + 0.45f * (float) Math.sin(System.currentTimeMillis() / 720.0);
-        Render2D.drawRoundedRect(stack, panelX + 28f, panelY + 1f, panelW - 56f, 1.5f, 1f,
-                withAlpha(ACCENT_SOFT, (int) (95f * t * accentPulse)));
-
-        this.lastPanelX = panelX; this.lastPanelY = panelY;
-        this.lastPanelW = panelW; this.lastPanelH = contentH;
-
-        float innerX = panelX + PANEL_PAD_X;
-        float innerW = panelW - PANEL_PAD_X * 2f;
-
-        float headerY = panelY + PANEL_PAD_TOP;
-
-        float titleSz    = 20f;
-        String titleText = TITLE;
-        float titleW     = Fonts.BOLD.getWidth(titleText, titleSz);
-        float logoTextGap = 14f;
-
-        float headerBlockW = HEADER_LOGO_SIZE + logoTextGap + titleW;
-        float headerBlockX = innerX + innerW / 2f - headerBlockW / 2f;
-
-        float logoX = headerBlockX;
-
-        float logoBob = (float) Math.sin((System.currentTimeMillis() - shownAtMs) / 900.0) * 1.5f;
-        drawHeaderLogo(stack, logoX, headerY + logoBob, HEADER_LOGO_SIZE, t);
-        this.lastLogoX = logoX; this.lastLogoY = headerY;
-
-        float titleX = logoX + HEADER_LOGO_SIZE + logoTextGap;
-        float titleY = headerY + HEADER_LOGO_SIZE / 2f - Fonts.BOLD.getHeight(titleSz) / 2f;
-
-        float titlePulse = 0.85f + 0.15f * (float) Math.sin((System.currentTimeMillis() - shownAtMs) / 1100.0);
-        float shimmer = 0.5f + 0.5f * (float) Math.sin((System.currentTimeMillis() - shownAtMs) / SHIMMER_PERIOD);
-        Color titleColor = lerpColor(TITLE_PURPLE, TITLE_GRAY, shimmer);
-
-        Render2D.drawFont(stack, Fonts.BOLD.getFont(titleSz), titleText,
-                titleX + 0.6f, titleY + 0.6f,
-                withAlpha(ACCENT_SOFT, (int) (60 * t * shimmer)));
-        Render2D.drawFont(stack, Fonts.BOLD.getFont(titleSz), titleText,
-                titleX, titleY, withAlpha(titleColor, (int) (235 * t * titlePulse)));
-        Render2D.drawRoundedRect(stack, headerBlockX, headerY + HEADER_LOGO_SIZE + 7f, headerBlockW, 1.2f, 0.6f,
-                withAlpha(titleColor, (int) (110 * t * titlePulse)));
-
-        float y1 = headerY + headerH + HEADER_GAP;
-        float y2 = y1 + BTN_H + ROW_GAP;
-        float y3 = y2 + BTN_H + ROW_GAP;
-
-        float colW = (innerW - COL_GAP) / 2f;
-        float col1X = innerX;
-        float col2X = innerX + colW + COL_GAP;
-
-        this.lastColX1 = col1X; this.lastColX2 = col2X;
-        this.lastColW1 = colW;  this.lastColW2 = colW;
-        this.lastY1 = y1; this.lastY2 = y2; this.lastY3 = y3;
-        this.lastBtnH = BTN_H;
-
-        long elapsedMs = System.currentTimeMillis() - shownAtMs;
-
-        float b1 = entranceStep(elapsedMs, 120L);
-        mpHover.update(isHovered(mouseX, mouseY, col1X, y1, colW, BTN_H));
-        if (b1 > 0.01f) {
-            stack.push();
-            stack.translate(0f, (1f - b1) * 16f - 2f * (float) mpHover.getValue(), 0f);
-            drawFilledButton(stack, col1X, y1, colW, BTN_H, "Сетевая игра",
-                    ICO_MULTI, ACCENT_PURPLE, mpHover.getValue(), t * b1, true);
-            stack.pop();
-        }
-
-        float b2 = entranceStep(elapsedMs, 190L);
-        spHover.update(isHovered(mouseX, mouseY, col2X, y1, colW, BTN_H));
-        if (b2 > 0.01f) {
-            stack.push();
-            stack.translate(0f, (1f - b2) * 16f - 2f * (float) spHover.getValue(), 0f);
-            drawGlassButton(stack, col2X, y1, colW, BTN_H, "Одиночная Игра",
-                    ICO_SOLO, ACCENT_PURPLE, spHover.getValue(), t * b2, false);
-            stack.pop();
-        }
-
-        float b3 = entranceStep(elapsedMs, 260L);
-        accHover.update(isHovered(mouseX, mouseY, col1X, y2, colW, BTN_H));
-        if (b3 > 0.01f) {
-            stack.push();
-            stack.translate(0f, (1f - b3) * 16f - 2f * (float) accHover.getValue(), 0f);
-            drawGlassButton(stack, col1X, y2, colW, BTN_H, "Аккаунты",
-                    ICO_ACCOUNT, ACCENT_PURPLE, accHover.getValue(), t * b3, true);
-            stack.pop();
-        }
-
-        float b4 = entranceStep(elapsedMs, 330L);
-        setHover.update(isHovered(mouseX, mouseY, col2X, y2, colW, BTN_H));
-        if (b4 > 0.01f) {
-            stack.push();
-            stack.translate(0f, (1f - b4) * 16f - 2f * (float) setHover.getValue(), 0f);
-            drawGlassButton(stack, col2X, y2, colW, BTN_H, "Настройки",
-                    ICO_OPTIONS, ACCENT_PURPLE, setHover.getValue(), t * b4, false);
-            stack.pop();
-        }
-
-        float b5 = entranceStep(elapsedMs, 400L);
-        float exitW = innerW;
-        exitHover.update(isHovered(mouseX, mouseY, col1X, y3, exitW, BTN_H));
-        if (b5 > 0.01f) {
-            stack.push();
-            stack.translate(0f, (1f - b5) * 16f - 2f * (float) exitHover.getValue(), 0f);
-            drawExitButton(stack, col1X, y3, exitW, BTN_H, "Выйти", exitHover.getValue(), t * b5);
-            stack.pop();
-        }
-
+        stack.translate(titleX, recodeY, 0f);
+        stack.scale(1.08f, 1.0f, 1.0f);
+        Render2D.drawFont(stack, Fonts.BOLD.getFont(recodeSz), recodeText,
+                0f, 0f, withAlpha(recodeColor, (int) (250 * t)));
         stack.pop();
 
-        this.lastExitX = col1X; this.lastExitY = y3;
-        this.lastExitW = exitW; this.lastExitH = BTN_H;
+        float menuX = 26f;
+        float menuY = recodeY + Fonts.BOLD.getHeight(recodeSz) + 18f;
+        float btnW = 160f;
+        float btnH = 24f;
+        float btnGap = 7f;
 
-        drawAchievements(stack, 20f, 20f, mouseX, mouseY, t);
+        this.lastBtnW = btnW;
+        this.lastBtnH = btnH;
 
-        float verSz = 8f;
-        float verW  = Fonts.REGULAR.getWidth(VERSION, verSz);
-        float verT = entranceStep(System.currentTimeMillis() - shownAtMs, 650L);
-        Render2D.drawFont(stack, Fonts.REGULAR.getFont(verSz), VERSION,
-                W - verW - 10f, H - verSz - 10f,
-                new Color(210, 210, 220, (int) (180 * t * verT)));
-    }
+        this.lastB1X = menuX; this.lastB1Y = menuY;
+        this.lastB2X = menuX; this.lastB2Y = menuY + btnH + btnGap;
+        this.lastB3X = menuX; this.lastB3Y = menuY + (btnH + btnGap) * 2f;
+        this.lastB4X = menuX; this.lastB4Y = menuY + (btnH + btnGap) * 3f;
 
-    private void drawSun(MatrixStack stack, int W, int H, float alpha) {
-        if (alpha <= 0.01f) return;
+        boolean hov1 = !themePickerOpen && isHovered(mouseX, mouseY, lastB1X, lastB1Y, btnW, btnH);
+        boolean hov2 = !themePickerOpen && isHovered(mouseX, mouseY, lastB2X, lastB2Y, btnW, btnH);
+        boolean hov3 = !themePickerOpen && isHovered(mouseX, mouseY, lastB3X, lastB3Y, btnW, btnH);
+        boolean hov4 = !themePickerOpen && isHovered(mouseX, mouseY, lastB4X, lastB4Y, btnW, btnH);
 
-        float time = (System.currentTimeMillis() - shownAtMs) / 1000f;
-        float cx = W / 2f, cy = H / 2f;
-        float breathe = 1f + 0.03f * (float) Math.sin(time * 1.1f);
-        float coreR = SUN_CORE_R * breathe * (0.7f + 0.3f * alpha);
-        int a = (int) (255f * alpha);
+        drawMenuButton(stack, lastB1X, lastB1Y, btnW, btnH, "Одиночная игра", ICO_SOLO, hov1, t);
+        drawMenuButton(stack, lastB2X, lastB2Y, btnW, btnH, "Сетевая игра", ICO_MULTI, hov2, t);
+        drawMenuButton(stack, lastB3X, lastB3Y, btnW, btnH, "Настройки", ICO_OPTIONS, hov3, t);
+        drawMenuButton(stack, lastB4X, lastB4Y, btnW, btnH, "Выход", ICO_EXIT, hov4, t);
 
-        for (int i = 0; i < SUN_RAYS; i++) {
-            boolean longRay = (i % 2 == 0);
-            float len    = longRay ? SUN_RAY_LONG : SUN_RAY_SHORT;
-            float halfW  = longRay ? 4.5f : 3f;
-            float rayA   = (longRay ? 62f : 44f) * alpha;
+        float smallSize = 24f;
+        float smallY = menuY + (btnH + btnGap) * 4f;
+        this.lastSmallSize = smallSize;
+        this.lastB5X = menuX;
+        this.lastB5Y = smallY;
+        this.lastB6X = menuX + smallSize + 7f;
+        this.lastB6Y = smallY;
 
-            stack.push();
-            stack.translate(cx, cy, 0f);
-            stack.multiply(RotationAxis.POSITIVE_Z.rotation(
-                    time * SUN_SPIN_SPEED + i * (float) (Math.PI * 2.0 / SUN_RAYS)));
+        boolean hov5 = !themePickerOpen && isHovered(mouseX, mouseY, lastB5X, lastB5Y, smallSize, smallSize);
+        boolean hov6 = !themePickerOpen && isHovered(mouseX, mouseY, lastB6X, lastB6Y, smallSize, smallSize);
 
-            Render2D.drawBlurredRect(stack, coreR * 0.7f, -halfW * 2.2f,
-                    len, halfW * 4.4f, halfW * 2.2f, 7f,
-                    new Color(153, 0, 255, (int) rayA));
+        drawSmallButton(stack, lastB5X, lastB5Y, smallSize, ICO_PENCIL, hov5, t);
+        drawSmallButton(stack, lastB6X, lastB6Y, smallSize, ICO_BRUSH, hov6 || themePickerOpen, t);
 
-            Render2D.drawRoundedRect(stack, coreR * 0.7f, -halfW, len, halfW * 2f, halfW,
-                    new Color(196, 120, 255, (int) (rayA * 1.5f)));
-            stack.pop();
+        if (hov5 && !themePickerOpen) {
+            String user = mc.getSession() != null && mc.getSession().getUsername() != null ? mc.getSession().getUsername() : "Player";
+            String tip = "Аккаунты (" + user + ")";
+            float tipSz = 7f;
+            float tw = Fonts.REGULAR.getWidth(tip, tipSz);
+            float tx = lastB5X + smallSize + 8f;
+            float ty = lastB5Y + (smallSize - Fonts.REGULAR.getHeight(tipSz)) / 2f;
+            Render2D.drawRoundedRect(stack, tx - 4f, ty - 2f, tw + 8f, Fonts.REGULAR.getHeight(tipSz) + 4f, 4f, new Color(15, 15, 20, 210));
+            Render2D.drawFont(stack, Fonts.REGULAR.getFont(tipSz), tip, tx, ty, Color.WHITE);
         }
 
-        float glowR = coreR * 3.6f;
-        Render2D.drawBlurredRect(stack, cx - glowR, cy - glowR, glowR * 2f, glowR * 2f, glowR, 26f,
-                new Color(153, 0, 255, (int) (85f * alpha)));
+        if (themePickerOpen) {
+            renderThemePicker(stack, W, H, mouseX, mouseY);
+        }
+    }
 
-        Render2D.drawRoundedRect(stack, cx - coreR, cy - coreR, coreR * 2f, coreR * 2f, coreR,
-                new Color(153, 0, 255, (int) (225f * alpha)));
-        float r2 = coreR * 0.72f;
-        Render2D.drawRoundedRect(stack, cx - r2, cy - r2, r2 * 2f, r2 * 2f, r2,
-                new Color(186, 90, 255, (int) (235f * alpha)));
-        float r3 = coreR * 0.46f;
-        Render2D.drawRoundedRect(stack, cx - r3, cy - r3, r3 * 2f, r3 * 2f, r3,
-                new Color(224, 168, 255, (int) (245f * alpha)));
-        float r4 = coreR * 0.22f;
-        Render2D.drawRoundedRect(stack, cx - r4, cy - r4, r4 * 2f, r4 * 2f, r4,
-                new Color(255, 240, 255, a));
+    private void renderThemePicker(MatrixStack stack, int W, int H, int mx, int my) {
+        Render2D.drawRect(stack, 0, 0, W, H, new Color(0, 0, 0, 110));
+
+        float cardW = 110f;
+        float cardH = 60f;
+        float gapX = 12f;
+        float gapY = 12f;
+
+        this.lastCardW = cardW;
+        this.lastCardH = cardH;
+        this.lastCardGapX = gapX;
+        this.lastCardGapY = gapY;
+
+        float totalW = 3 * cardW + 2 * gapX;
+        float totalH = 2 * cardH + gapY;
+
+        float startX = (W - totalW) / 2f + 30f;
+        float startY = (H - totalH) / 2f;
+
+        this.lastPopupStartX = startX;
+        this.lastPopupStartY = startY;
+
+        for (int r = 0; r < 2; r++) {
+            for (int c = 0; c < 3; c++) {
+                float cx = startX + c * (cardW + gapX);
+                float cy = startY + r * (cardH + gapY);
+
+                int modeNum = 1;
+                if (r == 0 && c == 0) modeNum = 1;
+                else if (r == 0 && c == 1) modeNum = 2;
+                else if (r == 0 && c == 2) modeNum = 3;
+                else if (r == 1 && c == 0) modeNum = -1;
+                else if (r == 1 && c == 1) modeNum = 4;
+                else if (r == 1 && c == 2) modeNum = 5;
+
+                boolean isSelected = (modeNum == menuMode);
+                boolean hovered = isHovered(mx, my, cx, cy, cardW, cardH);
+
+                drawThemeCard(stack, cx, cy, cardW, cardH, modeNum, isSelected, hovered);
+            }
+        }
+    }
+
+    private void drawThemeCard(MatrixStack stack, float x, float y, float w, float h,
+                               int modeNum, boolean isSelected, boolean hovered) {
+        Color cardBg = hovered ? new Color(45, 45, 60, 170) : new Color(20, 20, 30, 140);
+        Color cardBorder = isSelected ? new Color(74, 222, 128) : (hovered ? new Color(255, 255, 255, 80) : new Color(255, 255, 255, 30));
+        float borderThick = isSelected ? 2f : 1f;
+
+        Render2D.drawRoundedRect(stack, x, y, w, h, 8f, cardBg);
+        Render2D.drawBorder(stack, x, y, w, h, 8f, borderThick, 0f, cardBorder);
+
+        if (modeNum == 1) {
+            String defText = "Default";
+            float defSz = 14f;
+            float tw = Fonts.BOLD.getWidth(defText, defSz);
+            float th = Fonts.BOLD.getHeight(defSz);
+            Render2D.drawFont(stack, Fonts.BOLD.getFont(defSz), defText,
+                    x + (w - tw) / 2f, y + (h - th) / 2f + 1f, Color.WHITE);
+        } else if (modeNum == -1) {
+            float ax = x + w / 2f;
+            float ay = y + h / 2f;
+            Render2D.drawLine(stack, ax - 16f, ay, ax + 16f, ay, 2.5f, Color.WHITE);
+            Render2D.drawLine(stack, ax - 16f, ay, ax - 8f, ay - 8f, 2.5f, Color.WHITE);
+            Render2D.drawLine(stack, ax - 16f, ay, ax - 8f, ay + 8f, 2.5f, Color.WHITE);
+        } else {
+            Identifier tex = switch (modeNum) {
+                case 2 -> BG_MODE_2;
+                case 3 -> BG_MODE_3;
+                case 4 -> BG_MODE_4;
+                case 5 -> BG_MODE_5;
+                default -> BG_MODE_3;
+            };
+            float tw = 84f;
+            float th = 44f;
+            float tx = x + (w - tw) / 2f;
+            float ty = y + (h - th) / 2f;
+            Render2D.drawTexture(stack, tx, ty, tw, th, 6f, tex, Color.WHITE);
+            Render2D.drawRoundedRect(stack, tx, ty, tw, th, 6f, new Color(0, 0, 0, 50));
+
+            String numStr = String.valueOf(modeNum);
+            float numSz = 18f;
+            float nw = Fonts.BOLD.getWidth(numStr, numSz);
+            float nh = Fonts.BOLD.getHeight(numSz);
+            Render2D.drawFont(stack, Fonts.BOLD.getFont(numSz), numStr,
+                    tx + (tw - nw) / 2f, ty + (th - nh) / 2f + 1f, Color.WHITE);
+        }
+    }
+
+    private void drawMenuButton(MatrixStack stack, float x, float y, float w, float h,
+                                String text, Identifier icon, boolean hovered, float alpha) {
+        Color bg = hovered ? new Color(45, 45, 60, (int) (180 * alpha)) : new Color(20, 20, 30, (int) (130 * alpha));
+        Color border = hovered ? new Color(255, 255, 255, (int) (95 * alpha)) : new Color(255, 255, 255, (int) (35 * alpha));
+        Render2D.drawRoundedRect(stack, x, y, w, h, 6f, bg);
+        Render2D.drawBorder(stack, x, y, w, h, 6f, 1f, 0f, border);
+
+        if (icon != null) {
+            float iconSz = 12f;
+            Render2D.drawTexture(stack, x + 7f, y + (h - iconSz) / 2f, iconSz, iconSz, 0f, icon,
+                    withAlpha(Color.WHITE, (int) (245 * alpha)));
+            Render2D.drawRect(stack, x + 25f, y + 4f, 1f, h - 8f,
+                    withAlpha(new Color(255, 255, 255), (int) (45 * alpha)));
+            float textX = x + 33f;
+            float textY = y + (h - Fonts.BOLD.getHeight(7.5f)) / 2f + 1f;
+            Render2D.drawFont(stack, Fonts.BOLD.getFont(7.5f), text, textX, textY,
+                    withAlpha(Color.WHITE, (int) (245 * alpha)));
+        }
+    }
+
+    private void drawSmallButton(MatrixStack stack, float x, float y, float size,
+                                 Identifier icon, boolean hovered, float alpha) {
+        Color bg = hovered ? new Color(45, 45, 60, (int) (180 * alpha)) : new Color(20, 20, 30, (int) (130 * alpha));
+        Color border = hovered ? new Color(255, 255, 255, (int) (95 * alpha)) : new Color(255, 255, 255, (int) (35 * alpha));
+        Render2D.drawRoundedRect(stack, x, y, size, size, 6f, bg);
+        Render2D.drawBorder(stack, x, y, size, size, 6f, 1f, 0f, border);
+
+        if (icon != null) {
+            float iconSz = 12f;
+            Render2D.drawTexture(stack, x + (size - iconSz) / 2f, y + (size - iconSz) / 2f, iconSz, iconSz, 0f, icon,
+                    withAlpha(Color.WHITE, (int) (245 * alpha)));
+        }
     }
 
     @Override
     public boolean mouseClicked(double mx, double my, int btn) {
         if (btn != 0) return false;
 
-        if (isHovered(mx, my, lastColX1, lastY1, lastColW1, lastBtnH)) {
-            mc.setScreen(new MultiplayerScreen(this));
-            return true;
-        }
-        if (isHovered(mx, my, lastColX2, lastY1, lastColW2, lastBtnH)) {
-            mc.setScreen(new SelectWorldScreen(this));
-            return true;
-        }
+        try {
+            if (themePickerOpen) {
+                float startX = lastPopupStartX;
+                float startY = lastPopupStartY;
+                float cardW = lastCardW;
+                float cardH = lastCardH;
+                float gapX = lastCardGapX;
+                float gapY = lastCardGapY;
 
-        if (isHovered(mx, my, lastColX1, lastY2, lastColW1, lastBtnH)) {
-            mc.setScreen(new AltManagerScreen(this));
-            return true;
-        }
-        if (isHovered(mx, my, lastColX2, lastY2, lastColW2, lastBtnH)) {
-            mc.setScreen(new OptionsScreen(this, mc.options));
-            return true;
-        }
-
-        if (isHovered(mx, my, lastExitX, lastExitY, lastExitW, lastExitH)) {
-            mc.scheduleStop();
-            new Thread(() -> {
-                try {
-                    Thread.sleep(3000L);
-                } catch (InterruptedException ignored) {
+                for (int r = 0; r < 2; r++) {
+                    for (int c = 0; c < 3; c++) {
+                        float cx = startX + c * (cardW + gapX);
+                        float cy = startY + r * (cardH + gapY);
+                        if (isHovered(mx, my, cx, cy, cardW, cardH)) {
+                            if (r == 0 && c == 0) {
+                                menuMode = 1;
+                            } else if (r == 0 && c == 1) {
+                                menuMode = 2;
+                            } else if (r == 0 && c == 2) {
+                                menuMode = 3;
+                            } else if (r == 1 && c == 0) {
+                                themePickerOpen = false;
+                            } else if (r == 1 && c == 1) {
+                                menuMode = 4;
+                            } else if (r == 1 && c == 2) {
+                                menuMode = 5;
+                            }
+                            return true;
+                        }
+                    }
                 }
-                System.exit(0);
-            }, "MainMenu-ForceExit").start();
-            return true;
-        }
+                themePickerOpen = false;
+                return true;
+            }
 
-        if (isHovered(mx, my, lastLogoX, lastLogoY, HEADER_LOGO_SIZE, HEADER_LOGO_SIZE)) {
-            openLogoChooser();
-            return true;
-        }
+            if (isHovered(mx, my, lastB1X, lastB1Y, lastBtnW, lastBtnH)) {
+                mc.setScreen(new SelectWorldScreen(this));
+                return true;
+            }
+            if (isHovered(mx, my, lastB2X, lastB2Y, lastBtnW, lastBtnH)) {
+                mc.setScreen(new MultiplayerScreen(this));
+                return true;
+            }
+            if (isHovered(mx, my, lastB3X, lastB3Y, lastBtnW, lastBtnH)) {
+                mc.setScreen(new OptionsScreen(this, mc.options));
+                return true;
+            }
+            if (isHovered(mx, my, lastB4X, lastB4Y, lastBtnW, lastBtnH)) {
+                mc.scheduleStop();
+                new Thread(() -> {
+                    try {
+                        Thread.sleep(1500L);
+                    } catch (InterruptedException ignored) {
+                    }
+                    System.exit(0);
+                }, "MainMenu-ForceExit").start();
+                return true;
+            }
 
-        for (int i = 0; i < lastAchievementHitboxes.size(); i++) {
-            float[] hb = lastAchievementHitboxes.get(i);
-            if (isHovered(mx, my, hb[0], hb[1], hb[2], hb[3])) {
+            if (isHovered(mx, my, lastB5X, lastB5Y, lastSmallSize, lastSmallSize)) {
+                mc.setScreen(new AltManagerScreen(this));
+                return true;
+            }
+
+            if (isHovered(mx, my, lastB6X, lastB6Y, lastSmallSize, lastSmallSize)) {
+                themePickerOpen = true;
+                return true;
+            }
+
+            return super.mouseClicked(mx, my, btn);
+        } catch (Throwable t) {
+            darkvisuals.LOGGER.error("[DarkVisuals] Ошибка при клике в главном меню:", t);
+            return false;
+        }
+    }
+
+    @Override
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        if (keyCode == GLFW.GLFW_KEY_F11) {
+            if (this.client != null && this.client.getWindow() != null) {
+                this.client.getWindow().toggleFullscreen();
+                this.client.options.getFullscreen().setValue(this.client.getWindow().isFullscreen());
                 return true;
             }
         }
-
-        return super.mouseClicked(mx, my, btn);
-    }
-
-    private void drawGlass(MatrixStack stack, float x, float y, float w, float h,
-                           float radius, float blur, float fade, Color tint) {
-        drawGlass(stack, x, y, w, h, radius, blur, fade, tint, true);
-    }
-
-    private void drawGlass(MatrixStack stack, float x, float y, float w, float h,
-                           float radius, float blur, float fade, Color tint, boolean sheen) {
-        if (fade <= 0.01f) return;
-
-        Render2D.drawShaderBlurRect(stack, x, y, w, h, radius, blur * fade,
-                new Color(255, 255, 255, (int) (255f * fade)));
-
-        Render2D.drawRoundedRect(stack, x, y, w, h, radius,
-                withAlpha(tint, (int) (tint.getAlpha() * fade)));
-
-        if (!sheen) {
-
-            Render2D.drawBorder(stack, x, y, w, h, radius, 0f, 1f,
-                    withAlpha(tint, (int) (110f * fade)));
-            return;
-        }
-
-        Render2D.drawGradientRect(stack, x, y + radius * 0.5f, w, h - radius,
-                new Color(255, 255, 255, (int) (26f * fade)),
-                new Color(Math.max(0, tint.getRed() - 25), Math.max(0, tint.getGreen() - 25),
-                        Math.max(0, tint.getBlue() - 25), (int) (50f * fade)),
-                false);
-
-        Render2D.drawBorder(stack, x + 0.5f, y + 0.5f, w - 1f, h - 1f, radius - 0.5f, 2.5f, 0f,
-                new Color(255, 255, 255, (int) (34f * fade)));
-
-        Render2D.drawBorder(stack, x, y, w, h, radius, 0f, 1f,
-                withAlpha(tint, (int) (110f * fade)));
-
-        Render2D.drawGradientRect(stack, x + radius, y + 0.5f, w - radius * 2f, 1f,
-                new Color(255, 255, 255, (int) (140f * fade)),
-                new Color(255, 255, 255, (int) (20f * fade)),
-                true);
-    }
-
-    private void drawHeaderLogo(MatrixStack stack, float x, float y, float size, float alpha) {
-        if (customLogoTexture != null) {
-            Render2D.drawTexture(stack, x, y, size, size, 4f,
-                    customLogoTexture, new Color(255, 255, 255, (int) (255 * alpha)));
-        } else {
-            Render2D.drawTexture(stack, x, y, size, size, 0f,
-                    ICO_LOGO, withAlpha(ACCENT_PURPLE, (int) (255 * alpha)));
-        }
-    }
-
-    private void drawFilledButton(MatrixStack stack, float x, float y, float w, float h,
-                                  String label, Identifier icon, Color accent, double hover, float alpha,
-                                  boolean iconLeft) {
-        drawGlass(stack, x, y, w, h, RADIUS, 6f, alpha, GLASS_PURPLE, false);
-
-        if (hover > 0.01) {
-            Render2D.drawRoundedRect(stack, x, y, w, h, RADIUS,
-                    withAlpha(lighten(accent, 0.3f), (int) (40 * hover * alpha)));
-            float uw = (w - 16f) * (float) hover;
-            Render2D.drawRoundedRect(stack, x + 8f + (w - 16f - uw) / 2f, y + h - 2f, uw, 1.4f, 0.7f,
-                    new Color(255, 255, 255, (int) (175 * hover * alpha)));
-        }
-
-        float iconSz = Math.min(15f, h - 12f);
-        float pad = 12f;
-        float sz = 7.5f;
-
-        float iconX = x + pad + 2f * (float) hover;
-        float textX = iconX + iconSz + 8f;
-
-        Render2D.drawTexture(stack, iconX, y + h / 2f - iconSz / 2f, iconSz, iconSz, 0f, icon,
-                new Color(255, 255, 255, (int) (255 * alpha)));
-        Render2D.drawFont(stack, Fonts.BOLD.getFont(sz), label, textX, y + h / 2f - sz / 2f,
-                new Color(255, 255, 255, (int) (255 * alpha)));
-    }
-
-    private void drawGlassButton(MatrixStack stack, float x, float y, float w, float h,
-                                 String label, Identifier icon, Color accent, double hover, float alpha,
-                                 boolean iconLeft) {
-        drawGlass(stack, x, y, w, h, RADIUS, 6f, alpha, GLASS_DARK, false);
-        if (hover > 0.01) {
-            Render2D.drawRoundedRect(stack, x, y, w, h, RADIUS,
-                    withAlpha(accent, (int) (35 * hover * alpha)));
-
-            float uw = (w - 16f) * (float) hover;
-            Render2D.drawRoundedRect(stack, x + 8f + (w - 16f - uw) / 2f, y + h - 2f, uw, 1.4f, 0.7f,
-                    withAlpha(accent, (int) (185 * hover * alpha)));
-        }
-
-        float iconSz = Math.min(14f, h - 14f);
-        float pad = 12f;
-        float sz = 7.5f;
-        float slide = 2f * (float) hover;
-
-        if (iconLeft) {
-            float iconX = x + pad + slide;
-            float textX = iconX + iconSz + 8f;
-            Render2D.drawTexture(stack, iconX, y + h / 2f - iconSz / 2f, iconSz, iconSz, 0f, icon,
-                    new Color(255, 255, 255, (int) (230 * alpha)));
-            Render2D.drawFont(stack, Fonts.SEMIBOLD.getFont(sz), label, textX, y + h / 2f - sz / 2f,
-                    withAlpha(GLASS_BTN_TEXT, (int) (255 * alpha)));
-        } else {
-            float iconX = x + w - pad - iconSz - slide;
-            float textW = Fonts.SEMIBOLD.getWidth(label, sz);
-            float textX = x + w / 2f - (textW + iconSz + 8f) / 2f;
-
-            if (textX < x + pad) textX = x + pad;
-            Render2D.drawFont(stack, Fonts.SEMIBOLD.getFont(sz), label, textX, y + h / 2f - sz / 2f,
-                    withAlpha(GLASS_BTN_TEXT, (int) (255 * alpha)));
-            Render2D.drawTexture(stack, iconX, y + h / 2f - iconSz / 2f, iconSz, iconSz, 0f, icon,
-                    new Color(255, 255, 255, (int) (230 * alpha)));
-        }
-    }
-
-    private void drawExitButton(MatrixStack stack, float x, float y, float w, float h,
-                                String label, double hover, float alpha) {
-        drawGlass(stack, x, y, w, h, RADIUS, 6f, alpha, GLASS_DARK, false);
-        if (hover > 0.01) {
-            Render2D.drawRoundedRect(stack, x, y, w, h, RADIUS,
-                    withAlpha(ACCENT_PURPLE, (int) (40 * hover * alpha)));
-
-            float uw = (w - 16f) * (float) hover;
-            Render2D.drawRoundedRect(stack, x + 8f + (w - 16f - uw) / 2f, y + h - 2f, uw, 1.4f, 0.7f,
-                    withAlpha(ACCENT_SOFT, (int) (185 * hover * alpha)));
-        }
-
-        float crossSz = Math.min(14f, h - 14f);
-        float pad = 12f;
-        float crossX = x + pad;
-        float crossY = y + h / 2f - crossSz / 2f;
-        drawCrossIcon(stack, crossX, crossY, crossSz, withAlpha(ACCENT_SOFT, (int) (255 * alpha)));
-
-        float sz = 7.5f;
-        String text = label;
-        float textW = Fonts.BOLD.getWidth(text, sz);
-
-        float textX = x + w / 2f - textW / 2f;
-        Render2D.drawFont(stack, Fonts.BOLD.getFont(sz), text, textX, y + h / 2f - sz / 2f,
-                new Color(255, 255, 255, (int) (255 * alpha)));
-    }
-
-    private void drawCrossIcon(MatrixStack stack, float x, float y, float size, Color color) {
-        float thickness = Math.max(1.5f, size * 0.14f);
-        Render2D.drawLine(stack, x, y, x + size, y + size, thickness, color);
-        Render2D.drawLine(stack, x + size, y, x, y + size, thickness, color);
-    }
-
-    private void drawAchievements(MatrixStack stack, float x, float y, int mouseX, int mouseY, float alpha) {
-        lastAchievementHitboxes.clear();
-        lastAchievementList.clear();
-        lastAchX = x;
-        lastAchY = y;
-
-        List<Achievement> list = AchievementManager.getAchievements();
-        if (list.isEmpty()) return;
-
-        Render2D.drawFont(stack, Fonts.SEMIBOLD.getFont(4f), "ДОСТИЖЕНИЯ",
-                x, y, withAlpha(MUTED_TEXT, (int) (200 * alpha)));
-
-        float iconY = y + 8f;
-        float curX = x;
-        Achievement hoveredAchievement = null;
-
-        for (Achievement a : list) {
-            boolean hovered = mouseX >= curX && mouseX <= curX + ACH_ICON_SIZE
-                    && mouseY >= iconY && mouseY <= iconY + ACH_ICON_SIZE;
-
-            Render2D.drawRoundedRect(stack, curX, iconY, ACH_ICON_SIZE, ACH_ICON_SIZE, 4f,
-                    new Color(20, 14, 32, (int) (215 * alpha)));
-            Render2D.drawBorder(stack, curX, iconY, ACH_ICON_SIZE, ACH_ICON_SIZE, 4f, 0f, 1f,
-                    withAlpha(hovered ? ACCENT_SOFT : new Color(255, 255, 255),
-                            (int) ((hovered ? 170 : 45) * alpha)));
-
-            AbstractTexture icon = AchievementManager.getIcon(a);
-            if (icon != null) {
-                float pad = 2f;
-                Render2D.drawTexture(stack, curX + pad, iconY + pad, ACH_ICON_SIZE - pad * 2, ACH_ICON_SIZE - pad * 2,
-                        2f, icon, new Color(255, 255, 255, (int) (255 * alpha)));
-            } else {
-                float sz = 8f;
-                String fallback = "★";
-                float fw = Fonts.BOLD.getWidth(fallback, sz);
-                Render2D.drawFont(stack, Fonts.BOLD.getFont(sz), fallback,
-                        curX + ACH_ICON_SIZE / 2f - fw / 2f, iconY + ACH_ICON_SIZE / 2f - sz / 2f,
-                        new Color(186, 110, 255, (int) (230 * alpha)));
+        if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
+            if (themePickerOpen) {
+                themePickerOpen = false;
+                return true;
             }
-
-            lastAchievementHitboxes.add(new float[]{curX, iconY, ACH_ICON_SIZE, ACH_ICON_SIZE});
-            lastAchievementList.add(a);
-
-            if (hovered) hoveredAchievement = a;
-            curX += ACH_ICON_SIZE + ACH_ICON_GAP;
+            return true;
         }
-
-        if (hoveredAchievement != null) {
-            drawAchievementTooltip(stack, hoveredAchievement, mouseX, mouseY, alpha);
+        try {
+            return super.keyPressed(keyCode, scanCode, modifiers);
+        } catch (Throwable ignored) {
+            return false;
         }
     }
 
-    private void drawAchievementTooltip(MatrixStack stack, Achievement a, float mouseX, float mouseY, float alpha) {
-        float titleSz = 6f, bodySz = 5f;
-        String title = a.name;
-        String desc = a.description == null ? "" : a.description;
-        String unlock = (a.unlockFeature == null || a.unlockFeature.isEmpty())
-                ? null : "Разблокирует: " + a.unlockFeature;
+    @Override
+    public boolean keyReleased(int keyCode, int scanCode, int modifiers) {
+        try {
+            return super.keyReleased(keyCode, scanCode, modifiers);
+        } catch (Throwable ignored) {
+            return false;
+        }
+    }
 
-        float maxTextW = Math.max(Fonts.BOLD.getWidth(title, titleSz), Fonts.REGULAR.getWidth(desc, bodySz));
-        if (unlock != null) maxTextW = Math.max(maxTextW, Fonts.SEMIBOLD.getWidth(unlock, bodySz));
-
-        float boxW = maxTextW + 20f;
-        float boxH = 14f + 12f + (unlock != null ? 12f : 0f);
-
-        float boxX = mouseX + 14f;
-        float boxY = mouseY + 14f;
-        if (boxX + boxW > this.width) boxX = this.width - boxW - 6f;
-        if (boxY + boxH > this.height) boxY = this.height - boxH - 6f;
-
-        drawGlass(stack, boxX, boxY, boxW, boxH, 5f, 5f, alpha, new Color(16, 11, 26, 235));
-
-        float textX = boxX + 10f;
-        float textY = boxY + 8f;
-        Render2D.drawFont(stack, Fonts.BOLD.getFont(titleSz), title, textX, textY,
-                new Color(200, 140, 255, (int) (255 * alpha)));
-        textY += 12f;
-        Render2D.drawFont(stack, Fonts.REGULAR.getFont(bodySz), desc, textX, textY,
-                new Color(230, 230, 235, (int) (230 * alpha)));
-
-        if (unlock != null) {
-            textY += 12f;
-            Render2D.drawFont(stack, Fonts.SEMIBOLD.getFont(bodySz), unlock, textX, textY,
-                    new Color(150, 220, 170, (int) (240 * alpha)));
+    @Override
+    public boolean charTyped(char chr, int modifiers) {
+        try {
+            return super.charTyped(chr, modifiers);
+        } catch (Throwable ignored) {
+            return false;
         }
     }
 
@@ -721,15 +450,8 @@ public class MainMenu extends Screen implements Wrapper {
     }
 
     private static Color withAlpha(Color c, int alpha) {
-        return new Color(c.getRed(), c.getGreen(), c.getBlue(),
-                Math.max(0, Math.min(255, alpha)));
-    }
-
-    private static Color lighten(Color c, float amount) {
-        int r = (int) Math.min(255, c.getRed()   + (255 - c.getRed())   * amount);
-        int g = (int) Math.min(255, c.getGreen() + (255 - c.getGreen()) * amount);
-        int b = (int) Math.min(255, c.getBlue()  + (255 - c.getBlue())  * amount);
-        return new Color(r, g, b, c.getAlpha());
+        int a = Math.max(0, Math.min(255, alpha));
+        return new Color(c.getRed(), c.getGreen(), c.getBlue(), a);
     }
 
     private static Color lerpColor(Color a, Color b, float t) {

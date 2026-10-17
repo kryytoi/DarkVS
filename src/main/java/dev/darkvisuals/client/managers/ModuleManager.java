@@ -153,6 +153,7 @@ public class ModuleManager implements Wrapper {
                 new GlassNotes(),
                 new CombatTimer(),
                 new SlotLock(),
+                new Swap(),
                 new ItemReminder(),
                 new DurabilityAlert(),
                 new CoordsClipboard(),
@@ -173,7 +174,11 @@ public class ModuleManager implements Wrapper {
                 new CrosshairHitNotice(),
                 new LootBeam(),
                 new TotemHoldEffect(),
-                new MaceEffect()
+                new MaceEffect(),
+                new Blink(),
+                new Sigara(),
+                new CommandSave(),
+                new Games()
         );
 
         for (Module module : modules) {

@@ -20,6 +20,12 @@ public abstract class MinecraftClientMixin implements Wrapper {
 
     @Inject(method = "setScreen", at = @At("HEAD"), cancellable = true)
     private void darkvisuals$replaceDeathScreen(net.minecraft.client.gui.screen.Screen screen, CallbackInfo ci) {
+        if (screen instanceof net.minecraft.client.gui.screen.GameMenuScreen) {
+            ci.cancel();
+            ((MinecraftClient) (Object) this).setScreen(new dev.darkvisuals.client.ui.pause.CustomPauseScreen());
+            return;
+        }
+
         if (screen == null || screen instanceof dev.darkvisuals.client.ui.death.DarkDeathScreen) return;
         if (!(screen instanceof net.minecraft.client.gui.screen.DeathScreen)) return;
         if (!dev.darkvisuals.modules.impl.render.CustomDeathScreen.shouldReplace()) return;

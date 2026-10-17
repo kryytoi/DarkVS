@@ -42,7 +42,7 @@ public class DarkaManager {
     private static final List<Message> history = new ArrayList<>();
 
     private static String systemPrompt() {
-        return "Ты — DARKA-0.1, встроенный ИИ-ассистент клиента DarkVS для Minecraft. "
+        return "Ты — DARKA-0.1, встроенный ИИ-ассистент клиента Dark Visuals для Minecraft. "
                 + "Отвечай кратко, на русском языке, дружелюбно. Помогаешь игроку с клиентом, "
                 + "модами и общими вопросами по Minecraft.";
     }

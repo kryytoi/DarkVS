@@ -38,36 +38,47 @@ public record BuiltBlur(
     @Override
     public void render(Matrix4f matrix, float x, float y, float z) {
         MinecraftClient client = MinecraftClient.getInstance();
+        if (client == null) return;
         Framebuffer main = client.getFramebuffer();
         if (main == null) return;
-
-        SimpleFramebuffer fbo = TEMP_FBO_SUPPLIER.get();
-        if (fbo.textureWidth != main.textureWidth || fbo.textureHeight != main.textureHeight) fbo.resize(main.textureWidth, main.textureHeight);
-
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
-        RenderSystem.disableCull();
-        fbo.beginWrite(true);
-        main.draw(fbo.textureWidth, fbo.textureHeight);
-        main.beginWrite(true);
-        RenderSystem.setShaderTexture(0, fbo.getColorAttachment());
+        if (main.textureWidth <= 0 || main.textureHeight <= 0) return;
 
         float width = this.size.width(), height = this.size.height();
+        if (width <= 0 || height <= 0) return;
 
-		ShaderProgram shader = RenderSystem.setShader(BLUR_SHADER_KEY);
-        shader.getUniform("Size").set(width, height);
-        shader.getUniform("Radius").set(this.radius.radius1(), this.radius.radius2(), this.radius.radius3(), this.radius.radius4());
-        shader.getUniform("Smoothness").set(this.smoothness);
-        shader.getUniform("BlurRadius").set(this.blurRadius);
+        try {
+            SimpleFramebuffer fbo = TEMP_FBO_SUPPLIER.get();
+            if (fbo == null) return;
+            if (fbo.textureWidth != main.textureWidth || fbo.textureHeight != main.textureHeight) {
+                fbo.resize(main.textureWidth, main.textureHeight);
+            }
 
-		BufferBuilder builder = Tessellator.getInstance().begin(DrawMode.QUADS, VertexFormats.POSITION_COLOR);
-        builder.vertex(matrix, x, y, z).color(this.color.color1());
-        builder.vertex(matrix, x, y + height, z).color(this.color.color2());
-        builder.vertex(matrix, x + width, y + height, z).color(this.color.color3());
-        builder.vertex(matrix, x + width, y, z).color(this.color.color4());
-        BufferRenderer.drawWithGlobalProgram(builder.end());
-        RenderSystem.setShaderTexture(0, 0);
-        RenderSystem.enableCull();
-        RenderSystem.disableBlend();
+            RenderSystem.enableBlend();
+            RenderSystem.defaultBlendFunc();
+            RenderSystem.disableCull();
+            fbo.beginWrite(true);
+            main.draw(fbo.textureWidth, fbo.textureHeight);
+            main.beginWrite(true);
+            RenderSystem.setShaderTexture(0, fbo.getColorAttachment());
+
+            ShaderProgram shader = RenderSystem.setShader(BLUR_SHADER_KEY);
+            if (shader != null) {
+                if (shader.getUniform("Size") != null) shader.getUniform("Size").set(width, height);
+                if (shader.getUniform("Radius") != null) shader.getUniform("Radius").set(this.radius.radius1(), this.radius.radius2(), this.radius.radius3(), this.radius.radius4());
+                if (shader.getUniform("Smoothness") != null) shader.getUniform("Smoothness").set(this.smoothness);
+                if (shader.getUniform("BlurRadius") != null) shader.getUniform("BlurRadius").set(this.blurRadius);
+
+                BufferBuilder builder = Tessellator.getInstance().begin(DrawMode.QUADS, VertexFormats.POSITION_COLOR);
+                builder.vertex(matrix, x, y, z).color(this.color.color1());
+                builder.vertex(matrix, x, y + height, z).color(this.color.color2());
+                builder.vertex(matrix, x + width, y + height, z).color(this.color.color3());
+                builder.vertex(matrix, x + width, y, z).color(this.color.color4());
+                BufferRenderer.drawWithGlobalProgram(builder.end());
+            }
+            RenderSystem.setShaderTexture(0, 0);
+            RenderSystem.enableCull();
+            RenderSystem.disableBlend();
+        } catch (Throwable ignored) {
+        }
     }
 }

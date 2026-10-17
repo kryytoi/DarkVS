@@ -27,66 +27,20 @@ public final class LicenseGuard {
     private LicenseGuard() {}
 
     public static boolean isValid() {
-        return VALID.get();
+        return true;
     }
 
     public static boolean verifyOnStartup() {
-        boolean ok = checkNow();
-        VALID.set(ok);
-        return ok;
+        VALID.set(true);
+        return true;
     }
 
     public static void tick() {
-
-        if (FabricLoader.getInstance().isDevelopmentEnvironment()) return;
-        if (Instant.now().isBefore(lastCheck.plus(RECHECK_INTERVAL))) return;
-        VALID.set(checkNow());
     }
 
     private static boolean checkNow() {
-        lastCheck = Instant.now();
-
-        if (FabricLoader.getInstance().isDevelopmentEnvironment()) {
-            return true;
-        }
-
-        try {
-            File sessionFile = new File(
-                    MinecraftClient.getInstance().runDirectory,
-                    "darkvisuals" + File.separator + "session.json");
-
-            if (!sessionFile.exists()) return false;
-
-            JsonObject session = JsonParser.parseString(
-                    Files.readString(sessionFile.toPath())).getAsJsonObject();
-
-            String login = session.get("login").getAsString();
-            String hwid = session.get("hwid").getAsString();
-            String token = session.get("sessionToken").getAsString();
-
-            String body = "{\"login\":\"" + escape(login)
-                    + "\",\"hwid\":\"" + escape(hwid)
-                    + "\",\"sessionToken\":\"" + escape(token) + "\"}";
-
-            HttpRequest req = HttpRequest.newBuilder()
-                    .uri(URI.create(SERVER_BASE_URL + "/api/verify"))
-                    .timeout(Duration.ofSeconds(10))
-                    .header("Content-Type", "application/json")
-                    .POST(HttpRequest.BodyPublishers.ofString(body))
-                    .build();
-
-            HttpResponse<String> resp = HttpClient.newHttpClient()
-                    .send(req, HttpResponse.BodyHandlers.ofString());
-
-            if (resp.statusCode() != 200) return false;
-
-            JsonObject result = JsonParser.parseString(resp.body()).getAsJsonObject();
-            return result.has("valid") && result.get("valid").getAsBoolean();
-
-        } catch (IOException | InterruptedException | RuntimeException e) {
-
-            return false;
-        }
+        VALID.set(true);
+        return true;
     }
 
     private static String escape(String s) {

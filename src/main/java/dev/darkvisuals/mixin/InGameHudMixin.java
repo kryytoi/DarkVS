@@ -30,6 +30,11 @@ public abstract class InGameHudMixin {
         darkvisuals.post(event);
     }
 
+    @Inject(method = "render", at = @At("TAIL"))
+    public void renderThemePulse(DrawContext context, RenderTickCounter tickCounter, CallbackInfo ci) {
+        dev.darkvisuals.client.managers.ThemeManager.getInstance().renderThemePulse(context);
+    }
+
     @Inject(method = "renderHotbar", at = @At("HEAD"), cancellable = true)
     public void renderHotbar(DrawContext context, RenderTickCounter tickCounter, CallbackInfo ci) {
         try {

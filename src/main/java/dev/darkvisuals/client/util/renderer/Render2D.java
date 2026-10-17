@@ -196,13 +196,18 @@ public class   Render2D implements Wrapper {
     }
 
     public void drawShaderBlurRect(MatrixStack stack, float x, float y, float width, float height, float radius, float blurRadius, Color color) {
-        BuiltBlur built = Builder.blur()
-                .size(new SizeState(width, height))
-                .radius(new QuadRadiusState(radius))
-                .blurRadius(blurRadius)
-                .color(new QuadColorState(color))
-                .build();
-        built.render(stack.peek().getPositionMatrix(), x, y);
+        if (width <= 0 || height <= 0) return;
+        try {
+            BuiltBlur built = Builder.blur()
+                    .size(new SizeState(width, height))
+                    .radius(new QuadRadiusState(radius))
+                    .blurRadius(blurRadius)
+                    .color(new QuadColorState(color))
+                    .build();
+            built.render(stack.peek().getPositionMatrix(), x, y);
+        } catch (Throwable t) {
+            drawBlurredRect(stack, x, y, width, height, radius, blurRadius, color);
+        }
     }
 
      public void drawLiquidGlass(MatrixStack stack, float x, float y, float width, float height, float radius, float fade) {
@@ -212,35 +217,29 @@ public class   Render2D implements Wrapper {
 
     public void drawLiquidGlass(MatrixStack stack, float x, float y, float width, float height, float radius, float fade, Color tint) {
         int tr = tint.getRed(), tg = tint.getGreen(), tb = tint.getBlue();
+        try {
+            drawGlass(stack, x, y, width, height, fade, radius, (clampAlpha(35 * fade) << 24) | (tint.getRGB() & 0x00FFFFFF), 8f, 3f, 3.5f, 2.5f);
+        } catch (Throwable t) {
+            if (!dev.darkvisuals.modules.impl.utility.Optimization.isHudFastBackground()) {
+                drawBlurredRect(stack, x, y, width, height, radius, 14f, new Color(tr, tg, tb, clampAlpha(60 * fade)));
+            }
 
-        if (!dev.darkvisuals.modules.impl.utility.Optimization.isHudFastBackground()) {
-            drawBlurredRect(stack, x, y, width, height, radius, 14f, new Color(tr, tg, tb, clampAlpha(60 * fade)));
+            drawRoundedRect(stack, x, y, width, height, radius, new Color(tr, tg, tb, clampAlpha(75 * fade)));
+
+            drawGradientRect(stack, x, y + radius * 0.5f, width, height - radius,
+                    new Color(tr, tg, tb, clampAlpha(28 * fade)),
+                    new Color(Math.max(0, tr - 25), Math.max(0, tg - 25), Math.max(0, tb - 25), clampAlpha(65 * fade)),
+                    false);
+
+            drawBorder(stack, x, y, width, height, radius, 0f, 1f, new Color(tr, tg, tb, clampAlpha(110 * fade)));
         }
-
-        drawRoundedRect(stack, x, y, width, height, radius, new Color(tr, tg, tb, clampAlpha(75 * fade)));
-
-        drawGradientRect(stack, x, y + radius * 0.5f, width, height - radius,
-                new Color(255, 255, 255, clampAlpha(28 * fade)),
-                new Color(Math.max(0, tr - 25), Math.max(0, tg - 25), Math.max(0, tb - 25), clampAlpha(65 * fade)),
-                false);
-
-        drawBorder(stack, x + 0.5f, y + 0.5f, width - 1f, height - 1f, radius - 0.5f,
-                2.5f, 0f, new Color(255, 255, 255, clampAlpha(36 * fade)));
-
-        drawBorder(stack, x, y, width, height, radius, 0f, 1f, new Color(tr, tg, tb, clampAlpha(110 * fade)));
-
-        drawGradientRect(stack, x + radius, y + 0.5f, width - radius * 2f, 1f,
-                new Color(255, 255, 255, clampAlpha(150 * fade)),
-                new Color(255, 255, 255, clampAlpha(20 * fade)),
-                true);
     }
 
      public void drawHudBackground(MatrixStack stack, float x, float y,
                                   float width, float height, float radius, float fade) {
         if (dev.darkvisuals.client.ui.hud.HudStyle.isLiquidGlass()) {
-
             drawGlass(stack, x, y, width, height, fade, radius,
-                    glassTint(0.22f * fade), 8f, 3f, 3f, 2f);
+                    glassTint(0.24f * fade), 8f, 3f, 3.5f, 2.5f);
             return;
         }
         if (dev.darkvisuals.client.ui.hud.HudStyle.isGlowing()) {
@@ -273,7 +272,13 @@ public class   Render2D implements Wrapper {
     }
 
      public void drawHudPill(MatrixStack stack, float x, float y, float w, float h, float radius, float fade) {
-        if (dev.darkvisuals.client.ui.hud.HudStyle.isGlowing() || dev.darkvisuals.client.ui.hud.HudStyle.isLiquidGlass()) {
+        if (dev.darkvisuals.client.ui.hud.HudStyle.isLiquidGlass()) {
+            try {
+                drawGlass(stack, x, y, w, h, fade, radius, glassTint(0.20f * fade), 5f, 2.5f, 2.8f, 2.0f);
+                return;
+            } catch (Throwable ignored) {}
+        }
+        if (dev.darkvisuals.client.ui.hud.HudStyle.isGlowing()) {
             drawRoundedRect(stack, x, y, w, h, radius, new Color(255, 255, 255, clampAlpha(20 * fade)));
             drawBorder(stack, x, y, w, h, radius, 0f, 1f, new Color(255, 255, 255, clampAlpha(50 * fade)));
         } else {

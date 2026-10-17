@@ -8,12 +8,14 @@ import dev.darkvisuals.modules.settings.impl.BooleanSetting;
 import dev.darkvisuals.modules.settings.impl.ButtonSetting;
 import dev.darkvisuals.modules.settings.impl.EnumSetting;
 import dev.darkvisuals.modules.settings.impl.StringSetting;
+import dev.darkvisuals.client.ui.hud.WatermarkStyle;
 
 public class HUD extends Module {
 
     private static HUD instance;
 
     private final EnumSetting<HudStyle> style = new EnumSetting<>("Style", HudStyle.GLOWING);
+    private final EnumSetting<WatermarkStyle> watermarkStyle = new EnumSetting<>("Стиль ватермарки", WatermarkStyle.DEFAULT);
 
     private final BooleanSetting watermark = new BooleanSetting("Watermark", true);
     private final BooleanSetting targetHud = new BooleanSetting("TargetHud", true);
@@ -57,13 +59,20 @@ public class HUD extends Module {
         return getElementSetting(name) != null;
     }
 
-    private BooleanSetting getElementSetting(String name) {
+    public BooleanSetting getElementSetting(String name) {
         for (var setting : getSettings()) {
             if (setting instanceof BooleanSetting bool && bool.getName().equalsIgnoreCase(name)) {
                 return bool;
             }
         }
         return null;
+    }
+
+    public void setElementVisible(String name, boolean visible) {
+        BooleanSetting setting = getElementSetting(name);
+        if (setting != null) {
+            setting.setValue(visible);
+        }
     }
 
     public String getWatermarkName() {
@@ -89,5 +98,9 @@ public class HUD extends Module {
 
     public void setLogoFile(String f) {
         logoFile.setValue(f);
+    }
+
+    public WatermarkStyle getWatermarkStyle() {
+        return watermarkStyle.getValue();
     }
 }

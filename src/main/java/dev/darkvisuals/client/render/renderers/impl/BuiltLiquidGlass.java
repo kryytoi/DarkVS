@@ -49,76 +49,86 @@ public record BuiltLiquidGlass(
     public void render(Matrix4f matrix, float x, float y, float z) {
         MinecraftClient client = MinecraftClient.getInstance();
         if (client == null || client.getFramebuffer() == null) return;
+        Framebuffer main = client.getFramebuffer();
+        if (main.textureWidth <= 0 || main.textureHeight <= 0) return;
 
         float width = Math.max(this.size.width(), 1f);
         float height = Math.max(this.size.height(), 1f);
 
-        float drawX = x, drawY = y, drawW = width, drawH = height;
+        float pad = 12f;
+        float drawX = x - pad;
+        float drawY = y - pad;
+        float drawW = width + pad * 2f;
+        float drawH = height + pad * 2f;
         if (this.merge) {
-            float pad = Math.max(0f, this.mergeRadius);
-            drawX = Math.min(x, this.blob2X) - pad;
-            drawY = Math.min(y, this.blob2Y) - pad;
-            float right = Math.max(x + width, this.blob2X + this.blob2Width) + pad;
-            float bottom = Math.max(y + height, this.blob2Y + this.blob2Height) + pad;
+            float mPad = Math.max(12f, this.mergeRadius);
+            drawX = Math.min(x, this.blob2X) - mPad;
+            drawY = Math.min(y, this.blob2Y) - mPad;
+            float right = Math.max(x + width, this.blob2X + this.blob2Width) + mPad;
+            float bottom = Math.max(y + height, this.blob2Y + this.blob2Height) + mPad;
             drawW = right - drawX;
             drawH = bottom - drawY;
         }
 
-        SimpleFramebuffer fbo = TEMP_FBO_SUPPLIER.get();
-        Framebuffer main = client.getFramebuffer();
-        if (main == null) return;
-        if (fbo.textureWidth != main.textureWidth || fbo.textureHeight != main.textureHeight) {
-            fbo.resize(main.textureWidth, main.textureHeight);
+        try {
+            SimpleFramebuffer fbo = TEMP_FBO_SUPPLIER.get();
+            if (fbo == null) return;
+            if (fbo.textureWidth != main.textureWidth || fbo.textureHeight != main.textureHeight) {
+                fbo.resize(main.textureWidth, main.textureHeight);
+            }
+
+            RenderSystem.enableBlend();
+            RenderSystem.defaultBlendFunc();
+            RenderSystem.disableCull();
+            fbo.beginWrite(true);
+            main.draw(fbo.textureWidth, fbo.textureHeight);
+            main.beginWrite(true);
+            RenderSystem.setShaderTexture(0, fbo.getColorAttachment());
+
+            float guiScale = (float) client.getWindow().getScaleFactor();
+            float screenWidth = client.getWindow().getScaledWidth();
+            float screenHeight = client.getWindow().getScaledHeight();
+
+            float[] cuts = this.cutSizes == null || this.cutSizes.length < 4 ? NO_CUTS : this.cutSizes;
+            float[] radii = {
+                    this.radius.radius1(), this.radius.radius2(), this.radius.radius3(), this.radius.radius4()
+            };
+
+            int tint = this.color.color1();
+            float tintA = ((tint >> 24) & 0xFF) / 255.0f;
+            float tintR = ((tint >> 16) & 0xFF) / 255.0f;
+            float tintG = ((tint >> 8) & 0xFF) / 255.0f;
+            float tintB = (tint & 0xFF) / 255.0f;
+
+            ShaderProgram shader = RenderSystem.setShader(GLASS_SHADER_KEY);
+            if (shader != null) {
+                if (shader.getUniform("Rect") != null) shader.getUniform("Rect").set(drawX, drawY, drawW, drawH);
+                if (shader.getUniform("Screen") != null) shader.getUniform("Screen").set(screenWidth, screenHeight, guiScale, Math.max(0f, Math.min(1f, this.alpha)));
+                if (shader.getUniform("Radius") != null) shader.getUniform("Radius").set(radii[0], radii[1], radii[2], radii[3]);
+                if (shader.getUniform("Cuts") != null) shader.getUniform("Cuts").set(cuts[0], cuts[1], cuts[2], cuts[3]);
+                if (shader.getUniform("Tint") != null) shader.getUniform("Tint").set(tintR, tintG, tintB, tintA);
+                if (shader.getUniform("Glass") != null) shader.getUniform("Glass").set(
+                        Math.max(0f, this.distortion),
+                        Math.max(0f, this.waveSize),
+                        Math.max(0f, this.edgeLight),
+                        Math.max(0f, this.shine));
+                if (shader.getUniform("Blob0") != null) shader.getUniform("Blob0").set(x, y, width, height);
+                if (shader.getUniform("Blob1") != null) shader.getUniform("Blob1").set(this.blob2X, this.blob2Y, this.blob2Width, this.blob2Height);
+                if (shader.getUniform("Blobs") != null) shader.getUniform("Blobs").set(this.merge ? 2f : 1f, Math.max(0f, this.mergeRadius));
+                if (shader.getUniform("BlurRadius") != null) shader.getUniform("BlurRadius").set(Math.max(0f, this.blurRadius));
+
+                BufferBuilder builder = Tessellator.getInstance().begin(DrawMode.QUADS, VertexFormats.POSITION_COLOR);
+                builder.vertex(matrix, drawX, drawY, z).color(-1);
+                builder.vertex(matrix, drawX, drawY + drawH, z).color(-1);
+                builder.vertex(matrix, drawX + drawW, drawY + drawH, z).color(-1);
+                builder.vertex(matrix, drawX + drawW, drawY, z).color(-1);
+                BufferRenderer.drawWithGlobalProgram(builder.end());
+            }
+
+            RenderSystem.setShaderTexture(0, 0);
+            RenderSystem.enableCull();
+            RenderSystem.disableBlend();
+        } catch (Throwable ignored) {
         }
-
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
-        RenderSystem.disableCull();
-        fbo.beginWrite(true);
-        main.draw(fbo.textureWidth, fbo.textureHeight);
-        main.beginWrite(true);
-        RenderSystem.setShaderTexture(0, fbo.getColorAttachment());
-
-        float guiScale = (float) client.getWindow().getScaleFactor();
-        float screenWidth = client.getWindow().getScaledWidth();
-        float screenHeight = client.getWindow().getScaledHeight();
-
-        float[] cuts = this.cutSizes == null || this.cutSizes.length < 4 ? NO_CUTS : this.cutSizes;
-        float[] radii = {
-                this.radius.radius1(), this.radius.radius2(), this.radius.radius3(), this.radius.radius4()
-        };
-
-        int tint = this.color.color1();
-        float tintA = ((tint >> 24) & 0xFF) / 255.0f;
-        float tintR = ((tint >> 16) & 0xFF) / 255.0f;
-        float tintG = ((tint >> 8) & 0xFF) / 255.0f;
-        float tintB = (tint & 0xFF) / 255.0f;
-
-        ShaderProgram shader = RenderSystem.setShader(GLASS_SHADER_KEY);
-        shader.getUniform("Rect").set(drawX, drawY, drawW, drawH);
-        shader.getUniform("Screen").set(screenWidth, screenHeight, guiScale, Math.max(0f, Math.min(1f, this.alpha)));
-        shader.getUniform("Radius").set(radii[0], radii[1], radii[2], radii[3]);
-        shader.getUniform("Cuts").set(cuts[0], cuts[1], cuts[2], cuts[3]);
-        shader.getUniform("Tint").set(tintR, tintG, tintB, tintA);
-        shader.getUniform("Glass").set(
-                Math.max(0f, this.distortion),
-                Math.max(0f, this.waveSize),
-                Math.max(0f, this.edgeLight),
-                Math.max(0f, this.shine));
-        shader.getUniform("Blob0").set(x, y, width, height);
-        shader.getUniform("Blob1").set(this.blob2X, this.blob2Y, this.blob2Width, this.blob2Height);
-        shader.getUniform("Blobs").set(this.merge ? 2f : 1f, Math.max(0f, this.mergeRadius));
-        shader.getUniform("BlurRadius").set(Math.max(0f, this.blurRadius));
-
-        BufferBuilder builder = Tessellator.getInstance().begin(DrawMode.QUADS, VertexFormats.POSITION_COLOR);
-        builder.vertex(matrix, drawX, drawY, z).color(-1);
-        builder.vertex(matrix, drawX, drawY + drawH, z).color(-1);
-        builder.vertex(matrix, drawX + drawW, drawY + drawH, z).color(-1);
-        builder.vertex(matrix, drawX + drawW, drawY, z).color(-1);
-        BufferRenderer.drawWithGlobalProgram(builder.end());
-
-        RenderSystem.setShaderTexture(0, 0);
-        RenderSystem.enableCull();
-        RenderSystem.disableBlend();
     }
 }
