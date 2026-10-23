@@ -100,7 +100,8 @@ public class AutoSaveManager implements Wrapper {
             private boolean attempted = false;
             @Override
             public void onEndTick(MinecraftClient client) {
-                if (attempted) return;
+                // Applying module settings may request another resource reload.
+                if (attempted || !client.isFinishedLoading() || client.getOverlay() != null) return;
                 attempted = true;
 
                 ConfigManager configManager = darkvisuals.getInstance().getConfigManager();

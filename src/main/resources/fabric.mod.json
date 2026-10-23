@@ -13,17 +13,15 @@
     "main": [
       "dev.darkvisuals.emotes.network.EmotesNetworkInit",
       "dev.darkvisuals.darkvisuals"
-    ]
+    ],
+    "preLaunch": ["dev.darkvisuals.security.DarkVSPreLaunch"]
   },
   "mixins": [
     "darkvisuals.mixins.json"
   ],
   "depends": {
-    "fabricloader": ">=0.16.10",
-    "minecraft": "1.21.4"
-  },
-  "suggests": {
-    "sodium": "*",
+    "minecraft": "~1.21.4",
+    "sodium": ">=0.6.13",
     "sodium-extra": "*"
   }
 }

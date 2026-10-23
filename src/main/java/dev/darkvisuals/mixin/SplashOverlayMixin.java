@@ -39,6 +39,8 @@ public abstract class SplashOverlayMixin {
         int width = context.getScaledWindowWidth();
         int height = context.getScaledWindowHeight();
         long now = Util.getMeasuringTimeMs();
+        // The initial reload only preloads GUI shaders; fonts and text shaders are not ready yet.
+        boolean resourcesReady = this.client.isFinishedLoading();
 
         if (this.reloading && this.reloadStartTime == -1L) {
             this.reloadStartTime = now;
@@ -82,7 +84,7 @@ public abstract class SplashOverlayMixin {
             } catch (Throwable ignored) {
             }
 
-            if (this.client.textRenderer != null) {
+            if (resourcesReady && this.client.textRenderer != null) {
                 String title = "DARK VISUALS";
                 int tw = this.client.textRenderer.getWidth(title);
                 context.drawTextWithShadow(this.client.textRenderer, title, cx - tw / 2, cy + 8, 0xFFA855F7);
@@ -102,7 +104,7 @@ public abstract class SplashOverlayMixin {
                 context.fillGradient(barX, barY, barX + fillW, barY + barH / 2, 0x40FFFFFF, 0x00FFFFFF);
             }
 
-            if (this.client.textRenderer != null) {
+            if (resourcesReady && this.client.textRenderer != null) {
                 int pct = (int) Math.round(this.progress * 100.0);
                 String barText = (this.reloading ? "Загрузка ресурсов... " : "Инициализация... ") + pct + "%";
                 int tw = this.client.textRenderer.getWidth(barText);

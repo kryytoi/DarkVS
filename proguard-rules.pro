@@ -33,6 +33,7 @@
 # dev.darkvisuals.darkvisuals
 -keep class dev.darkvisuals.emotes.network.EmotesNetworkInit { *; }
 -keep class dev.darkvisuals.darkvisuals { *; }
+-keep class dev.darkvisuals.security.DarkVSPreLaunch { *; }
 
 # --- 4. Kotlin-рантайм (мод грузит fabric-language-kotlin) ---
 -keep class kotlin.** { *; }

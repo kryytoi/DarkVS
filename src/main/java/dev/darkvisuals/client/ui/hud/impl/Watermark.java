@@ -177,6 +177,7 @@ public class Watermark extends HudElement implements ThemeManager.ThemeChangeLis
         pushEntrance(matrices, fade);
 
         Render2D.drawHudBackground(matrices, x, y, totalWidth, totalHeight, r, fade);
+        drawBottomGradient(matrices, x, y, totalWidth, totalHeight, fade);
         drawSweep(e, x, y, totalWidth, totalHeight, fade);
 
         float textY = y + (totalHeight - font.getHeight(fontSize)) / 2f;
@@ -209,6 +210,52 @@ public class Watermark extends HudElement implements ThemeManager.ThemeChangeLis
         Render2D.drawHudText(matrices, font.getFont(fontSize), ping, cursor, textY, withAlpha(textColor, fade));
 
         matrices.pop();
+    }
+
+    /**
+     * Небольшой градиент снизу вверх в цвете темы (только для Minimalistic).
+     * Рисуется горизонтальными полосками, каждая сужена по скруглению плашки,
+     * поэтому градиент не вылезает за углы.
+     */
+    private void drawBottomGradient(MatrixStack matrices, float x, float y, float w, float h, float fade) {
+        if (fade < 0.02f) return;
+
+        Color accent = themeManager.getCurrentTheme().getAccentColor();
+        if (accent == null) return;
+
+        final float heightFrac = 0.42f;   // какая часть плашки закрашена (снизу)
+        final float maxAlpha = 105f;      // насыщенность у самого низа (0..255)
+        final float power = 1.8f;         // >1 = градиент быстрее затухает вверх
+
+        float gh = h * heightFrac;
+        float r = h / 2f;
+        int steps = Math.max(1, (int) Math.ceil(gh));
+        float stepH = gh / steps;
+
+        for (int i = 0; i < steps; i++) {
+            // i = 0 — самая верхняя полоска градиента, i = steps-1 — самая нижняя
+            float top = y + h - gh + i * stepH;
+            float bottom = top + stepH;
+
+            float tTop = (top - (y + h - gh)) / gh;       // 0 вверху градиента, 1 внизу
+            float tBottom = (bottom - (y + h - gh)) / gh;
+
+            int aTop = (int) (maxAlpha * Math.pow(tTop, power) * fade);
+            int aBottom = (int) (maxAlpha * Math.pow(tBottom, power) * fade);
+
+            // сужение полоски под скругление пилюли (по центру полоски)
+            float dy = (top + bottom) / 2f - (y + r);
+            float inset = r - (float) Math.sqrt(Math.max(0f, r * r - dy * dy));
+            inset += 0.4f;
+
+            float sx = x + inset;
+            float sw = w - inset * 2f;
+            if (sw <= 0f) continue;
+
+            Color cTop = new Color(accent.getRed(), accent.getGreen(), accent.getBlue(), Math.max(0, Math.min(255, aTop)));
+            Color cBottom = new Color(accent.getRed(), accent.getGreen(), accent.getBlue(), Math.max(0, Math.min(255, aBottom)));
+            Render2D.drawGradientRect(matrices, sx, top, sw, stepH, cTop, cBottom, false);
+        }
     }
 
     private float drawVertSep(MatrixStack matrices, float x, float y, float h, float fade) {
@@ -296,17 +343,17 @@ public class Watermark extends HudElement implements ThemeManager.ThemeChangeLis
     }
 
     private void drawGlassText(net.minecraft.client.util.math.MatrixStack matrices,
-                                Font font, float fontSize, String text, float x, float y, float fade) {
+                               Font font, float fontSize, String text, float x, float y, float fade) {
         drawGlassText(matrices, font, fontSize, text, x, y, fade, withAlpha(textColor, fade));
     }
 
     private void drawGlassText(net.minecraft.client.util.math.MatrixStack matrices,
-                                Font font, float fontSize, String text, float x, float y, float fade, Color color) {
+                               Font font, float fontSize, String text, float x, float y, float fade, Color color) {
         Render2D.drawHudText(matrices, font.getFont(fontSize), text, x, y, color);
     }
 
     private float drawSep(net.minecraft.client.util.math.MatrixStack matrices,
-                           float cursorX, float y, float h, float dotGap, float dotSize, Color accent, float fade) {
+                          float cursorX, float y, float h, float dotGap, float dotSize, Color accent, float fade) {
         long now = System.currentTimeMillis();
         float pulse = 0.65f + 0.35f * (float) Math.sin(now / 500.0 + cursorX * 0.15);
         float dot = dotSize * (0.8f + 0.35f * pulse);

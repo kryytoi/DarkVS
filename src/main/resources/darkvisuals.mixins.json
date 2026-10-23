@@ -61,6 +61,8 @@
     "AntiRodPullMixin",
     "FishingBobberPullMixin",
     "SelfNameTagMixin",
+    "SodiumGraphicsDriverChecksMixin",
+    "SodiumRenderAheadMixin",
     "PlayerEmoteRenderStateMixin",
     "PlayerEmoteRendererMixin",
     "PlayerEmoteModelMixin",

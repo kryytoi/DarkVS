@@ -23,7 +23,6 @@ base {
 }
 
 repositories {
-     
     exclusiveContent {
         forRepository {
             maven { url "https://maven.firstdark.dev/releases" }
@@ -32,6 +31,20 @@ repositories {
             includeGroup "dev.firstdark.discordrpc"
         }
     }
+
+    // Modrinth Maven (Sodium, Sodium Extra)
+    exclusiveContent {
+        forRepository {
+            maven {
+                name = "Modrinth"
+                url = "https://api.modrinth.com/maven"
+            }
+        }
+        filter {
+            includeGroup "maven.modrinth"
+        }
+    }
+
     mavenCentral()
     maven { url "https://jitpack.io" }
     maven { url "https://maven.meteordev.org/releases" }
@@ -52,6 +65,14 @@ dependencies {
     mappings("net.fabricmc:yarn:${project.yarn_mappings}:v2")
     modImplementation("net.fabricmc:fabric-loader:${project.loader_version}")
     modImplementation("net.fabricmc.fabric-api:fabric-api:${project.fabric_version}")
+
+    // Sodium 0.6.13 (1.21.4 Fabric) - вшивается в мод
+    modImplementation "maven.modrinth:AANobbMI:c3YkZvne"
+    include "maven.modrinth:AANobbMI:c3YkZvne"
+
+    // Sodium Extra 0.6.1 (1.21.4 Fabric) - вшивается в мод
+    modImplementation "maven.modrinth:PtjYWJkn:f4TfteNb"
+    include "maven.modrinth:PtjYWJkn:f4TfteNb"
 
     implementation(shadow("dev.redstones.mediaplayerinfo:media-player-info:0.1.0"))
     implementation("com.google.code.gson:gson:2.10.1")
@@ -95,18 +116,12 @@ shadowJar {
     archiveClassifier.set("dev")
 }
 
- 
- 
- 
- 
- 
 task proguardJar(type: ProGuardTask) {
     dependsOn shadowJar
 
     injars shadowJar.archiveFile
     outjars layout.buildDirectory.file("libs/${project.archives_base_name}-obf.jar")
 
-     
     libraryjars configurations.runtimeClasspath
     libraryjars "${System.getProperty('java.home')}/jmods"
 
